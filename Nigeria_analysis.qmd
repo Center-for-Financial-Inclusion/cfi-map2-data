@@ -1,0 +1,7 @@
+---
+title: "Nigeria"
+lightbox: true
+params:
+  country: Nigeria
+---
+{{< include cfi_map2.qmd >}}

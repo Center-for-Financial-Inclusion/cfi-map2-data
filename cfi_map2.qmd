@@ -1,0 +1,585 @@
+
+```{r}
+#| include: false
+
+# Importing packaegs, functions declaring globals
+source("R/packages.R")
+source("R/utils.R")
+source("R/globals.R")
+source("R/functions.R")
+source("R/viz_functions.R")
+
+# Select country:
+COUNTRY <- params$country
+#COUNTRY <- "India"
+CITY <- CITIES[[COUNTRY]]
+
+# Preparing enumeration data and weights 
+source("R/0_weights.R")
+# Preparing main interview data  
+source("R/0_main_data.R")
+# Preparing functions for part 1 of report
+source("R/1_business_landscape.R")
+# Preparing functions for part 2 of report
+source("R/2_owners.R")
+# Preparing functions for part 3 of report
+source("R/3_digitaltechnology.R")
+
+source("R/weights_out.R")
+
+# Add check that number of rows in main dataset = number of rows in raw dataset
+```
+
+```{r}
+#| include: false
+
+# Quantities to summarize fieldwork
+
+N_initial_blocks_sampled = WEIGHT_PARAMS[[COUNTRY]]["n"]
+N_initial_blocks_inenum = sum(businesses_percluster$N_business_total_percluster > 0)
+N_blocks_w_expansion = sum(blocks_percluster$N_blocks_percluster > 1)
+N_blocks_enumerated = sum(blocks_percluster$N_blocks_percluster) 
+
+summary <- get_fieldwork_summary_businesses(enum_data)
+N_bs_total = summary["business_total"]
+N_bs_elig = summary["business_eligible"]
+N_bs_selected = summary["business_selected"]
+N_bs_interviewed = summary["business_interviewed"]
+N_clusters_w_interviews = sum(businesses_percluster$N_business_interviwed_percluster > 0)
+N_clusters_w_zero_businesses = sum(businesses_percluster$N_business_total_percluster == 0)
+  
+```
+
+## Fieldwork summary
+
+  * Enumeration was completed in `{r} N_initial_blocks_inenum` out of `{r} N_initial_blocks_sampled` initial sampled blocks.
+  * `{r} N_blocks_w_expansion` of the `{r} N_initial_blocks_inenum` initial sampled blocks enumerated resulted in expansion to adjacent blocks
+  * `{r} N_blocks_enumerated` blocks (including both initial sampled and expansion blocks) were enumerated. 
+  * In total, `{r} N_bs_total` business were found during enumeration
+  * Of all businesses, `{r} num_and_pct(N_bs_elig, N_bs_total)` were eligible for the study
+  * Of eligible businesses, `{r} num_and_pct(N_bs_selected, N_bs_elig)` were selected at random for interview
+  * Of selected businesses, `{r} num_and_pct(N_bs_interviewed, N_bs_selected)` were successfully interviewed 
+  * Successful interviews originate from `{r} N_clusters_w_interviews` initial sampled blocks
+
+## The business landscape 
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-nbus_size_and_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "Businesses enumerated by size and sector"
+
+# Number of firms by size and sector
+
+indicators <- c("business_total")
+groups_l1 <- "business_size_agg2"
+groups_l2 <- GROUPS[c("business_sector_agg3")]
+
+ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data, weights_cluster, keep = "total")
+fig_data <- fig_1_data(ests)
+title <- fig_1_title(ests, fig_data)
+
+labels <- list(
+  title = str_wrap(title, 150),
+  subtitle =  "Number of businesses by size and main industrial sector",
+  legend_ti = "Industrial sector",
+  yax_ti = "Number of businesses",
+  xax_ti = NULL,
+  caption = "Notes: Businesses whose size or main industrial sector was not determinable during enumeration are included in the totals but not shown in the figure."
+)
+
+barparams <- list(
+  bars = list(width = 0.7, position = "stack", labeltotal = TRUE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain"),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#41BBD9", "#ADCAD6", "#ECA72C")
+names(palette) <- c("Services: retail/wholesale trade (re-sale)", "Services: transportation, construction, repair, other", "Manufacturing")
+
+fig_bar_w_fill(fig_data, yvar = "total", xvar = "business_size_agg2", fvar = "group_cat_val", facets = NULL, labels, barparams, palette = palette, coord_flip = TRUE) + theme(axis.text.y = element_text(face = "bold"))
+
+
+```
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-mse_chars
+#| echo: false
+#| warning: false
+#| fig-cap: "Small businesses by gender, size and sector"
+
+
+indicators <- c("business_total")
+groups <- GROUPS[c("business_size_agg2", "business_sector_agg3", "business_premise", "business_registration_status", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "total")
+
+fig_data <- fig_3_data(ests, groups)
+
+palette <- c("#A2C3A4", "#C4F1BE", "#ECA72C", "#41BBD9", "#ADCAD6", "#BFD3C1", "#A2C3A4", "#C4F1BE", "#ADCAD6", "#31AFD4", "grey80","#BABFD1", "#FF7B9C")
+names(palette) <- unique(fig_data$group_cat_val)
+
+labels <- list(
+  title = "Characteristics of MSEs* in study sample",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = "Notes: MSEs correspond to businesses with 1-10 employees including the owner"
+)
+
+barparams <- list(
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain"),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+fig_bar_w_fill(fig_data, xvar = "group_name", yvar = "share", fvar = "group_cat_val", facets = NULL, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE) + theme(axis.text.y = element_text(face = "bold"))
+
+
+```
+
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-mses_size_and_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "MSEs by size and sector"
+
+# Firm performance: Monthly revenue and normalized sales per employee
+
+indicators <- c("perf_rev_usd", "perf_revphrpemp_usd")
+groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_2a_data(ests, INDICATORS[indicators], groups)
+
+labels <- list(
+  title = "MSE Revenues and Productivity",
+  subtitle = "$",
+  legend_ti = NULL,
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(color = "#41BBD9",  width = 0.7), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_ndgfcty = 10000, lab_ndgdiry = 1, lab_ndgx = 0.25, lab_face = "plain"), 
+  errorbars = list(show = TRUE, color = "#2374AB")
+)
+
+facets <- list(type = "wrap", "rows" = "group_name", "cols" = "indicator_name", "scales" = "free_x", "space" = "free")
+
+fig_bar(fig_data, xvar = "group_cat_val", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "number")
+
+```
+
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-mses_chars_bygender
+#| echo: false
+#| warning: false
+#| fig-cap: "Gender composition of MSEs by sise and sector"
+
+
+indicators <- c("resp_sex_men", "resp_sex_women")
+groups <- GROUPS[c("fullsample", "business_premise", "business_size_agg2", "business_sector_agg3")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_4_data(ests)
+
+labels <- list(
+  title = "Share of men and women MSE owners or manager, by business size, sector and premises",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(width = 0.8, position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain"),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = TRUE, color = "#2374AB")
+)
+
+palette <- c("#FF7B9C", "#BABFD1")
+names(palette) <- c("Women", "Men")   
+
+facets <- list(type = "grid", rows = "group_name", cols = "indicator_group", scales = "free_y", space = "free")
+  
+fig_bar_w_fill(fig_data, xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent")
+
+
+```
+
+## The small firm owner
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-mse_owner_chars
+#| echo: false
+#| warning: false
+#| fig-cap: "MSE owner characteristics"
+
+
+indicators <- c("resp_education_agg4_shc_non", "resp_education_agg4_shc_pri", "resp_education_agg4_shc_sec", "resp_education_agg4_shc_trt", 
+                 "resp_experience_agg5_shc_1", "resp_experience_agg5_shc_2_5", "resp_experience_agg5_shc_6_10", "resp_experience_agg5_shc_11_20", "resp_experience_agg5_shc_20", 
+                "resp_age_agg6_shc_25", "resp_age_agg6_shc_2535", "resp_age_agg6_shc_3545", "resp_age_agg6_shc_4555", "resp_age_agg6_shc_5565", "resp_age_agg6_shc_65")
+
+groups <- GROUPS[c("fullsample", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_5_data(ests, INDICATORS[indicators])
+
+labels <- list(
+  title = "Age, education and experience of small business owners or managers",
+  subtitle =  "Owners or managers (%)",
+  legend_ti = "",
+  yax_ti = "% of respondents",
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(width = 0.5, position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain"),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = TRUE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", rows = "indicator_group", cols = "group_name", scales = "free_y", space = "free")
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+
+fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette, coord_flip = TRUE, yaxtype = "percent")
+
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.45}
+#| label: fig-mse_owner_psych
+#| echo: false
+#| warning: false
+#| fig-cap: "Pyschographic characrteristics of SME owners or managers, by gender"
+
+
+indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motivation_oth", 
+                "resp_riskapproach_aggr", "resp_riskapproach_calc", "resp_riskapproach_avoid", 
+                "resp_maingoal_grow",  "resp_maingoal_stab", "resp_maingoal_leave")
+                #"resp_psych_segment_shc_grow", "resp_psych_segment_shc_stab", "resp_psych_segment_shc_surv")
+
+groups <- GROUPS[c("resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_6_data(ests, INDICATORS[indicators], wrap_len = 50)
+
+labels <- list(
+  title = "Pyschographic characteristics of SME owners or managers, by gender",
+  subtitle = "% of MSE owners or managers",
+  legend_ti = NULL,
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(color = "#41BBD9",  width = 0.8), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_ndgfcty = 100, lab_ndgdiry = 1, lab_ndgx = 0.25, lab_face = "plain"), 
+  errorbars = list(show = TRUE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", rows = "indicator_group", cols = "group_cat_val", scales = "free_y", space = "free")
+
+fig_bar(fig_data, xvar = "indicator_name", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "percent") + theme(strip.text = element_text(face = "bold"))
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-resp_psyc_corr
+#| echo: false
+#| warning: false
+#| fig-cap: "Correlation between owner's motivations, goals and attitudes to risk"
+
+selected_indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motivation_oth",
+                            "resp_maingoal_grow", "resp_maingoal_leave", "resp_maingoal_stab",
+                            "resp_riskapproach_aggr", "resp_riskapproach_avoid", "resp_riskapproach_calc")
+
+corr <- gen_corrmatrix(main_data, selected_indicators)
+
+fig_data <- fig_7_data(corr)
+
+fig_7_chart(fig_data)
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-reg_growth_gender
+#| echo: false
+#| warning: false
+#| fig-cap: "Correlation between owner's motivations, goals and attitudes to risk"
+
+# Defining regressions
+  depvars <- c("resp_psych_segment_shc_grow", "resp_psych_segment_shc_stab", "resp_psych_segment_shc_surv")
+  depvar_labels <- c("Growth and risk oriented", "Stability oriented", "Survival oriented")
+  names(depvar_labels) <- depvars
+  maineffects <- "resp_sex_women"
+  effect_labels <- c("(Intercept)" = "Men", INDICATORS[maineffects])
+    
+# Running regressions
+ests <- bind_rows(
+    map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
+    map(depvars, model_and_prepfig, maineffects, confounds = c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_sec",  "resp_education_agg4_shc_trt"), data = main_data, depvar_labels, effect_labels)
+  )
+
+# Preparing figure
+fig_data <- fig_8_data(ests)
+fig_8_chart(fig_data) + theme(strip.text = element_text(face = "bold"))
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-mse_hh_owner
+#| echo: false
+#| warning: false
+#| fig-cap: "MSEs and codependence with owner's household"
+
+
+indicators <- c("business_premise_shc_1", "resp_pcthhincfrmbus_high", "business_finances_notseparate", "business_hh_noboundaries")
+
+groups <- GROUPS[c("resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_9_data(ests, INDICATORS[indicators])
+
+labels <- list(
+  title = "Co-dependence of MSEs and their owner's household",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(color = "#41BBD9",  width = 0.7), 
+  valuelabels = list(show = TRUE, lab_hjust = 1, lab_ndgfcty = 60, lab_ndgdiry = -1, lab_ndgx = 0.25, lab_face = "plain"), 
+  errorbars = list(show = TRUE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_cat_val", "scales" = "free_y", "space" = "free")
+
+fig_bar(fig_data, xvar = "indicator_name", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "percent")
+
+
+```
+
+## Digital technology 
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-digtech_divide
+#| echo: false
+#| warning: false
+#| fig-cap: "Access to connectivity and devices"
+
+indicators <- c("tech_has_internet", "tech_has_device", "tech_has_none", "tech_has_both")
+
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_10_data(ests, INDICATORS[indicators])
+
+labels <- list(
+  title = "Internet connectivity and use of devices",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = "% of businesses",
+  xax_ti = NULL,
+  caption = NULL
+)
+
+barparams <- list(
+  bars = list(width = 0.5, position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain"),
+  catlabels = list(show = TRUE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free_y", "space" = "free")
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+
+fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE)
+
+```
+
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-digtech_usage
+#| echo: false
+#| warning: false
+#| fig-cap: "Digital technology adoption by use case"
+
+#indicators <- c("tech_cat_none", "tech_uses_messaging", "tech_uses_socialmedia", "tech_uses_website", "tech_uses_ecommerce", "tech_uses_software", "tech_uses_ai", "tech_uses_digpayments", "tech_uses_digloans")
+
+indicators <- c("tech_function_comms", "tech_function_mkts", "tech_function_ops", "tech_function_efin", 
+                "tech_function_comms_30da", "tech_function_mkts_30da", "tech_function_ops_30da", "tech_function_efin_30da")
+
+groups <- GROUPS[c("fullsample", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_11_data(ests, INDICATORS[indicators])
+
+labels <- list(
+  title = "Use-cases of digital technologies in use by MSEs",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap("Notes: The functional use-case categories are defined as follows: 'Communicating with customers' includes use of messaging (e.g. Whatsapp) or social media apps (e.g. Facebook); 'Accessing markets' includes use of e-commerce platforms (e.g. Amazon) or a dedicated business website; 'Enterprise operations' includes use of digital applications or software (e.g. for booking, inventory management), including aritifical intelligence; 'Enterprise finance' includes use of any of the following: a digital POS devices for customer payments (e.g. Cards/debit, mobile money, QR codes), use of digital loans or use of digital insurance", 175)
+)
+
+barparams <- list(
+  bars = list(width = 0.5, position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain"),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_cat_val", "scales" = "free_y", "space" = "free")
+
+palette <- c("#A2C3A4", "#C4F1BE")
+names(palette) <- c("Uses", "30-day active")   
+
+fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "user_group", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent") + theme(legend.position = "bottom")
+
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.45}
+#| label: fig-digtech_use_depth
+#| echo: false
+#| warning: false
+#| fig-cap: "Depth of digital technology adoption"
+
+indicators <- c("tech_cat_none", "tech_cat_any1", "tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
+
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+fig_data <- fig_12_data(ests, INDICATORS[indicators])
+
+labels <- list(
+  title = "Depth of digital technologies used by MSEs",
+  subtitle =  "MSEs (%)",
+  legend_ti = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap("Notes: Four use-cases of digital technology are considered here: 'Communicating with customers', 'Accessing markets', 'Enterprise operations' and 'Enterprise finance'. MSEs are classified with respect to whether they use digital technology for any one, any two, any three, all four or none of these use-cases.", 175)
+)
+
+barparams <- list(
+  bars = list(width = 0.5, position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain"),
+  catlabels = list(show = TRUE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free_y", "space" = "free")
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1",  "#ECA72C", "#41BBD9")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men", "Stability or survival", "Growth")   
+
+fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE)
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-reg_revprhr_digtechusecase
+#| echo: false
+#| warning: false
+#| fig-cap: "Relationship between digital technology adoption and firm-level labor productivity"
+
+# Defining regressions
+  depvars <- c("perf_revphrpemp_usd")
+  depvar_labels <- INDICATORS[depvars]
+  maineffects <- c("tech_function_comms", "tech_function_mkts","tech_function_ops","tech_function_efin")
+  effect_labels <- c("(Intercept)" = "No digital solutions used", INDICATORS[maineffects])
+  confounds <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt")
+  
+# Running regressions
+ests <- bind_rows(
+    map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
+    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
+  )
+
+# Preparing figure
+fig_data <- fig_13_data(ests)
+
+
+ labels <- list(
+      title = "Observational estimates of the effect of digital technology adoption on labor productivity",
+      subtitle = "The effect of digital technology adoption on labor productivity is shown with the red arrow",
+      y = "Hourly sales per employee (USD)",
+      x = "Digital technology adoption",
+      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption
+                      on firm labor productivity. The 'unadjusted' model does not include any additional controls,
+                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
+                       The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption,                    with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
+    )
+ 
+fig_13_chart(fig_data, labels) + theme(strip.text = element_text(face = "bold"))
+
+```
+
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-reg_revprhr_digtechdepth
+#| echo: false
+#| warning: false
+#| fig-cap: "Relationship between depth of digital technology adoption and firm-level labor productivity"
+
+
+# Defining regressions
+  depvars <- c("perf_revphrpemp_usd")
+  depvar_labels <- INDICATORS[depvars]
+  maineffects <- c("tech_cat_any1", "tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
+  effect_labels <- c("(Intercept)" = "No digital solutions used", INDICATORS[maineffects])
+  confounds <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt")
+  
+# Running regressions
+ests <- bind_rows(
+    map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
+    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
+  )
+
+# Preparing figure
+fig_data <- fig_13_data(ests)
+
+
+ labels <- list(
+      title = "Observational estimates of the effect of depth of digital technology adoption on labor productivity",
+      subtitle = "The effect of digital technology adoption on labor productivity is shows with the red arrow",
+      y = "Hourly sales per employee (USD)",
+      x = "Digital technology adoption",
+      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption
+                      on firm labor productivity. The 'unadjusted' model does not include any additional controls,
+                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
+                       The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption,                    with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
+    )
+ 
+fig_13_chart(fig_data, labels) + theme(strip.text = element_text(face = "bold"))
+
+```
