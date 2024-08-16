@@ -1,6 +1,7 @@
 
 project:
   type: website
+  output-dir: docs
   render:
     - index.qmd
     - Indonesia_analysis.qmd
