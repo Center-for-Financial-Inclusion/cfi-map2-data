@@ -212,8 +212,6 @@ return(p)
 
 }
 
-
-
 fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", legend = TRUE, errorbars = FALSE) {
   
   xvar <- sym(xvar)
@@ -292,3 +290,79 @@ fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette
 }
 
 
+fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FALSE) {
+  
+  data <- data %>% group_by(model_type) %>% 
+    mutate(x = ifelse(term == "(Intercept)", fig_data, NA), 
+           refline = max(x, na.rm = TRUE), 
+           refline = ifelse(row_number() == 1, refline, NA))
+  
+  p <- ggplot(data = data,
+         aes(x = fct_rev(fct_inorder(str_wrap(effect_label, scales[["x"]][["txtwrap"]]))),
+             y = fig_data))
+    
+    if (!is.null(facets)) {
+      fcvar_rows <- sym(facets[["rows"]])
+      fcvar_cols <- sym(facets[["cols"]])
+      
+      if (facets[["type"]] == "wrap") {
+        
+        p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 30)), nrow = 1, scales = facets[["scales"]])
+        
+      } else if (facets[["type"]] == "grid") {
+        
+        p <- p + facet_grid(rows = vars(!!fcvar_rows), cols = vars(!!fcvar_cols), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
+        
+      }
+      
+    }
+  
+    p + geom_col(width =  barparams[["bars"]][["width"]], fill = barparams[["bars"]][["color"]]) + 
+    geom_hline(aes(yintercept = refline), color = "red", size = 0.25, linetype = "dashed") + 
+    geom_segment(aes(y = startarrow, yend = endarrow), color = "red", arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
+    geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white", size= 3.5) -> p
+    
+    # Value labels
+    if (barparams[["valuelabels"]][["show"]]) {
+        p <- p +
+          geom_text(aes(label = barlabel), color = "black", 
+                    size = barparams[["valuelabels"]][["lab_size"]], 
+                    nudge_x = barparams[["valuelabels"]][["lab_ndgx"]], 
+                    nudge_y = barparams[["valuelabels"]][["lab_ndgy"]], 
+                    hjust = barparams[["valuelabels"]][["lab_vjust"]], 
+                    hjust = barparams[["valuelabels"]][["lab_hjust"]], 
+                    fontface = barparams[["valuelabels"]][["lab_face"]])
+    }
+    # Arrow labels
+      if (barparams[["arrowlabels"]][["show"]]) {
+        p <- p +
+          geom_text(aes(y = valuelabel_pos, label = valuelabel), color = "red", 
+                    size = barparams[["arrowlabels"]][["lab_size"]], 
+                    nudge_x = barparams[["arrowlabels"]][["lab_ndgx"]], 
+                    nudge_y = barparams[["arrowlabels"]][["lab_ndgy"]], 
+                    hjust = barparams[["arrowlabels"]][["lab_vjust"]], 
+                    hjust = barparams[["arrowlabels"]][["lab_hjust"]], 
+                    fontface = barparams[["arrowlabels"]][["lab_face"]])
+      }  
+      
+    #geom_text(aes(y = 0.95, label = annotation), hjust = 0, color = "black", nudge_x = 0, size = 3.5) +
+    p + 
+    # Figure Labels
+    labs(
+      title = labels[["title"]],
+      subtitle = labels[["subtitle"]],
+      y = labels[["y"]],
+      x = labels[["x"]],
+      caption = labels[["caption"]]
+    ) +
+    scale_y_continuous(limits = scales[["y"]][["limits"]], label = scales::label_number(), position = scales[["y"]][["position"]]) +
+    scale_x_discrete(position = scales[["x"]][["position"]]) +
+    theme_custom() -> p
+  
+    if (coord_flip) {
+      p <- p + coord_flip()
+    }
+    
+    return(p)
+    
+}

@@ -52,6 +52,39 @@ techlevels <- c("Mobile phone/computer/tablet", "Internet connectivity", "Websit
 
 }
 
+fig_10a_data <- function(data) {
+  
+  data %>%
+    group_by(depvar, confounds_flag) %>%
+    mutate(
+      
+      baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
+      
+      sig = ifelse(p.value < 0.1, ".", NA),
+      sig = ifelse(p.value < 0.05, "*", sig),
+      sig = ifelse(p.value < 0.01, "**", sig),
+      sig = ifelse(p.value < 0.001, "***", sig),
+      sig = ifelse(is.na(sig), "", sig),
+      
+      valuelabel = numclean(estimate, n = 2),
+      
+      effect_dir = ifelse(estimate < 0, -1, 1),
+      
+      startarrow = baseline,
+      endarrow = fig_data,
+      
+      valuelabel = paste0(valuelabel, sig),
+      valuelabel = ifelse(term == "(Intercept)", NA, valuelabel),
+      
+      valuelabel_pos = ifelse(effect_dir == 1, (endarrow - startarrow)/2 + startarrow, (startarrow - endarrow)/2 + endarrow),
+      
+      barlabel =  numclean(fig_data, n = 2),
+      annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
+      annotation = ifelse(term == "(Intercept)", NA, annotation)
+    )
+  
+}
+
 
 # Figure 11  -----------------------
 
@@ -90,6 +123,27 @@ fig_12_data <- function(ests, indicators) {
     ) %>%
     filter(!is.na(group_cat_val))
 
+}
+
+# Figure 12a  -----------------------
+
+fig_12a_data <- function(ests, indicators) {
+  
+  ests %>%
+    separate_wider_delim(indicator_name, delim = ": ", names = c("indicator_group", "indicator_name"), too_few = "align_start") %>% 
+    mutate(
+      indicator_group = case_match(indicator_group, 
+         "Adoption factors" ~ "1. Adoption factors", 
+        "Adoption benefits" ~ "2. Adoption benefits", 
+        "Adoption challenges" ~ "3. Adoption challenges"
+      ), 
+      indicator_name = fct_reorder(indicator_name, mean), 
+      valuelabel = paste0(pctclean(mean, 0), "%"), 
+      group_cat_val = fct_inorder(group_cat_val)
+      #group_cat_val = factor(group_cat_val, levels = GROUP_CAT_LEVELS, ordered = TRUE)
+    ) %>%
+    filter(!is.na(group_cat_val))
+  
 }
 
 # Figure 13  -----------------------

@@ -75,43 +75,25 @@ fig_17_data <- function(ests) {
 
 fig_18_data <- function(ests, indicators) {
   
-  cats <- c("Lo", "Mlo", "Mhi", "Hi")
   blues <- brewer.pal(4, "Blues")
-  names(blues) <- cats
   reds <- brewer.pal(4, "Reds")
-  names(reds) <- cats
+  palette <- c(rev(reds), blues)
+  names(palette) <- seq(1, 8, 1)
   
   wrap <- 20
   ests %>%
     filter(!is.na(indicator_name)) %>% 
     mutate(
+      indicator_type = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2"), "cont", "disc"), 
       indicator_group = "Resilience capital", 
       indicator_name = fct_rev(factor(indicator_name, levels = indicators, ordered = TRUE)), 
       group_name = str_wrap(group_name, wrap),
       group_cat_val = str_wrap(group_cat_val, wrap), 
       valuelabel = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2"), numclean(mean,1), paste0(round(mean*100, 0), "%")), 
-      valuecat = case_when(
-        mean < 0.25 ~ "Lo", 
-        mean >= 0.25 & mean < 0.5 ~ "Mlo", 
-        mean >= 0.5 & mean < 0.75 ~ "Mhi", 
-        mean >= 0.75 ~ "Hi"),
-      valuecat2 = case_when(
-        mean < 1 ~ "Lo", 
-        mean >= 1 & mean < 2 ~ "Mlo", 
-        mean >= 2 & mean < 3 ~ "Mhi", 
-        mean >= 3 ~ "Hi"),
-      valuecat3 = case_when(
-        mean < 0.75 ~ "Lo", 
-        mean >= 0.75 & mean < 1.5 ~ "Mlo", 
-        mean >= 1.5 & mean < 2.25 ~ "Mhi", 
-        mean >= 2.25 ~ "Hi"),
-      fillcolor = ifelse(mean < 0.5, reds[valuecat], blues[valuecat]), 
-      fillcolor2 = ifelse(mean < 2, reds[valuecat2], blues[valuecat]),
-      fillcolor3 = ifelse(mean < 1.5, reds[valuecat3], blues[valuecat]), 
-      fillcolor = ifelse(indicator %in% c("resi_capital_score_v1"), fillcolor2, fillcolor), 
-      fillcolor = ifelse(indicator %in% c("resi_capital_score_v2"), fillcolor3, fillcolor), 
-      #indicator_name = fct_rev(factor(indicator_name, levels = indicators, ordered = TRUE))
-      
+      valuecat = ifelse(indicator %not_in% c("resi_capital_score_v1", "resi_capital_score_v2"), cut(mean, breaks = seq(1,9,1)/8, labels = seq(1,8,1)), NA), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v1"), cut(mean, breaks = (seq(1,9,1)/8)*4, labels = seq(1,8,1)), valuecat), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v2"), cut(mean, breaks = (seq(1,9,1)/8)*3, labels = seq(1,8,1)), valuecat), 
+      fillcolor = palette[valuecat] 
     ) %>%
     filter(!is.na(group_cat_val)) %>% 
     filter(group_cat_val != "Don't know")

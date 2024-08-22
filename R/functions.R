@@ -289,6 +289,7 @@ prep_main_data <- function(raw_data, weights, country) {
       
       resp_experience = ifelse(Q8 == 97, NA, Q8),
       resp_experience_c = resp_experience - mean(resp_experience, na.rm = TRUE),
+      resp_experience_c_5yi = resp_experience_c/5,
       resp_experience_agg5 = case_when(
         Q8 <= 1 ~ '1 yr or less',
         Q8 <= 5 ~ '2-5 yrs',
@@ -307,6 +308,13 @@ prep_main_data <- function(raw_data, weights, country) {
       ),
 
       resp_age = ifelse(Q72 == 99, NA, Q72),
+      resp_age_c = resp_age - mean(resp_age, na.rm = TRUE), 
+      resp_age_c_5yi = resp_age_c/5, 
+      resp_age_agg3_shc = case_when(
+        resp_age < 35 ~ "35", 
+        resp_age >= 35 & resp_age < 55 ~ "3555", 
+        resp_age >= 55 ~ "55"
+      ), 
       resp_age_agg6 = case_when(
         resp_age < 25 ~ "[< 25 yrs]",
         resp_age >= 25 & resp_age < 35 ~ "[25-35 yrs)",
@@ -337,7 +345,8 @@ prep_main_data <- function(raw_data, weights, country) {
         resp_education %in% c(5, 6, 8, 10) ~ "sec",
         resp_education %in% c(7, 9, 11) ~ "trt"
       ),
-
+      resp_education_agg2_shc = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "priorless", "secormore"), 
+      
       resp_sex_str = ifelse(Q5 == 1, "Women", "Men"),
       resp_sex_men = ifelse(Q5 == 2, 1, 0),
       resp_sex_women = ifelse(Q5 == 1, 1, 0),
@@ -507,6 +516,32 @@ prep_main_data <- function(raw_data, weights, country) {
   
       tech_uses_adoption_score = tech_has_internet + tech_has_device + tech_uses_website + tech_uses_messaging + tech_uses_socialmedia + tech_uses_ecommerce + tech_uses_software + tech_uses_ai + tech_uses_digpayments + tech_uses_digloans,
       tech_uses_adoption_score_c = tech_uses_adoption_score - mean(tech_uses_adoption_score, na.rm = TRUE),
+      
+      # User of non-financical technologies
+      tech_nonfin_adopter = ifelse(Q15 == 1 | Q17 == 1 | Q19 == 1 | Q21 == 1 | Q23 == 1 | Q26 == 1, 1, 0), 
+      
+      # Factors encouraging adoption 
+      tech_adopfactors_demand = ifelse(Q27_1 == 1, 1, 0), 
+      tech_adopfactors_support = ifelse(Q27_2 == 1, 1, 0), 
+      tech_adopfactors_comp = ifelse(Q27_3 == 1, 1, 0), 
+      tech_adopfactors_other = ifelse(Q27_4 == 1, 1, 0), 
+      
+      # Benefits 
+      tech_adopbenefits_rev = ifelse(Q28_1 == 1, 1, 0), 
+      tech_adopbenefits_costs = ifelse(Q28_2 == 1, 1, 0), 
+      tech_adopbenefits_customer = ifelse(Q28_3 == 1, 1, 0), 
+      tech_adopbenefits_sales = ifelse(Q28_4 == 1, 1, 0), 
+      tech_adopbenefits_cashflow = ifelse(Q28_5 == 1, 1, 0), 
+      tech_adopbenefits_finserv = ifelse(Q28_6 == 1, 1, 0), 
+      tech_adopbenefits_other = ifelse(Q28_7 == 1, 1, 0),
+      
+      # Challenges 
+      tech_adopchllng_diff = ifelse(Q29_1 == 1, 1, 0), 
+      tech_adopchllng_cost = ifelse(Q29_2 == 1, 1, 0), 
+      tech_adopchllng_trust = ifelse(Q29_3 == 1, 1, 0), 
+      tech_adopchllng_notrlv = ifelse(Q29_4 == 1, 1, 0), 
+      tech_adopchllng_infra = ifelse(Q29_5 == 1, 1, 0), 
+      tech_adopchllng_other = ifelse(Q29_6 == 1, 1, 0), 
       
       # Functional perspective --------------
       
@@ -680,7 +715,7 @@ prep_main_data <- function(raw_data, weights, country) {
       
     ) %>%
     dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
-                                  "resp_experience_agg5_shc", "resp_education_agg4_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
+                                  "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
                                   "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc",
                                   "risk_largestimpact_shc")) %>%
     mutate(

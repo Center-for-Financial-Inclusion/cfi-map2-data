@@ -97,6 +97,12 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
+![Relationship between digital technology adoption and firm-level labor productivity](India_analysis_files/figure-html/fig-reg_digtech_drivers-1.png){#fig-reg_digtech_drivers width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
 ![Digital technology adoption by use case](India_analysis_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
 :::
 :::
@@ -104,6 +110,12 @@ params:
 ::: {.cell}
 ::: {.cell-output-display}
 ![Depth of digital technology adoption](India_analysis_files/figure-html/fig-digtech_use_depth-1.png){#fig-digtech_use_depth width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Digital technology adoption factors](India_analysis_files/figure-html/fig-tech_adoptionfactors-1.png){#fig-tech_adoptionfactors width=1152}
 :::
 :::
 
