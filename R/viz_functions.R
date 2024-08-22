@@ -82,10 +82,12 @@ fig_bar <- function(data, xvar, yvar, facets = NULL, labels, barparams, palette 
   }
 
   if (yaxtype == "number") {
-    p <- p +  scale_y_continuous(labels = scales::label_comma())
+    p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = c(0,0))
   }
   else if (yaxtype == "percent") {
-    p <- p +  scale_y_continuous(labels = scales::label_percent())
+    breaks <- c(0, .20, .40, .60, .80, 1)
+    p <- p +  scale_y_continuous(position = "right", breaks = breaks, labels = scales::label_percent(suffix = ""), expand = c(0,0)) + 
+      geom_hline(yintercept = breaks, color ="white")
   }
 
   if (legend == FALSE) {
@@ -96,7 +98,7 @@ fig_bar <- function(data, xvar, yvar, facets = NULL, labels, barparams, palette 
 
 }
 
-fig_bar_w_fill <- function(data, xvar, yvar, fvar, facets, labels, barparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", legend = TRUE, errorbars = FALSE) {
+fig_bar_w_fill <- function(data, xvar, yvar, fvar, facets, labels, barparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", yaxdroplines = FALSE, legend = TRUE, errorbars = FALSE) {
 
 xvar <- sym(xvar)
 yvar <- sym(yvar)
@@ -113,17 +115,17 @@ p <- ggplot(
 
   # Geoms
   if (barparams[["bars"]][["position"]] == "stack") {
-    pos <- position_stack(vjust = 0.5)
+    pos <- position_stack(vjust = barparams[["valuelabels"]][["lab_vjust"]])
   } else if (barparams[["bars"]][["position"]] == "dodge") {
     pos <- position_dodge(width = barparams[["bars"]][["position_width"]])
   }
 
-  p <- p + geom_col(width =  barparams[["bars"]][["width"]], position = pos)
+  p <- p + geom_col(width =  barparams[["bars"]][["width"]], color = barparams[["bars"]][["color"]], position = pos)
 
   # Value labels
   if (barparams[["valuelabels"]][["show"]]) {
     p <- p +
-      geom_text(aes(label = valuelabel), position = pos, hjust = barparams[["valuelabels"]][["lab_hjust"]], fontface = barparams[["valuelabels"]][["lab_face"]])
+      geom_text(aes(label = valuelabel), position = pos, size = barparams[["valuelabels"]][["lab_size"]], hjust = barparams[["valuelabels"]][["lab_hjust"]], fontface = barparams[["valuelabels"]][["lab_face"]])
   }
 
   # Error bars
@@ -140,7 +142,7 @@ p <- ggplot(
   }
 
   # Legend
-  p <-  p + guides(fill = guide_legend(title = labels[["legend_ti"]], nrow = 1)) +
+  p <-  p + guides(fill = guide_legend(title = labels[["legend_ti"]], direction = labels[["legend_dir"]], nrow = labels[["legend_nrow"]], reverse = labels[["legend_rev"]])) +
 
   # Figure Labels
   labs(
@@ -150,9 +152,8 @@ p <- ggplot(
     x = labels[["xax_ti"]],
     caption = labels[["caption"]]
   ) +
-
-  theme_custom() +
-  theme(legend.position = "top")
+  
+  theme_custom() 
 
   if (!is.null(facets)) {
     fcvar_rows <- sym(facets[["rows"]])
@@ -160,11 +161,11 @@ p <- ggplot(
 
     if (facets[["type"]] == "wrap") {
 
-      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 20)), nrow = 1, scales = facets[["scales"]])
+      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 25)), nrow = 1, scales = facets[["scales"]])
 
     } else if (facets[["type"]] == "grid") {
 
-      p <- p + facet_grid(rows = vars(str_wrap(!!fcvar_rows, 20)), cols = vars(str_wrap(!!fcvar_cols, 20)), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
+      p <- p + facet_grid(rows = vars(str_wrap(!!fcvar_rows, 25)), cols = vars(str_wrap(!!fcvar_cols, 25)), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
 
     }
 
@@ -181,24 +182,113 @@ if (coord_flip) {
 
 if (barparams[["bars"]][["labeltotal"]]) {
   maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
-  ndg_y <- maxy/45
+  ndg_y <- maxy/60
   p <- p +
-    geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") +
-    scale_y_continuous(limits = c(0, maxy + 0.1*maxy))
+    geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") 
 }
 
 if (yaxtype == "number") {
-  p <- p +  scale_y_continuous(labels = scales::label_comma())
+  if (barparams[["bars"]][["labeltotal"]]) {
+    p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = c(0,0))
+  } else { 
+    p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = c(0,0))
+    }
 }
-else if (yaxtype == "percent") {
-  p <- p +  scale_y_continuous(labels = scales::label_percent())
+  
+if (yaxtype == "percent") {
+    breaks <- c(0, .20, .40, .60, .80, 1)
+    p <- p +  scale_y_continuous(position = "right", breaks = breaks, labels = scales::label_percent(suffix = "")) 
 }
+ 
+if (yaxdroplines == TRUE) { 
+  p <- p + geom_hline(yintercept = breaks, color ="white")
+} 
+  
 if (legend == FALSE) {
   p <- p + theme(legend.position = "none")
 }
 
 return(p)
 
+}
+
+
+
+fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", legend = TRUE, errorbars = FALSE) {
+  
+  xvar <- sym(xvar)
+  yvar <- sym(yvar)
+  fvar <- sym(fvar)
+  
+  p <- ggplot(
+    data = data,
+    aes(
+      x = !!xvar,
+      y = !!yvar,
+      fill = !!fvar
+    )
+  )
+  
+  # Geoms
+
+  p <- p + geom_tile(color = tileparams[["tiles"]][["color"]])
+  
+  # Value labels
+  if (tileparams[["valuelabels"]][["show"]]) {
+    p <- p +
+      geom_text(aes(label = valuelabel), size = tileparams[["valuelabels"]][["lab_size"]], hjust = tileparams[["valuelabels"]][["lab_hjust"]], fontface = tileparams[["valuelabels"]][["lab_face"]])
+  }
+  
+  # Legend & scales
+  p <-  p + guides(fill = guide_legend(title = labels[["legend_ti"]], nrow = 1)) + scale_y_discrete(position = "right") +
+    
+    # Figure Labels
+    labs(
+      title = labels[["title"]],
+      subtitle = labels[["subtitle"]],
+      y = labels[["yax_ti"]],
+      x = labels[["xax_ti"]],
+      caption = labels[["caption"]]
+    ) +
+    
+    theme_custom() 
+  
+  if (!is.null(facets)) {
+    fcvar_rows <- sym(facets[["rows"]])
+    fcvar_cols <- sym(facets[["cols"]])
+    
+    if (facets[["type"]] == "wrap") {
+      
+      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 30)), nrow = 1, scales = facets[["scales"]])
+      
+    } else if (facets[["type"]] == "grid") {
+      
+      p <- p + facet_grid(rows = vars(!!fcvar_rows), cols = vars(!!fcvar_cols), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
+      
+    }
+    
+  }
+  
+  # Scales
+  if (!is.null(palette)) {
+    if(palette == "identity") { 
+      p <- p + scale_fill_identity()
+    }
+    else {
+      p <- p + scale_fill_distiller(palette = palette, direction = 1)
+    }
+  }
+  
+  if (coord_flip) {
+    p <- p + coord_flip()
+  }
+  
+  if (legend == FALSE) {
+    p <- p + theme(legend.position = "none")
+  }
+  
+  return(p)
+  
 }
 
 

@@ -223,8 +223,14 @@ get_main_data <- function(country, blockID_to_InitialID = NULL) {
 
 }
 
-prep_main_data <- function(raw_data, weights) {
+prep_main_data <- function(raw_data, weights, country) {
 
+  if (country == "Nigeria") { 
+    add_worker <- 1
+  } else { 
+    add_worker <- 0
+    }
+  
   main_raw_data %>%
 
     left_join(weights, by = join_by(Initial_block_ID)) %>%
@@ -243,7 +249,7 @@ prep_main_data <- function(raw_data, weights) {
         Q2 %in% seq(1,7,1) ~ "Manufacturing",
         Q2 %in% seq(8,22,1) ~ "Services"
       ),
-      business_sector_agg2 = ifelse(is.na(business_sector_agg2), "Don't know", business_sector_agg2),
+      #business_sector_agg2 = ifelse(is.na(business_sector_agg2), "Don't know", business_sector_agg2),
       business_sector_agg2_shc = case_when(
         business_sector_agg2 == "Manufacturing" ~ "mfc",
         business_sector_agg2 == "Services" ~ "srv",
@@ -255,7 +261,7 @@ prep_main_data <- function(raw_data, weights) {
         Q2 %in% seq(8,13,1) ~ "Services: trade (re-sale)",
         Q2 %in% seq(14,22,1) ~ "Services: other (eg. transport, construction)"
       ),
-      business_sector_agg3 = ifelse(is.na(business_sector_agg3), "Don't know", business_sector_agg3),
+      #business_sector_agg3 = ifelse(is.na(business_sector_agg3), "Don't know", business_sector_agg3),
       business_sector_agg3_shc = case_when(
         business_sector_agg3 == "Manufacturing" ~ "mfc",
         business_sector_agg3 == "Services: trade (re-sale)" ~ "srv_resale",
@@ -268,13 +274,19 @@ prep_main_data <- function(raw_data, weights) {
       business_registration_status = names(attributes(Q74)$labels[Q74]),
       #business_sector_agg3 = factor(business_sector_agg4, levels = c("Services: retail & wholesale trade", "Services: other", "Manufacturing", "Construction & other"), ordered = TRUE),
 
-      business_size = ifelse(Q6 == 0, 1, Q6),
+      business_size = ifelse(Q6 == 0, 1, Q6) + add_worker,
       business_size_agg2 = ifelse(Q6 == 1, "1 person", "2-10 people"),
       business_size_agg2_shc = ifelse(business_size_agg2 == "1 person", "1", "2_10"),
       #business_size_agg2 = factor(business_size_agg2, levels = c("1 person", "2-10 people"), ordered = TRUE),
 
       # Respondent characteristics
       resp_owner = ifelse(Q4 %in% c(1,3), 1, 0), # Is the respondent the owner or a manager?
+      resp_owner_str = case_when(
+        Q4 %in% c(1, 3) ~ "Owner", 
+        Q4 == 2 ~ "Manager", 
+        Q4 == 4 ~ "Other"
+      ), 
+      
       resp_experience = ifelse(Q8 == 97, NA, Q8),
       resp_experience_c = resp_experience - mean(resp_experience, na.rm = TRUE),
       resp_experience_agg5 = case_when(
@@ -430,22 +442,58 @@ prep_main_data <- function(raw_data, weights) {
       tech_has_both = ifelse(tech_has_internet == 1 & tech_has_device == 1, 1, 0),
       tech_has_none = ifelse(tech_has_internet == 0 & tech_has_device == 0, 1, 0),
 
-      #
+      # Messaging apps
       tech_uses_messaging =  case_match(Q15, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_messaging_30da = case_match(Q16, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
-
+      tech_uses_messaging_7da = case_match(Q16, c(1, 2) ~ 1, c(3, 4,5) ~ 0, c(97,99) ~ NA),
+      
+      tech_uses_messaging_shc = case_when(
+        tech_uses_messaging == 0 ~ "nvr", 
+        Q16 == 5 ~ "nam", 
+        Q16 %in% c(3, 4) ~ "mol", 
+        Q16 %in% c(1, 2) ~ "dow"
+      ), 
+      
+      #Social media
       tech_uses_socialmedia =  case_match(Q17, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_socialmedia_30da = case_match(Q18, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
-
+      tech_uses_socialmedia_7da = case_match(Q18, c(1, 2) ~ 1, c(3, 4,5) ~ 0, c(97,99) ~ NA),
+      
+      tech_uses_socialmedia_shc = case_when(
+        tech_uses_socialmedia == 0 ~ "nvr", 
+        Q18 == 5 ~ "nam", 
+        Q18 %in% c(3, 4) ~ "mol", 
+        Q18 %in% c(1, 2) ~ "dow"
+      ), 
+      
+      # Website
       tech_uses_website =  case_match(Q19, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_website_imp =  case_match(Q20, c(1,2) ~ 1, c(3,4) ~ 0, c(97,99) ~ NA),
-
+      
+      # E-commerce platforms
       tech_uses_ecommerce =  case_match(Q21, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_ecommerce_30da = case_match(Q22, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
-
+      tech_uses_ecommerce_7da = case_match(Q22, c(1, 2) ~ 1, c(3,4,5) ~ 0, c(97,99) ~ NA),
+      
+      tech_uses_ecommerce_shc = case_when(
+        tech_uses_ecommerce == 0 ~ "nvr", 
+        Q22 == 5 ~ "nam", 
+        Q22 %in% c(3, 4) ~ "mol", 
+        Q22 %in% c(1, 2) ~ "dow"
+      ), 
+      
+      # Software
       tech_uses_software = case_match(Q23,  1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_software_30da = case_match(Q24, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
-
+      tech_uses_software_7da = case_match(Q24, c(1, 2) ~ 1, c(3, 4,5) ~ 0, c(97,99) ~ NA),
+      
+      tech_uses_software_shc = case_when(
+        tech_uses_software == 0 ~ "nvr", 
+        Q24 == 5 ~ "nam", 
+        Q24 %in% c(3, 4) ~ "mol", 
+        Q24 %in% c(1, 2) ~ "dow"
+      ), 
+      
       tech_uses_ai = case_match(Q26,  1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
 
       # Enterprise finance
@@ -456,27 +504,47 @@ prep_main_data <- function(raw_data, weights) {
 
       tech_uses_diginsurance = ifelse(B2_1 == 1 | B2_2 == 1 | B2_3 == 1 | B2_4 == 1 | B2_5 == 1 | B2_6 == 1 | B2_7 == 1 | B2_8 == 1 | B2_9 == 1 | B2_10 == 1, 1, 0),
       tech_uses_diginsurance = ifelse(is.na(tech_uses_diginsurance), 0, tech_uses_diginsurance),
-
-      # Functional perspective
+  
+      tech_uses_adoption_score = tech_has_internet + tech_has_device + tech_uses_website + tech_uses_messaging + tech_uses_socialmedia + tech_uses_ecommerce + tech_uses_software + tech_uses_ai + tech_uses_digpayments + tech_uses_digloans,
+      tech_uses_adoption_score_c = tech_uses_adoption_score - mean(tech_uses_adoption_score, na.rm = TRUE),
+      
+      # Functional perspective --------------
+      
+      # Communications
+      # 30-day active
       tech_function_comms = ifelse(tech_uses_messaging == 1 | tech_uses_socialmedia == 1, 1, 0),
       tech_function_comms_30da= ifelse(tech_uses_messaging_30da == 1 | tech_uses_socialmedia_30da == 1, 1, 0),
       tech_function_comms_30da= ifelse(is.na(tech_function_comms_30da), 0, tech_function_comms_30da),
-
+      # 7-day active
+      tech_function_comms_7da= ifelse(tech_uses_messaging_7da == 1 | tech_uses_socialmedia_7da == 1, 1, 0),
+      tech_function_comms_7da= ifelse(is.na(tech_function_comms_7da), 0, tech_function_comms_7da),
+      
+      # Access to markets
+      # 30-day active
       tech_function_mkts = ifelse(tech_uses_ecommerce == 1 | tech_uses_website == 1, 1, 0),
       tech_function_mkts_30da =  ifelse(tech_uses_ecommerce_30da == 1 | tech_uses_website_imp == 1, 1, 0),
       tech_function_mkts_30da= ifelse(is.na(tech_function_mkts_30da), 0, tech_function_mkts_30da),
-
+      # 7-day active
+      tech_function_mkts_7da =  ifelse(tech_uses_ecommerce_7da == 1 | tech_uses_website_imp == 1, 1, 0),
+      tech_function_mkts_7da= ifelse(is.na(tech_function_mkts_7da), 0, tech_function_mkts_7da),
+      
+      # Operations
+      # 30-day active
       tech_function_ops = ifelse(tech_uses_software == 1 | tech_uses_ai == 1, 1, 0),
       tech_function_ops_30da =  ifelse(tech_uses_software_30da == 1, 1, 0),
       tech_function_ops_30da= ifelse(is.na(tech_function_ops_30da), 0, tech_function_ops_30da),
-
-      tech_function_efin = ifelse(tech_uses_digpayments == 1 | tech_uses_digloans == 1 | tech_uses_diginsurance == 1, 1, 0),
-      tech_function_efin_30da = 0,
+      # 7-day active
+      tech_function_ops_7da =  ifelse(tech_uses_software_7da == 1, 1, 0),
+      tech_function_ops_7da= ifelse(is.na(tech_function_ops_7da), 0, tech_function_ops_7da),
+      
+      # Enterprise digital finance  
+      tech_function_epay = tech_uses_digpayments,
+      tech_function_efin = ifelse(tech_uses_digloans == 1 | tech_uses_diginsurance == 1, 1, 0),
 
       tech_function_total = tech_function_comms + tech_function_mkts + tech_function_ops + tech_function_efin,
       tech_function_30da_total = tech_function_comms_30da + tech_function_mkts_30da + tech_function_ops_30da,
 
-      tech_cat_none = ifelse(tech_function_comms == 0 & tech_function_mkts == 0 & tech_function_ops == 0 & tech_function_efin == 0, 1, 0),
+      tech_cat_none = ifelse(tech_function_comms == 0 & tech_function_mkts == 0 & tech_function_ops == 0 & tech_function_epay == 0, 1, 0),
       tech_cat_any1 = ifelse(tech_function_total == 1, 1, 0),
       tech_cat_any2 = ifelse(tech_function_total == 2, 1, 0),
       tech_cat_any3 = ifelse(tech_function_total == 3, 1, 0),
@@ -484,7 +552,7 @@ prep_main_data <- function(raw_data, weights) {
 
       tech_function_index = (tech_function_total + tech_function_30da_total)/7,
 
-      # Business performance
+      # Business performance ----------
       fx = unlist(FX_RATES[country]),
       perf_mpy = Q75, # Months per year of operations
       perf_mpy = ifelse(Q75 %in% c(97, 99), NA, perf_mpy),
@@ -497,11 +565,124 @@ prep_main_data <- function(raw_data, weights) {
       perf_hrspy = perf_hrspy/12, #Avg. Hours per month of operation
       perf_revphr = perf_rev/perf_hrspy,
       perf_revphrpemp = perf_revphr/business_size, # Revenue per hour per employee
-      perf_revphrpemp_usd = perf_revphrpemp/fx # Revenue per hour per employee
+      perf_revphrpemp_usd = perf_revphrpemp/fx, # Revenue per hour per employee
 
+      # Risks -------- 
+      
+      # In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business
+      risk_largestimpact_str = names(attributes(Q56)$labels[Q56]),
+      risk_largestimpact_str = ifelse(Q56 == 99, NA, risk_largestimpact_str), 
+      
+      risk_largestimpact_shc = case_when(
+        Q56 == 1 ~ "wthr", 
+        Q56 == 2 ~ "hlth", 
+        Q56 == 3 ~ "corr", 
+        Q56 == 4 ~ "crme", 
+        Q56 == 5 ~ "frau", 
+        Q56 == 6 ~ "cost", 
+        Q56 == 7 ~ "othr",
+        Q56 == 8 ~ "none"
+      ), 
+      
+      risk_weather_type_heat = ifelse(Q57_1 == 1, 1, ifelse(Q57_1 == 2, 0, NA)),
+      risk_weather_type_droughts = ifelse(Q57_2 == 1, 1, ifelse(Q57_2 == 2, 0, NA)),
+      risk_weather_type_floods = ifelse(Q57_3 == 1, 1, ifelse(Q57_3 == 2, 0, NA)),
+      risk_weather_type_typhoon = ifelse(Q57_4 == 1, 1, ifelse(Q57_4 == 2, 0, NA)),
+      risk_weather_type_typhoon = ifelse(is.na(risk_weather_type_typhoon), 0, risk_weather_type_typhoon),
+      risk_weather_type_floodstyphoon = ifelse(risk_weather_type_floods == 1 | risk_weather_type_typhoon == 1, 1, 0), 
+      risk_weather_type_other = ifelse(Q57_5 == 1, 1, ifelse(Q57_5 == 2, 0, NA)),
+      risk_weather_type_any = ifelse(risk_weather_type_heat == 1 | risk_weather_type_droughts == 1 | risk_weather_type_floodstyphoon == 1 | risk_weather_type_other == 1, 1, 0), 
+      risk_weather_type_any_str = ifelse(risk_weather_type_any== 1, "Impacted by climate shock in past 36 months", "Not impacted by climate shock"), 
+      
+      risk_weather_impact_fin =  ifelse(Q58_1 == 1, 1, ifelse(Q58_1 == 2, 0, NA)),
+      risk_weather_impact_cst = ifelse(Q58_2 == 1, 1, ifelse(Q58_2 == 2, 0, NA)),
+      risk_weather_impact_ops = ifelse(Q58_3 == 1, 1, ifelse(Q58_3 == 2, 0, NA)),
+      risk_weather_impact_dmg = ifelse(Q58_4 == 1, 1, ifelse(Q58_4 == 2, 0, NA)),
+      risk_weather_impact_imp = ifelse(Q58_5 == 1, 1, ifelse(Q58_5 == 2, 0, NA)),
+      
+      risk_weather_cope_prod = ifelse(Q59_1 == 1, 1, ifelse(Q59_1 == 2, 0, NA)),
+      risk_weather_cope_spch = ifelse(Q59_2 == 1, 1, ifelse(Q59_2 == 2, 0, NA)),
+      risk_weather_cope_relo = ifelse(Q59_3 == 1, 1, ifelse(Q59_3 == 2, 0, NA)),
+      risk_weather_cope_cash = ifelse(Q59_4 == 1, 1, ifelse(Q59_4 == 2, 0, NA)),
+      risk_weather_cope_loan = ifelse(Q59_5 == 1, 1, ifelse(Q59_5 == 2, 0, NA)),
+      risk_weather_cope_insu = ifelse(Q59_6 == 1, 1, ifelse(Q59_6 == 2, 0, NA)),
+      risk_weather_cope_govr = ifelse(Q59_7 == 1, 1, ifelse(Q59_7 == 2, 0, NA)),
+      risk_weather_cope_hcsh = ifelse(Q59_8 == 1, 1, ifelse(Q59_8 == 2, 0, NA)),
+      risk_weather_cope_remi = ifelse(Q59_9 == 1, 1, ifelse(Q59_9 == 2, 0, NA)),
+      risk_weather_cope_asst = ifelse(Q59_10 == 1, 1, ifelse(Q59_10 == 2, 0, NA)),
+      risk_weather_cope_noth = ifelse(Q59_11 == 1, 1, ifelse(Q59_11 == 2, 0, NA)),
+      risk_weather_cope_othr = ifelse(Q59_12 == 1, 1, ifelse(Q59_12 == 2, 0, NA)),
+      
+      risk_weather_cond_ntrc = ifelse(Q60 == 1, 1, 0), 
+      risk_weather_cond_ntrc = ifelse(Q60 %in% c(97,99), NA, risk_weather_cond_ntrc), 
+      risk_weather_cond_rc = ifelse(Q60 == 2, 1, 0), 
+      risk_weather_cond_rc = ifelse(Q60 %in% c(97,99), NA, risk_weather_cond_rc), 
+      risk_weather_cond_rcbt = ifelse(Q60 == 3, 1, 0), 
+      risk_weather_cond_rcbt = ifelse(Q60 %in% c(97,99), NA, risk_weather_cond_rcbt), 
+      
+      risk_weather_adaptspend = ifelse(Q61 == 1, 1, 0), 
+      risk_weather_adaptspend = ifelse(Q61 %in% c(97,99), NA, risk_weather_adaptspend), 
+      
+      # Resilience ---------------------
+      resi_efunds_firm_diff_3 = ifelse(Q62 == 1, 1, ifelse(Q62 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_diff_2 = ifelse(Q62 == 2, 1, ifelse(Q62 %in% c(97,99), NA, 0)),
+      resi_efunds_firm_diff_1 = ifelse(Q62 == 3, 1, ifelse(Q62 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_diff_4 = ifelse(Q62 == 4, 1, ifelse(Q62 %in% c(97,99), NA, 0)), 
+
+      resi_efunds_firm_str = case_when(
+        resi_efunds_firm_diff_3 == 1 ~ "Very difficult", 
+        resi_efunds_firm_diff_2 == 1 | resi_efunds_firm_diff_1 == 1 ~ "Somewhat or not difficult at all", 
+        resi_efunds_firm_diff_4 == 1 ~ "Not possible"
+      ), 
+      
+      resi_efunds_firm_source_family = ifelse(Q63 == 1, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_work = ifelse(Q63 == 2, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_firmcsh = ifelse(Q63 == 3, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_hhcsh = ifelse(Q63 == 4, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_borrow = ifelse(Q63 == 5, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_sellassets = ifelse(Q63 == 6, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      resi_efunds_firm_source_other = ifelse(Q63 == 7, 1, ifelse(Q63 %in% c(97,99), NA, 0)), 
+      
+      # Asked only to owners
+      resi_efunds_hh_owner_yes = ifelse(Q64 == 1, 1, ifelse(Q64 %in% c(97,99), NA, 0)), 
+      resi_efunds_hh_owner_yes = ifelse(resp_owner == 0, 0, resi_efunds_hh_owner_yes), 
+      resi_efunds_hh_owner_no = ifelse(Q64 == 2, 1, ifelse(Q64 %in% c(97,99), NA, 0)), 
+      resi_efunds_hh_owner_no = ifelse(resp_owner == 0, 0, resi_efunds_hh_owner_no), 
+      
+      resi_suppchain_cust_diff_1 = ifelse(Q65 == 1, 1, ifelse(Q65 %in% c(97,99), NA, 0)), 
+      resi_suppchain_cust_diff_2 = ifelse(Q65 %in% c(2, 3), 1, ifelse(Q65 %in% c(97,99), NA, 0)), 
+      resi_suppchain_cust_diff_3 = ifelse(Q65 == 4, 1, ifelse(Q65 %in% c(97,99), NA, 0)), 
+      
+      resi_resp_attitude_chllng_str = names(attributes(Q66)$labels[Q66]),
+      resi_resp_attitude_chllng_str = ifelse(Q66 %in% c(97,99), NA, resi_resp_attitude_chllng_str), 
+      
+      resi_resp_attitude_chllng_1 = ifelse(Q66 == 1, 1, ifelse(Q66 %in% c(97,99), NA, 0)), 
+      resi_resp_attitude_chllng_2 = ifelse(Q66 == 2, 1, ifelse(Q66 %in% c(97,99), NA, 0)), 
+      resi_resp_attitude_chllng_3 = ifelse(Q66 == 3, 1, ifelse(Q66 %in% c(97,99), NA, 0)), 
+      resi_resp_attitude_chllng_4 = ifelse(Q66 == 4, 1, ifelse(Q66 %in% c(97,99), NA, 0)), 
+      
+      resi_network_conf_3 = ifelse(Q67 == 1, 1, ifelse(Q67 %in% c(97,99), NA, 0)), 
+      resi_network_conf_2 = ifelse(Q67 %in% c(2, 3), 1, ifelse(Q67 %in% c(97,99), NA, 0)), 
+      resi_network_conf_1 = ifelse(Q67 == 4, 1, ifelse(Q67 %in% c(97,99), NA, 0)),
+      
+      # Resilience capital
+      # Financial: Can raise emergency funds in 7 days without major difficulty
+      resi_capital_financial = ifelse(resi_efunds_firm_str == "Somewhat or not difficult at all", 1, 0), 
+      # Dependency on customers: Can overcome challenges with main customer or supplier without major difficulty
+      resi_capital_linkages = ifelse(resi_suppchain_cust_diff_1 == 1 | resi_suppchain_cust_diff_2 == 1, 1, 0), 
+      # Dependency on household: Business savings not vulnerable to household shocks
+      resi_capital_hh = ifelse(resi_efunds_hh_owner_no == 1, 1, 0), 
+      # Confidence in network 
+      resi_capital_network = ifelse(resi_network_conf_2 == 1 | resi_network_conf_3 == 1, 1, 0), 
+      
+      resi_capital_score_v1 = resi_capital_financial + resi_capital_linkages + resi_capital_hh + resi_capital_network, 
+      resi_capital_score_v2 = resi_capital_financial + resi_capital_linkages + resi_capital_network
+      
     ) %>%
     dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
-                                  "resp_experience_agg5_shc", "resp_education_agg4_shc", "resp_age_agg6_shc", "resp_psych_segment_shc")) %>%
+                                  "resp_experience_agg5_shc", "resp_education_agg4_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
+                                  "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc",
+                                  "risk_largestimpact_shc")) %>%
     mutate(
 
       # Index of how closely tied up (only defined for respondents that are owners) business is with owner's personal finances
@@ -513,8 +694,52 @@ prep_main_data <- function(raw_data, weights) {
 
     ) %>%
 
-    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "w", "business_", "resp_", "tech_", "perf_")))
+    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "w", "business_", "resp_", "tech_", "perf_", "risk_", "resi_")))
 
+}
+
+runpca_psych <- function(data) { 
+  
+  prcomp(~ resp_motivation_entrep + resp_motivation_lackopp + resp_maingoal_grow + resp_maingoal_stab + resp_riskapproach_aggr + resp_riskapproach_avoid, scale = TRUE, data = data)
+
+  }
+
+runmca_psych <- function(data, showgraph = FALSE) { 
+  
+  data %>% 
+    select(resp_motivation, resp_maingoal, resp_riskapproach, resi_resp_attitude_chllng_str) %>% filter(complete.cases(.)) %>% 
+    mutate(
+      resp_motivation = ifelse(resp_motivation == "Lack of other income opportunities or desire to generate additional income", "Lack other income opportunities", resp_motivation), 
+      resp_maingoal = ifelse(resp_maingoal == "Leave business to get a regular wage paying job or other", "Leave business to get job", resp_maingoal), 
+      resp_riskapproach = ifelse(resp_riskapproach == "Aggresively pursue risky opportunities that could generate significant additional income", "Aggressively pursue risky opportunities", resp_riskapproach), 
+      resp_riskapproach = ifelse(resp_riskapproach == "Cautiously pursue risk opportunities that could generate a little income", "Cautiously pursue risky opportunities", resp_riskapproach), 
+      resp_riskapproach = ifelse(resp_riskapproach == "Avoid risks even if they could generate additional income", "Avoid risks", resp_riskapproach), 
+    ) %>%
+    mutate(resp_motivation = str_wrap(resp_motivation, 20), 
+           resp_maingoal = str_wrap(resp_maingoal, 20), 
+           resp_riskapproach = str_wrap(resp_riskapproach, 20), 
+           resi_resp_attitude_chllng_str = str_wrap(resi_resp_attitude_chllng_str, 20)) %>% 
+    rename(Motivation = resp_motivation, `Main goal` = resp_maingoal, `Risk approach` = resp_riskapproach, `Reaction to challenge` = resi_resp_attitude_chllng_str) -> data
+  
+  MCA(data, graph = showgraph)
+  
+}
+
+add_pca_todata <- function(data) { 
+  
+  subset <- data %>% select(ID, resp_motivation, resp_maingoal, resp_riskapproach, resi_resp_attitude_chllng_str) %>% filter(complete.cases(.))
+  mca <- runmca_psych(subset, showgraph = FALSE)
+  dims <- mca$ind$coord[, c(1, 2)]
+  
+  subset %>% 
+    mutate(
+      psych_mca_dim1 = dims[, 1], 
+      psych_mca_dim2 = dims[, 2]
+    ) %>% 
+    select(ID, psych_mca_dim1, psych_mca_dim2) -> subset
+  
+  return(data %>% left_join(subset, by = "ID"))
+  
   }
 
 # Function to compute summary statistics -------------------

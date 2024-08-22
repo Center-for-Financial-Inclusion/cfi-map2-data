@@ -102,14 +102,16 @@ theme_custom <- function(scale_f = 1, ...) {
       axis.title.x = element_text(color="black", hjust = 0.5, size=10*scale_f),
       axis.text = element_text(size=10*scale_f, color = "black"),
       #panel.grid = element_line(color = "#F5E3E0", size = 0.25),
-      plot.caption=element_text(hjust=0, color="grey40", size=10.5*scale_f),
+      plot.caption=element_text(hjust=0, color="gray30", size=10.5*scale_f),
       panel.background = element_rect(fill = "#ffffff"),
       rect = element_rect(fill = "#ffffff", colour = "#ffffff", size = 0.5, linetype = 1),
-      axis.line.x = element_line(color = "black", size=0.5),
-      axis.line.y = element_line(color = "black", size=0.5),
+      axis.line.x  = element_blank(), 
+      axis.line.y  = element_blank(), 
       strip.background = element_rect(fill = "#ffffff"),
-      strip.text = element_text(size = 10*scale_f, face = 'plain'),
+      strip.text = element_text(size = 10*scale_f, face = 'bold'),
       strip.text.y = element_text(angle = 90),
+      strip.placement = "outside",
+      legend.position = "bottom", 
       legend.title = element_text(size = 10*scale_f),
       legend.text = element_text(size = 10*scale_f),
       legend.key.height = unit(1, 'lines'),
@@ -134,6 +136,8 @@ svy_summary_1g <- function(data, i, g, psu, strata, w, iref, gref) {
   g <- sym(g)
   w <- sym(w)
 
+  data <- data %>% filter(!is.na(!!g))
+  
   if (!is.null(psu)) {
     psu <- sym(psu)
   }

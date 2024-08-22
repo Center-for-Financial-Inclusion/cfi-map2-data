@@ -36,6 +36,7 @@ fig_6_data <- function(ests, indicators, wrap_len = 40) {
       indicator_group = ifelse(str_detect(indicator, "motivation"), "1. Reason for starting business", NA),
       indicator_group = ifelse(str_detect(indicator, "maingoal"), "2. Primary goal for business", indicator_group),
       indicator_group = ifelse(str_detect(indicator, "riskapproach"), "3. Approach to risk", indicator_group),
+      indicator_group = ifelse(str_detect(indicator, "attitude"), "4. Attitude facing past challenges", indicator_group), 
       indicator_group = ifelse(str_detect(indicator, "segment"), "4. Pyschographic segment", indicator_group)
       #indicator_group = factor(indicator_group, levels = c("Reason for starting business", "Primary goal for business", "Approach to risk", "Pyschographic segment"), ordered = TRUE)
     )
@@ -110,65 +111,60 @@ fig_8_data <- function(data) {
   data %>%
     group_by(depvar, confounds_flag) %>%
     mutate(
-           max = max(fig_data),
-           #max = ifelse(label == "Women", max, NA),
-           min = min(fig_data),
-           #min = ifelse(label == "Women", min, NA),
-
-           sig = ifelse(p.value < 0.1, ".", NA),
-           sig = ifelse(p.value < 0.05, "*", sig),
-           sig = ifelse(p.value < 0.01, "**", sig),
-           sig = ifelse(p.value < 0.001, "***", sig),
-           sig = ifelse(is.na(sig), "", sig),
-
-           maineffect = ifelse(term == "resp_sex_women", estimate, NA),
-           valuelabel = round(max(ifelse(effect_label == "Women", estimate, NA), na.rm = TRUE)*100, 1),
-           effect_dir = ifelse(valuelabel < 0, -1, 1),
-
-           endarrow = ifelse(effect_dir == 1, max, min),
-           startarrow = ifelse(effect_dir == 1, min, max),
-           endarrow = ifelse(effect_label == "Women" & effect_dir == 1, NA, endarrow),
-           startarrow = ifelse(effect_label == "Women" & effect_dir == 1, NA, startarrow),
-           endarrow = ifelse(effect_label == "Men" & effect_dir == -1, NA, endarrow),
-           startarrow = ifelse(effect_label == "Men" & effect_dir == -1, NA, startarrow),
-
-           valuelabel = paste0(valuelabel, "pp", sig),
-           valuelabel =  ifelse(effect_label == "Women" & effect_dir == 1, NA, valuelabel),
-           valuelabel =  ifelse(effect_label == "Men" & effect_dir == -1, NA, valuelabel),
-
-           valuelabel_pos = (max - min)/2 + min,
-           barlabel = round(fig_data*100, 1),
-           annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
-           annotation = ifelse(effect_label == "Women", NA, annotation)
+      
+      baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
+      
+      sig = ifelse(p.value < 0.1, ".", NA),
+      sig = ifelse(p.value < 0.05, "*", sig),
+      sig = ifelse(p.value < 0.01, "**", sig),
+      sig = ifelse(p.value < 0.001, "***", sig),
+      sig = ifelse(is.na(sig), "", sig),
+      
+      valuelabel = numclean(estimate, n = 2),
+      
+      effect_dir = ifelse(estimate < 0, -1, 1),
+      
+      startarrow = baseline,
+      endarrow = fig_data,
+      
+      valuelabel = paste0(valuelabel, sig, "pp"),
+      valuelabel = ifelse(term == "(Intercept)", NA, valuelabel),
+      valuelabel = ifelse(sig == "", NA, valuelabel), 
+      
+      valuelabel_pos = ifelse(effect_dir == 1, (endarrow - startarrow)/2 + startarrow, (startarrow - endarrow)/2 + endarrow),
+      
+      barlabel =  numclean(fig_data, n = 2),
+      annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
+      annotation = ifelse(term == "(Intercept)", NA, annotation)
     )
-
 }
 
-fig_8_chart <- function(data) {
+fig_8_chart <- function(data, labels) {
 
+  data <- data %>% group_by(depvar, model_type) %>% mutate(x = ifelse(term == "(Intercept)", fig_data, NA), refline = max(x, na.rm = TRUE), refline = ifelse(row_number() == 1, refline, NA))
+  
   ggplot(data = data,
-         aes(x = effect_label,
+         aes(x = fct_inorder(str_wrap(effect_label, 15)),
              y = fig_data)
   ) +
     facet_grid(cols = vars(depvar_label), rows = vars(model_type), switch = "y") +
-    geom_col(width = 0.5, fill = "grey80") +
-    geom_segment(aes(y = startarrow, yend = endarrow), color = "red", arrow = arrow(length=unit(.2, 'cm'))) +
-    geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white") +
-    geom_text(aes(label = barlabel), vjust = 1, nudge_y = -0.01, color = "black") +
-    geom_text(aes(y = valuelabel_pos, label = valuelabel), color = "red", hjust = 0, nudge_x = 0.07) +
+    geom_col(width = 0.55, fill = "grey85") +
+    geom_hline(aes(yintercept = refline), color = "red", size = 0.25, linetype = "dashed") + 
+    geom_segment(aes(y = startarrow, yend = endarrow), color = "red", arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
+    geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white", size= 3.5) +
+    #geom_text(aes(label = barlabel), vjust = 0, nudge_y = 0.05, color = "black") +
+    geom_text(aes(y = valuelabel_pos, label = valuelabel), color = "red", hjust = 0, nudge_x = 0.05) +
     #geom_text(aes(y = 0.95, label = annotation), hjust = 0, color = "black", nudge_x = 0, size = 3.5) +
+    # Figure Labels
     labs(
-      title = "Observational estimates of the relationship of owner's gender on the orientation of firms",
-      subtitle = "The effect (in percentage points) of female ownership on the likelihood of a particular growth orientation mentality is shown with the red arrow",
-      y = "Predicted probability (%)",
-      x = "Gender",
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of gender
-                      on several outcomes of interest. The 'unadjusted' model does not include any additional controls,
-                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
-                       The regression parameters are used to compute predicted probabilities for male and female business owners with the average years of experience running
-                       the business in the sample and with primary-level educational attainment.", 175)
+      title = labels[["title"]],
+      subtitle = labels[["subtitle"]],
+      y = labels[["y"]],
+      x = labels[["x"]],
+      caption = labels[["caption"]]
     ) +
-    scale_y_continuous(limits = c(0, 1), label = scales::label_percent()) +
+    scale_y_continuous(label = scales::label_percent(), position = "left") +
+    scale_x_discrete(position = "top") +
     theme_custom()
 
   }

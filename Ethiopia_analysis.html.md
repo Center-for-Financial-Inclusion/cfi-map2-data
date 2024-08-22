@@ -12,7 +12,7 @@ params:
 
 ## Fieldwork summary
 
-  * Enumeration was completed in 90 out of 100 initial sampled blocks.
+  * Enumeration was completed in 90 out of 98 initial sampled blocks.
   * 63 of the 90 initial sampled blocks enumerated resulted in expansion to adjacent blocks
   * 282 blocks (including both initial sampled and expansion blocks) were enumerated. 
   * In total, 2794 business were found during enumeration
@@ -28,6 +28,7 @@ params:
 ![Businesses enumerated by size and sector](Ethiopia_analysis_files/figure-html/fig-nbus_size_and_sector-1.png){#fig-nbus_size_and_sector width=1152}
 :::
 :::
+
 ::: {.cell}
 ::: {.cell-output-display}
 ![Small businesses by gender, size and sector](Ethiopia_analysis_files/figure-html/fig-mse_chars-1.png){#fig-mse_chars width=1152}
@@ -37,18 +38,17 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
-![MSEs by size and sector](Ethiopia_analysis_files/figure-html/fig-mses_size_and_sector-1.png){#fig-mses_size_and_sector width=1152}
+![MSE revenues and productivity](Ethiopia_analysis_files/figure-html/fig-mses_size_and_sector-1.png){#fig-mses_size_and_sector width=1152}
 :::
 :::
 
+## The small firm owner
 
 ::: {.cell}
 ::: {.cell-output-display}
 ![Gender composition of MSEs by sise and sector](Ethiopia_analysis_files/figure-html/fig-mses_chars_bygender-1.png){#fig-mses_chars_bygender width=1152}
 :::
 :::
-
-## The small firm owner
 
 ::: {.cell}
 ::: {.cell-output-display}
@@ -70,6 +70,12 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
+![Correlation between owner's motivations, goals and attitudes to risk](Ethiopia_analysis_files/figure-html/fig-resp_psyc_mca-1.png){#fig-resp_psyc_mca width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
 ![Correlation between owner's motivations, goals and attitudes to risk](Ethiopia_analysis_files/figure-html/fig-reg_growth_gender-1.png){#fig-reg_growth_gender width=1152}
 :::
 :::
@@ -84,14 +90,14 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Access to connectivity and devices](Ethiopia_analysis_files/figure-html/fig-digtech_divide-1.png){#fig-digtech_divide width=1152}
+![Access to connectivity and devices](Ethiopia_analysis_files/figure-html/fig-digtech_overview-1.png){#fig-digtech_overview width=1152}
 :::
 :::
 
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Digital technology adoption by use case](Ethiopia_analysis_files/figure-html/fig-digtech_usage-1.png){#fig-digtech_usage width=1152}
+![Digital technology adoption by use case](Ethiopia_analysis_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
 :::
 :::
 
@@ -111,6 +117,45 @@ params:
 ::: {.cell}
 ::: {.cell-output-display}
 ![Relationship between depth of digital technology adoption and firm-level labor productivity](Ethiopia_analysis_files/figure-html/fig-reg_revprhr_digtechdepth-1.png){#fig-reg_revprhr_digtechdepth width=1152}
+:::
+:::
+
+## Risks and Resilience
+
+::: {.cell}
+::: {.cell-output-display}
+![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_types-1.png){#fig-risks_types width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_climate_types-1.png){#fig-risks_climate_types width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_impacts-1.png){#fig-risks_impacts width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Shocks ](Ethiopia_analysis_files/figure-html/fig-resilience_financial-1.png){#fig-resilience_financial width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Non-financial dimensions of business resilience](Ethiopia_analysis_files/figure-html/fig-resilience_nonfinancial-1.png){#fig-resilience_nonfinancial width=1152}
+:::
+:::
+
+
+::: {.cell}
+::: {.cell-output-display}
+![Access to connectivity and devices](Ethiopia_analysis_files/figure-html/fig-resilience_overview-1.png){#fig-resilience_overview width=1152}
 :::
 :::
 

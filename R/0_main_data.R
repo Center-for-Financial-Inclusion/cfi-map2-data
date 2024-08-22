@@ -13,9 +13,11 @@ main_valuebook <- gen_valuebook(main_raw_data)
 #main_valuebook[["Q2"]]
 #main_valuebook[["Q5"]]
 
-main_data <- prep_main_data(main_raw_data, weight_msme) %>% filter(!is.na(weight_msme))
-
-# Outputting table of weights developed by Igore
+main_data <- prep_main_data(main_raw_data, weight_msme, COUNTRY) %>% filter(!is.na(weight_msme))
+# Adding mca (pyschology) dimensions to data
+main_data <- add_pca_todata(main_data)
+  
+# Outputting table of weights developed by Igor
 write_csv(main_data %>% group_by(Initial_block_ID, Cluster_number) %>% filter(row_number() == 1) %>% select(Initial_block_ID, Cluster_number, w), glue("outputs/weights_percluster_{COUNTRY}_Igor.csv"))
 
 

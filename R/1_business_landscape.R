@@ -118,9 +118,10 @@ fig_3_data <- function(ests, groups) {
       group_cat_val = ifelse(group_cat_val == "Non-household premises with permanent structure", "Non-household: Permanent structure", group_cat_val),
       group_cat_val = ifelse(group_cat_val == "Non-household premises with semi-permanent structure, including stalls or stands", "Non-household: Semi-permanent structure", group_cat_val),
       group_cat_val = ifelse(is.na(group_cat_val), "Don't know", group_cat_val),
-      valuelabel = paste0(str_wrap(group_cat_val, 20), "\n", pctclean(share, 0), "%"),
+      valuelabel = paste0(str_wrap(group_cat_val, 30)),
+      #valuelabel = paste0(str_wrap(group_cat_val, 20), "\n", pctclean(share, 0), "%"),
     ) %>%
-    filter(!is.na(group_cat_val))
+    filter(!is.na(group_cat_val) | group_cat_val != "Don't know")
 
 }
 
@@ -131,6 +132,10 @@ fig_4_data <- function(ests) {
   ests %>%
     mutate(
       valuelabel = paste0(pctclean(mean, 0), "%"),
+      valuelabel = ifelse(indicator_name == "Men", NA, valuelabel),
+      group_cat_val = ifelse(group_cat_val == "Household premises" , "Household", group_cat_val),
+      group_cat_val = ifelse(group_cat_val == "Non-household premises with permanent structure", "Non-household: Permanent structure", group_cat_val),
+      group_cat_val = ifelse(group_cat_val == "Non-household premises with semi-permanent structure, including stalls or stands", "Non-household: Semi-permanent structure", group_cat_val),
       group_cat_val = factor(group_cat_val, levels = GROUP_CAT_LEVELS, ordered = TRUE),
       indicator_group = ""
     ) %>%
