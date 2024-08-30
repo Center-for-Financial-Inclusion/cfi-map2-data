@@ -38,7 +38,7 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
-![MSE revenues and productivity](Nigeria_analysis_files/figure-html/fig-mses_size_and_sector-1.png){#fig-mses_size_and_sector width=1152}
+![MSE revenues and productivity](Nigeria_analysis_files/figure-html/fig-mses_productivity-1.png){#fig-mses_productivity width=1152}
 :::
 :::
 
@@ -132,29 +132,51 @@ params:
 :::
 :::
 
+## Financial services 
+
+::: {.cell}
+::: {.cell-output-display}
+![Financical accounts and savings](Nigeria_analysis_files/figure-html/fig-account_ownership-1.png){#fig-account_ownership width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Merchant payments](Nigeria_analysis_files/figure-html/fig-payments-1.png){#fig-payments width=1152}
+:::
+:::
+
+
+::: {.cell}
+::: {.cell-output-display}
+![Demand for credit](Nigeria_analysis_files/figure-html/fig-credit_demand-1.png){#fig-credit_demand width=1152}
+:::
+:::
+
+
 ## Risks and Resilience
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Nigeria_analysis_files/figure-html/fig-risks_types-1.png){#fig-risks_types width=1152}
+![Risks: General](Nigeria_analysis_files/figure-html/fig-risks_types-1.png){#fig-risks_types width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Nigeria_analysis_files/figure-html/fig-risks_climate_types-1.png){#fig-risks_climate_types width=1152}
+![Risks: Climate](Nigeria_analysis_files/figure-html/fig-risks_climate_types-1.png){#fig-risks_climate_types width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Nigeria_analysis_files/figure-html/fig-risks_impacts-1.png){#fig-risks_impacts width=1152}
+![Risks: Impacts](Nigeria_analysis_files/figure-html/fig-risks_impacts-1.png){#fig-risks_impacts width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Nigeria_analysis_files/figure-html/fig-resilience_financial-1.png){#fig-resilience_financial width=1152}
+![Financial resilience](Nigeria_analysis_files/figure-html/fig-resilience_financial-1.png){#fig-resilience_financial width=1152}
 :::
 :::
 

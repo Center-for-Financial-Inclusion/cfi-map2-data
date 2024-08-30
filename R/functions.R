@@ -405,14 +405,15 @@ prep_main_data <- function(raw_data, weights, country) {
 
       # Pyschogrpahic segment based on motivations, goals and approach to risk
 
-      # Owner identifies as an entrepreneur, wants to grow by taking sizeable risks
+      # Owner identifies as an entrepreneur, wants to grow by taking risks
       resp_psych_segment = ifelse(
               resp_motivation_entrep == 1 &
               resp_maingoal_grow == 1 &
-              resp_riskapproach_aggr == 1, "Growth", NA),
-      # Owner identifies as an entrepreneur, has
+              (resp_riskapproach_aggr == 1 | resp_riskapproach_calc == 1), "Growth", NA),
+      # Owner started business du to lack of opportunities & wants to avoid risks
       resp_psych_segment = ifelse(
               resp_motivation_lackopp == 1 &
+              (resp_maingoal_leave == 1 | resp_maingoal_stab == 1) & 
               resp_riskapproach_avoid == 1, "Survival", resp_psych_segment
         ),
       resp_psych_segment = ifelse(is.na(resp_psych_segment), "Stability", resp_psych_segment),
@@ -435,7 +436,7 @@ prep_main_data <- function(raw_data, weights, country) {
 
       # Business has formal account
       business_account_formal = ifelse(Q30 == 1, 1, 0),
-      business_account_formal = ifelse(Q40 %in% c(97,99), NA, business_account_formal),
+      business_account_formal = ifelse(Q30 %in% c(97,99), NA, business_account_formal),
 
       # Owner's account separate from business account
       business_account_separate = case_match(Q31, 1 ~ 1, 2 ~ 0, 99 ~ NA),
@@ -506,7 +507,7 @@ prep_main_data <- function(raw_data, weights, country) {
       tech_uses_ai = case_match(Q26,  1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
 
       # Enterprise finance
-      tech_uses_digpayments = ifelse(Q35_3 == 1 | Q35_4 == 1 | Q35_5 == 1 | Q35_6 == 1 | Q35_7 == 1 | Q35_8 == 1, 1, 0),
+      tech_uses_digpayments = ifelse(Q35_3 == 1 | Q35_5 == 1 | Q35_6 == 1 | Q35_7 == 1 | Q35_8 == 1, 1, 0),
 
       tech_uses_digloans = ifelse(Q38_1 == 1 | Q38_2 == 1 | Q38_3 == 1 | Q38_4 == 1 | Q38_5 == 1 | Q38_6 == 1 |  Q37_3 == 1 | Q37_6 == 1 | Q37_7 == 1, 1, 0),
       tech_uses_digloans = ifelse(is.na(tech_uses_digloans), 0, tech_uses_digloans),
@@ -595,14 +596,262 @@ prep_main_data <- function(raw_data, weights, country) {
       perf_hrspw = ifelse(Q76 %in% c(97, 99), NA, perf_hrspw),
       perf_rev = as.numeric(zap_labels(main_raw_data$Q78)),
       perf_rev = ifelse(Q78 %in% c(97,99), NA, perf_rev),
+      perf_rev_reports = ifelse(!is.na(perf_rev), 1, 0), 
       perf_rev_usd = perf_rev/fx,
       perf_hrspy = perf_hrspw*4*perf_mpy, #Total hours per year of operation
       perf_hrspy = perf_hrspy/12, #Avg. Hours per month of operation
       perf_revphr = perf_rev/perf_hrspy,
       perf_revphrpemp = perf_revphr/business_size, # Revenue per hour per employee
       perf_revphrpemp_usd = perf_revphrpemp/fx, # Revenue per hour per employee
+      
+      ###### FINANCIAL SERVICES ----------------
+      
+      # Business has formal account
+      fin_account_formal = ifelse(Q30 == 1, 1, 0),
+      fin_account_formal = ifelse(Q30 %in% c(97,99), NA, fin_account_formal),
+      
+      # Can owner save regularly out of business income
+      fin_owner_save = ifelse(Q32 == 1, 1, 0),
+      fin_owner_save = ifelse(Q32 %in% c(97,99), NA, fin_owner_save),
+      
+      # Business savings account/method
+      fin_bus_savings_cbnk = ifelse(Q33 == 1, 1, 0), 
+      fin_bus_savings_cbnk = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_cbnk),
+      fin_bus_savings_mfi =  ifelse(Q33 == 2, 1, 0), 
+      fin_bus_savings_mfi = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_mfi),
+      fin_bus_savings_fintech =  ifelse(Q33 == 3, 1, 0), 
+      fin_bus_savings_fintech = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_fintech),
+      fin_bus_savings_sacco =  ifelse(Q33 == 4, 1, 0), 
+      fin_bus_savings_sacco = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_sacco),
+      fin_bus_savings_group =  ifelse(Q33 == 5, 1, 0), 
+      fin_bus_savings_group = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_group),
+      fin_bus_savings_mm =  ifelse(Q33 == 6, 1, 0), 
+      fin_bus_savings_mm = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_mm),
+      fin_bus_savings_other =  ifelse(Q33 == 7, 1, 0), 
+      fin_bus_savings_other = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_other),
+      
+      # Transaction channels available for savings account
+      fin_bus_savings_channel_inprsn = ifelse(Q34 == 1, 1, 0), 
+      fin_bus_savings_channel_inprsn = ifelse(Q34 %in% c(97,99), NA, fin_bus_savings_channel_inprsn), 
+      fin_bus_savings_channel_digonly = ifelse(Q34 == 2, 1, 0),
+      fin_bus_savings_channel_digonly = ifelse(Q34 %in% c(97,99), NA, fin_bus_savings_channel_digonly), 
+      fin_bus_savings_channel_both = ifelse(Q34 == 3, 1, 0),
+      fin_bus_savings_channel_both = ifelse(Q34 %in% c(97,99), NA, fin_bus_savings_channel_both), 
+      fin_bus_savings_channel_other = ifelse(Q34 == 4, 1, 0),
+      fin_bus_savings_channel_other = ifelse(Q34 %in% c(97,99), NA, fin_bus_savings_channel_other), 
 
-      # Risks -------- 
+      # Customer payment acceptance mechanisms
+      fin_merchpay_cashcheques = ifelse(Q35_1 == 1 | Q35_2 == 1, 1, 0),  
+      fin_merchpay_poscard = ifelse(Q35_3 == 1, 1, 0),  
+      fin_merchpay_poscard = ifelse(Q35_3 == 3, NA, fin_merchpay_poscard), 
+      fin_merchpay_bnktrnsf = ifelse(Q35_4 == 1, 1, 0),  
+      fin_merchpay_bnktrnsf = ifelse(Q35_4 == 3, NA, fin_merchpay_bnktrnsf), 
+      fin_merchpay_online = ifelse(Q35_5 == 1, 1, 0),  
+      fin_merchpay_online = ifelse(Q35_5 == 3, NA, fin_merchpay_online), 
+      fin_merchpay_mobmoney = ifelse(Q35_6 == 1, 1, 0),  
+      fin_merchpay_mobmoney = ifelse(Q35_6 == 3, NA, fin_merchpay_mobmoney), 
+      fin_merchpay_instant = ifelse(Q35_7 == 1, 1, 0),  
+      fin_merchpay_instant = ifelse(Q35_7 == 3, NA, fin_merchpay_instant), 
+      fin_merchpay_qr = ifelse(Q35_8 == 1, 1, 0),  
+      fin_merchpay_qr = ifelse(Q35_8 == 3, NA, fin_merchpay_qr), 
+      
+      # Owner used a credit card for business purposes
+      fin_owner_creditcard = ifelse(Q36 == 1, 1, 0), 
+      fin_owner_creditcard = ifelse(Q36 %in% c(97,99), NA, fin_owner_creditcard), 
+      
+      # Active loans in las 12 months
+      fin_activeloan_cbnk = ifelse(Q37_1 == 1, 1, 0),
+      fin_activeloan_cbnk = ifelse(Q37_1 %in% c(97,99), NA, fin_activeloan_cbnk), 
+      fin_activeloan_mfi = ifelse(Q37_2 == 1, 1, 0), 
+      fin_activeloan_mfi = ifelse(Q37_2 %in% c(97,99), NA, fin_activeloan_mfi), 
+      fin_activeloan_fintech = ifelse(Q37_3 == 1, 1, 0), 
+      fin_activeloan_fintech = ifelse(Q37_3 %in% c(97,99), NA, fin_activeloan_fintech), 
+      fin_activeloan_sacco = ifelse(Q37_4 == 1, 1, 0), 
+      fin_activeloan_sacco = ifelse(Q37_4 %in% c(97,99), NA, fin_activeloan_sacco), 
+      fin_activeloan_group = ifelse(Q37_5 == 1, 1, 0), 
+      fin_activeloan_group = ifelse(Q37_5 %in% c(97,99), NA, fin_activeloan_group), 
+      fin_activeloan_mm = ifelse(Q37_6 == 1, 1, 0), 
+      fin_activeloan_mm = ifelse(Q37_6 %in% c(97,99), NA, fin_activeloan_mm), 
+      fin_activeloan_platform = ifelse(Q37_7 == 1, 1, 0), 
+      fin_activeloan_platform = ifelse(Q37_7 %in% c(97,99), NA, fin_activeloan_platform), 
+      fin_activeloan_supplier = ifelse(Q37_8 == 1, 1, 0), 
+      fin_activeloan_supplier = ifelse(Q37_8 %in% c(97,99), NA, fin_activeloan_supplier), 
+      fin_activeloan_moneylndr = ifelse(Q37_9 == 1, 1, 0), 
+      fin_activeloan_moneylndr = ifelse(Q37_9 %in% c(97,99), NA, fin_activeloan_moneylndr), 
+      fin_activeloan_ff = ifelse(Q37_10 == 1, 1, 0), 
+      fin_activeloan_ff = ifelse(Q37_10 %in% c(97,99), NA, fin_activeloan_ff), 
+      fin_activeloan_other = ifelse(Q37_11 == 1, 1, 0), 
+      fin_activeloan_other = ifelse(Q37_11 %in% c(97,99), NA, fin_activeloan_other), 
+      
+      fin_activeloan_any = ifelse(Q37_1 == 1 | Q37_2 == 1 | Q37_3 == 1 | Q37_4 == 1 | Q37_5 == 1 | Q37_6 == 1 | Q37_7 == 1 | Q37_8 == 1 | Q37_9 == 1 | Q37_10 == 1 | Q37_11 == 1, 1, 0), 
+      
+      # Did business apply for loan digitally? 
+      fin_activeloan_da_cbnk = ifelse(Q38_1 == 1, 1, 0), 
+      fin_activeloan_da_cbnk = ifelse(Q38_1 %in% c(97,99), NA, fin_activeloan_da_cbnk), 
+      fin_activeloan_da_mfi = ifelse(Q38_2 == 1, 1, 0), 
+      fin_activeloan_da_mfi = ifelse(Q38_2 %in% c(97,99), NA, fin_activeloan_da_mfi), 
+      fin_activeloan_da_fintech = ifelse(Q38_3 == 1, 1, 0), 
+      fin_activeloan_da_fintech = ifelse(Q38_3 %in% c(97,99), NA, fin_activeloan_da_fintech), 
+      fin_activeloan_da_sacco = ifelse(Q38_4 == 1, 1, 0), 
+      fin_activeloan_da_sacco = ifelse(Q38_4 %in% c(97,99), NA, fin_activeloan_da_sacco), 
+      fin_activeloan_da_group = ifelse(Q38_5 == 1, 1, 0), 
+      fin_activeloan_da_group = ifelse(Q38_5 %in% c(97,99), NA, fin_activeloan_da_group), 
+      fin_activeloan_da_mm = ifelse(Q38_6 == 1, 1, 0), 
+      fin_activeloan_da_mm = ifelse(Q38_6 %in% c(97,99), NA, fin_activeloan_da_mm), 
+      
+      # DId this business want a loan but could not obtain it?
+      fin_deniedloan = ifelse(Q39 == 1, 1, 0),
+      fin_deniedloan = ifelse(Q39 %in% c(97,99), NA, fin_deniedloan), 
+      
+      # Reason business could not obtain loan
+      fin_deniedloan_reason_nosuit = ifelse(Q40 == 1, 1, 0),
+      fin_deniedloan_reason_req = ifelse(Q40 == 2, 1, 0),
+      fin_deniedloan_reason_cost = ifelse(Q40 == 3, 1, 0),
+      fin_deniedloan_reason_terms = ifelse(Q40 == 4, 1, 0),
+      fin_deniedloan_reason_denied = ifelse(Q40 %in% c(5,6), 1, 0),
+      fin_deniedloan_reason_other= ifelse(Q40 == 7, 1, 0),
+      
+      # Use of active loans
+      fin_activeloan_use_inv = ifelse(Q42_1 == 1, 1, 0),
+      fin_activeloan_use_inv = ifelse(Q42_1 %in% c(97,99), NA, fin_activeloan_use_inv),
+      fin_activeloan_use_exp = ifelse(Q42_2 == 1, 1, 0),
+      fin_activeloan_use_exp = ifelse(Q42_2 %in% c(97,99), NA, fin_activeloan_use_exp),
+      fin_activeloan_use_debt = ifelse(Q42_3 == 1, 1, 0),
+      fin_activeloan_use_debt = ifelse(Q42_3 %in% c(97,99), NA, fin_activeloan_use_debt),
+      fin_activeloan_use_exp = ifelse(Q42_4 == 1, 1, 0),
+      fin_activeloan_use_exp = ifelse(Q42_4 %in% c(97,99), NA, fin_activeloan_use_exp),
+      fin_activeloan_use_other = ifelse(Q42_5 == 1, 1, 0),
+      fin_activeloan_use_other = ifelse(Q42_5 %in% c(97,99), NA, fin_activeloan_use_other), 
+      
+      # OVerall loan demand
+      fin_demandloan = ifelse(fin_activeloan_any == 1 | fin_deniedloan == 1, 1, 0), 
+      
+      # Supplier credit 
+      fin_suppliercredit = ifelse(Q41 == 1, 1, 0), 
+      fin_suppliercredit = ifelse(Q41 %in% c(97,99), NA, fin_suppliercredit), 
+      
+      # Trust of channels
+      fin_channels_trust_physical = ifelse(Q43 == 1, 1, 0),
+      fin_channels_trust_physical = ifelse(Q43 %in% c(97,99), NA, fin_channels_trust_physical),
+      fin_channels_trust_digital = ifelse(Q43 == 2, 1, 0), 
+      fin_channels_trust_digital = ifelse(Q43 %in% c(97,99), NA, fin_channels_trust_digital),
+      fin_channels_trust_indiff = ifelse(Q43 == 3, 1, 0), 
+      fin_channels_trust_indiff = ifelse(Q43 %in% c(97,99), NA, fin_channels_trust_indiff),
+      
+      # User of digital financial services
+      fin_dfs_user = ifelse(
+        Q33 == 6 | 
+          Q34 %in% c(2,3) | 
+          Q35_5 == 1  | 
+          Q35_6 == 1 | 
+          Q35_7 == 1 | 
+          Q35_8 == 1 | 
+          Q37_6 == 1 | 
+          Q37_7 == 1 | 
+          Q38_1 == 1 |
+          Q38_2 == 1 |
+          Q38_3 == 1 |
+          Q38_4 == 1 |
+          Q38_5 == 1 |
+          Q45_1 == 1 |
+          Q45_2 == 1 |
+          Q45_3 == 1 |
+          Q45_4 == 1 |
+          Q45_5 == 1 |
+          B2_1 == 1 |
+          B2_2 == 1 |
+          B2_3 == 1 |
+          B2_4 == 1 |
+          B2_5 == 1 |
+          B2_6 == 1 |
+          B2_7 == 1 |
+          B2_8 == 1 |
+          B2_9 == 1 |
+          B2_10 == 1, 1, 0), 
+      
+      # Benefits of digital financial services: 
+      fin_digital_benefits_cus = ifelse(Q46_1 == 1, 1, 0), 
+      fin_digital_benefits_rev = ifelse(Q46_2 == 1, 1, 0), 
+      fin_digital_benefits_cst = ifelse(Q46_3 == 1, 1, 0), 
+      fin_digital_benefits_tim = ifelse(Q46_4 == 1, 1, 0), 
+      fin_digital_benefits_cf = ifelse(Q46_5 == 1, 1, 0), 
+      fin_digital_benefits_bnk = ifelse(Q46_6 == 1, 1, 0), 
+      fin_digital_benefits_crd = ifelse(Q46_7 == 1, 1, 0), 
+      fin_digital_benefits_dat = ifelse(Q46_8 == 1, 1, 0), 
+      fin_digital_benefits_none = ifelse(Q46_9 == 1, 1, 0), 
+      
+      # Benefits of digital financial services: 
+      fin_digital_challenges_diff = ifelse(Q47_1 == 1, 1, 0), 
+      fin_digital_challenges_cost = ifelse(Q47_2 == 1, 1, 0), 
+      fin_digital_challenges_trust = ifelse(Q47_3 == 1, 1, 0), 
+      fin_digital_challenges_rel = ifelse(Q47_4 == 1, 1, 0), 
+      fin_digital_challenges_infra = ifelse(Q47_5 == 1, 1, 0), 
+      fin_digital_challenges_other = ifelse(Q47_6 == 1, 1, 0), 
+      fin_digital_challenges_none = ifelse(Q47_7 == 1, 1, 0), 
+      
+      # Open banking
+      fin_openbanking_use = ifelse(Q48 == 1, 1, 0), 
+      fin_openbanking_use = ifelse(Q48 %in% c(97,98), NA, fin_openbanking_use), 
+      
+      ##### CONSUMER PROTECTION RISKS ---------
+      
+      # Loan repayment difficulty
+      cp_loanrepaydiff = ifelse(Q49 == 1, 1, 0), 
+      cp_loanrepaydiff = ifelse(Q49 %in% c(97, 99), NA, cp_loanrepaydiff), 
+      cp_loanrepaydiff = ifelse(Q49 %in% c(98) | fin_activeloan_any == 0, 0, cp_loanrepaydiff), 
+      
+      cp_loanrepaydiff_cope_notpay = ifelse(Q50_1 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_notpay = ifelse(Q50_1 == 99, NA, cp_loanrepaydiff_cope_notpay), 
+      cp_loanrepaydiff_cope_restr = ifelse(Q50_2 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_restr = ifelse(Q50_2 == 99, NA, cp_loanrepaydiff_cope_restr),
+      cp_loanrepaydiff_cope_borr = ifelse(Q50_3 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_borr = ifelse(Q50_3 == 99, NA, cp_loanrepaydiff_cope_borr),
+      cp_loanrepaydiff_cope_work = ifelse(Q50_4 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_work = ifelse(Q50_4 == 99, NA, cp_loanrepaydiff_cope_work),
+      cp_loanrepaydiff_cope_sellasst = ifelse(Q50_5 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_sellasst = ifelse(Q50_5 == 99, NA, cp_loanrepaydiff_cope_sellasst),
+      cp_loanrepaydiff_cope_usedhh = ifelse(Q50_6 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_usedhh = ifelse(Q50_6 == 99, NA, cp_loanrepaydiff_cope_usedhh),
+      cp_loanrepaydiff_cope_other = ifelse(Q50_7 == 1, 1, 0), 
+      cp_loanrepaydiff_cope_other = ifelse(Q50_7 == 99, NA, cp_loanrepaydiff_cope_other),
+      
+      # Issues experienced with financial services
+      cp_issues_fraud = ifelse(Q50_1 == 1, 1, 0), 
+      cp_issues_fraud = ifelse(Q50_1 == 3, NA, cp_issues_fraud), 
+      cp_issues_salesp = ifelse(Q50_2 == 1, 1, 0), 
+      cp_issues_salesp = ifelse(Q50_2 == 3, NA, cp_issues_salesp), 
+      cp_issues_badtreat = ifelse(Q50_3 == 1, 1, 0), 
+      cp_issues_badtreat = ifelse(Q50_3 == 3, NA, cp_issues_badtreat), 
+      cp_issues_unxfees = ifelse(Q50_4 == 1, 1, 0),
+      cp_issues_unxfees = ifelse(Q50_4 == 3, NA, cp_issues_unxfees), 
+      cp_issues_crb = ifelse(Q50_5 == 1, 1, 0),
+      cp_issues_crb = ifelse(Q50_5 == 3, NA, cp_issues_crb), 
+      cp_issues_trms = ifelse(Q50_6 == 1, 1, 0),
+      cp_issues_trms = ifelse(Q50_6 == 3, NA, cp_issues_trms),
+      cp_issues_other = ifelse(Q50_7 ==1, 1, 0),
+      cp_issues_other = ifelse(Q50_7 == 3, NA, cp_issues_other),
+      
+      cp_issues_any = ifelse(Q50_1 == 1 | Q50_2 == 1 | Q50_3 == 1 | Q50_4 == 1 | Q50_5 == 1 | Q50_6 == 1 | Q50_7 == 1, 1, 0), 
+      
+      cp_complaint = ifelse(Q52 ==1, 1, 0),
+      
+      cp_complaint_no_diff = ifelse(Q53 == 1, 1, 0), 
+      cp_complaint_no_diff = ifelse(Q53 %in% c(97,99), NA, cp_complaint_no_diff), 
+      cp_complaint_no_knowhow = ifelse(Q53 %in% c(2, 5), 1, 0), 
+      cp_complaint_no_knowhow = ifelse(Q53 %in% c(97,99), NA, cp_complaint_no_knowhow), 
+      cp_complaint_no_channel = ifelse(Q53 == 3, 1, 0), 
+      cp_complaint_no_channel = ifelse(Q53 %in% c(97,99), NA, cp_complaint_no_channel), 
+      cp_complaint_no_faith = ifelse(Q53 == 4, 1, 0), 
+      cp_complaint_no_faith = ifelse(Q53 %in% c(97,99), NA, cp_complaint_no_faith), 
+      
+      cp_complaint_resolved_yes = ifelse(Q54 == 1, 1, 0), 
+      cp_complaint_resolved_yes = ifelse(Q54 %in% c(97, 98, 99), NA, cp_complaint_resolved_yes),
+      
+      # Stopped using DFS due to fear of risks?
+      cp_dfs_stopped = ifelse(Q55 == 1, 1, 0), 
+      cp_dfs_stopped = ifelse(Q55 %in% c(97, 99), 1, 0), 
+      
+      ###### RISKS & RESILIENCE -------- 
       
       # In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business
       risk_largestimpact_str = names(attributes(Q56)$labels[Q56]),
@@ -729,7 +978,7 @@ prep_main_data <- function(raw_data, weights, country) {
 
     ) %>%
 
-    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "w", "business_", "resp_", "tech_", "perf_", "risk_", "resi_")))
+    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "w", "business_", "resp_", "tech_", "fin_", "cp_", "perf_", "risk_", "resi_")))
 
 }
 
@@ -799,10 +1048,12 @@ compute_summary_clusterlevel_1g <- function(inidcators, groups, data, weights, p
        psu = psu,
        strata = NULL,
        w = "weight_cluster")
-  )
-
+  ) %>% 
+    separate_wider_delim(indicator_name, delim = ": ", names = c("indicator_group", "indicator_name"), too_few = "align_start") %>% 
+    mutate(indicator_name_long = paste(indicator_group, indicator_name, sep = ": "))
+    
   if (!is.null(keep)) {
-    return(results %>% select(indicator, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
+    return(results %>% select(indicator, indicator_name_long, indicator_group, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
   } else {
     return(results)
   }
@@ -830,10 +1081,12 @@ compute_summary_clusterlevel_2g <- function(inidcators, groups_l1, groups_l2, da
          psu = psu,
          strata = NULL,
          w = "weight_cluster")
-  )
+  )  %>% 
+    separate_wider_delim(indicator_name, delim = ": ", names = c("indicator_group", "indicator_name"), too_few = "align_start") %>% 
+    mutate(indicator_name_long = paste(indicator_group, indicator_name, sep = ": "))
 
   if (!is.null(keep)) {
-    return(results %>% select(!!sym(groups_l1), indicator, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
+    return(results %>% select(!!sym(groups_l1), indicator, indicator_name_long, indicator_group, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
   } else {
     return(results)
   }
@@ -856,10 +1109,12 @@ compute_summary_mainlevel_1g <- function(inidcators, groups, data, weights, psu 
          psu = psu,
          strata = NULL,
          w = weights)
-  )
+  ) %>% 
+    separate_wider_delim(indicator_name, delim = ": ", names = c("indicator_group", "indicator_name"), too_few = "align_start") %>% 
+    mutate(indicator_name_long = paste(indicator_group, indicator_name, sep = ": "))
 
   if (!is.null(keep)) {
-    return(results %>% select(indicator, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
+    return(results %>% select(indicator, indicator_name_long, indicator_group, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
   } else {
     return(results)
   }
@@ -883,10 +1138,12 @@ compute_summary_mainlevel_2g <- function(inidcators, groups_l1, groups_l2, data,
          psu = psu,
          strata = NULL,
          w = weights)
-  )
+  ) %>% 
+    separate_wider_delim(indicator_name, delim = ": ", names = c("indicator_group", "indicator_name"), too_few = "align_start") %>% 
+    mutate(indicator_name_long = paste(indicator_group, indicator_name, sep = ": "))
 
   if (!is.null(keep)) {
-    return(results %>% select(!!sym(groups_l1), indicator, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
+    return(results %>% select(!!sym(groups_l1), indicator, indicator_name_long, indicator_group, indicator_name, group, group_name, group_cat_val, nobs, starts_with(keep)))
   } else {
     return(results)
   }

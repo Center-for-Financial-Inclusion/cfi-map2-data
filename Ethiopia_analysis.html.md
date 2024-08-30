@@ -38,7 +38,7 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
-![MSE revenues and productivity](Ethiopia_analysis_files/figure-html/fig-mses_size_and_sector-1.png){#fig-mses_size_and_sector width=1152}
+![MSE revenues and productivity](Ethiopia_analysis_files/figure-html/fig-mses_productivity-1.png){#fig-mses_productivity width=1152}
 :::
 :::
 
@@ -97,6 +97,12 @@ params:
 
 ::: {.cell}
 ::: {.cell-output-display}
+![Relationship between digital technology adoption and firm-level labor productivity](Ethiopia_analysis_files/figure-html/fig-reg_digtech_drivers-1.png){#fig-reg_digtech_drivers width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
 ![Digital technology adoption by use case](Ethiopia_analysis_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
 :::
 :::
@@ -104,6 +110,12 @@ params:
 ::: {.cell}
 ::: {.cell-output-display}
 ![Depth of digital technology adoption](Ethiopia_analysis_files/figure-html/fig-digtech_use_depth-1.png){#fig-digtech_use_depth width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Digital technology adoption factors](Ethiopia_analysis_files/figure-html/fig-tech_adoptionfactors-1.png){#fig-tech_adoptionfactors width=1152}
 :::
 :::
 
@@ -120,29 +132,51 @@ params:
 :::
 :::
 
+## Financial services 
+
+::: {.cell}
+::: {.cell-output-display}
+![Financical accounts and savings](Ethiopia_analysis_files/figure-html/fig-account_ownership-1.png){#fig-account_ownership width=1152}
+:::
+:::
+
+::: {.cell}
+::: {.cell-output-display}
+![Merchant payments](Ethiopia_analysis_files/figure-html/fig-payments-1.png){#fig-payments width=1152}
+:::
+:::
+
+
+::: {.cell}
+::: {.cell-output-display}
+![Demand for credit](Ethiopia_analysis_files/figure-html/fig-credit_demand-1.png){#fig-credit_demand width=1152}
+:::
+:::
+
+
 ## Risks and Resilience
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_types-1.png){#fig-risks_types width=1152}
+![Risks: General](Ethiopia_analysis_files/figure-html/fig-risks_types-1.png){#fig-risks_types width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_climate_types-1.png){#fig-risks_climate_types width=1152}
+![Risks: Climate](Ethiopia_analysis_files/figure-html/fig-risks_climate_types-1.png){#fig-risks_climate_types width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Ethiopia_analysis_files/figure-html/fig-risks_impacts-1.png){#fig-risks_impacts width=1152}
+![Risks: Impacts](Ethiopia_analysis_files/figure-html/fig-risks_impacts-1.png){#fig-risks_impacts width=1152}
 :::
 :::
 
 ::: {.cell}
 ::: {.cell-output-display}
-![Shocks ](Ethiopia_analysis_files/figure-html/fig-resilience_financial-1.png){#fig-resilience_financial width=1152}
+![Financial resilience](Ethiopia_analysis_files/figure-html/fig-resilience_financial-1.png){#fig-resilience_financial width=1152}
 :::
 :::
 

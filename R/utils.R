@@ -71,6 +71,50 @@ invert <- function(x) {
   x <- ifelse(x == 1, 0, 1)
 }
 
+# Factor functions 
+
+wrap_factor <- function(x, size = NULL) { 
+  
+  if (is.null(size)) { 
+    fct_inorder(x) 
+    } else { 
+    fct_inorder(str_wrap(x, size)) 
+    }
+
+}
+
+reverse_factor <- function(x, reverse_order = NULL) { 
+  
+  if (reverse_order) { 
+    fct_rev(x)
+  } else { 
+    x  
+    }
+
+}
+
+reorder_factor <- function(x, order_var = NULL) { 
+  
+  if (!is.null(order_var)) { 
+    order_var <- sym(order_var)
+    fct_reorder(x, !!order_var)
+  } else { 
+    x
+    }
+
+  }
+
+style_factors <- function(x, size, reverse_order, order_var) { 
+  
+     x <- wrap_factor(x, size)
+     x <- reverse_factor(x, reverse_order)   
+     x <- reorder_factor(x, order_var)
+
+  return(x)
+  
+  }
+  
+  
 # ++++++++++++++++++++++++++++
 # flattenCorrMatrix
 # ++++++++++++++++++++++++++++
@@ -110,6 +154,7 @@ theme_custom <- function(scale_f = 1, ...) {
       strip.background = element_rect(fill = "#ffffff"),
       strip.text = element_text(size = 10*scale_f, face = 'bold'),
       strip.text.y = element_text(angle = 90),
+      strip.text.y.left = element_text(hjust = 1, angle = 0),
       strip.placement = "outside",
       legend.position = "bottom", 
       legend.title = element_text(size = 10*scale_f),

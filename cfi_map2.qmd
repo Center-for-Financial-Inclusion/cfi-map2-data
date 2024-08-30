@@ -11,21 +11,15 @@ source("R/viz_functions.R")
 
 # Select country:
 COUNTRY <- params$country
-#COUNTRY <- "India"
+#COUNTRY <- "Indonesia"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
 source("R/0_weights.R")
 # Preparing main interview data  
 source("R/0_main_data.R")
-# Preparing functions for part 1 of report
-source("R/1_business_landscape.R")
-# Preparing functions for part 2 of report
-source("R/2_owners.R")
-# Preparing functions for part 3 of report
-source("R/3_digitaltechnology.R")
-# Preparing functions for part 5 of report
-source("R/5_risksresilience.R")
+# Preparing specialized (non-generic) functions
+source("R/specific_functions.R")
 
 source("R/weights_out.R")
 
@@ -78,29 +72,46 @@ groups_l1 <- "business_size_agg2"
 groups_l2 <- GROUPS[c("business_sector_agg3")]
 
 ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data, weights_cluster, keep = "total")
-fig_data <- fig_1_data(ests)
-title <- fig_1_title(ests, fig_data)
+fig_data <- total_businesses(ests)
+title <- total_businesses_title(ests, fig_data)
 
 labels <- list(
-  title = str_wrap(title, 150),
-  subtitle =  "Number of businesses by size and main industrial sector",
-  legend_ti = "Industrial sector",
+  title = title,
+  subtitle =  "Businesses (N)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = "Notes: Businesses whose size or main industrial sector was not determinable during enumeration are included in the totals but not shown in the figure."
+  caption = NULL
 )
 
-barparams <- list(
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
   bars = list(width = 0.8, position = "stack", labeltotal = TRUE, color = "white"), 
   valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE, color = "#2374AB")
+  errorbars = list(show = FALSE)
 )
 
-palette <- c("#41BBD9", "#ADCAD6", "#ECA72C")
+palette <- c("#41BBD9", "#CEE5F2", "#FF9F1C")
 names(palette) <- c("Services: retail/wholesale trade (re-sale)", "Services: transportation, construction, repair, other", "Manufacturing")
 
-fig_bar_w_fill(fig_data, yvar = "total", xvar = "business_size_agg2", fvar = "group_cat_val", facets = NULL, labels, barparams, palette = palette, coord_flip = TRUE) + theme(axis.text.y = element_text(face = "bold"))
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "number", expand = c(0,0), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "Industrial sector", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "business_size_agg2", yvar = "total", fillvar = "group_cat_val"
+)
+
+fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
@@ -116,67 +127,122 @@ indicators <- c("business_total")
 groups <- GROUPS[c("business_size_agg2", "business_sector_agg3", "business_premise", "business_registration_status", "resp_owner_str", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "total")
-
-fig_data <- fig_3_data(ests, groups)
-
-palette <- c("#A2C3A4", "#C4F1BE", "#ECA72C", "#41BBD9", "#ADCAD6", "#BFD3C1", "#A2C3A4", "#C4F1BE", "#ADCAD6", "#31AFD4", "grey80","#BABFD1", "#FF7B9C", "#BABFD1", "#FF7B9C")
-names(palette) <- unique(fig_data$group_cat_val)
+fig_data <- sample_chars(ests, groups)
 
 labels <- list(
   title = "Characteristics of MSEs* in study sample",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = "Notes: MSEs correspond to businesses with 1-10 employees including the owner"
 )
 
-barparams <- list(
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
   bars = list(width = 0.9, position = "stack", color = "white", labeltotal = FALSE), 
   valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
   catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE, color = "#2374AB")
+  errorbars = list(show = FALSE)
 )
 
-fig_bar_w_fill(fig_data, xvar = "group_name", yvar = "share", fvar = "group_cat_val", facets = NULL, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE) + theme(axis.text.y = element_text(face = "plain"))
+palette <- c("#A2C3A4", "#C4F1BE", "#FF9F1C", "#41BBD9", "#CEE5F2", "#BFD3C1", "#A2C3A4", "#C4F1BE", "#CEE5F2", "#FF7B9C", "#C4F1BE","#A2C3A4", "#CEE5F2", "#FF7B9C")
+names(palette) <- unique(fig_data$group_cat_val)
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_name", yvar = "share", fillvar = "group_cat_val"
+)
+
+fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord_flip = TRUE)
+
 
 
 ```
 
 
 ```{r, fig.width = 12, fig.asp = 0.35}
-#| label: fig-mses_size_and_sector
+#| label: fig-mses_productivity
 #| echo: false
 #| warning: false
 #| fig-cap: "MSE revenues and productivity"
 
 # Firm performance: Monthly revenue and normalized sales per employee
 
-indicators <- c("perf_rev_usd", "perf_revphrpemp_usd")
+indicators <- c("perf_rev_reports", "perf_rev_usd", "perf_revphrpemp_usd")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_2a_data(ests, INDICATORS[indicators], groups)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = FALSE) %>% 
+  mutate(
+    mean = ifelse(indicator == "perf_rev_reports", mean*100, mean), 
+    mean_low = ifelse(indicator == "perf_rev_reports", mean_low*100, mean_low), 
+    mean_upp = ifelse(indicator == "perf_rev_reports", mean_upp*100, mean_upp), 
+    valuelabel = round(mean, 2))
 
 labels <- list(
   title = "MSE revenues and productivity",
   subtitle = "Current USD (Average)",
-  legend_ti = NULL,
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(color = "#41BBD9",  width = 0.7), 
-  valuelabels = list(show = TRUE, lab_hjust = 0, lab_ndgfcty = 10000, lab_ndgdiry = 1, lab_ndgx = 0, lab_face = "plain"), 
-  errorbars = list(show = FALSE, color = "#2374AB")
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 1, lab_ndgfcty = 1000, lab_ndgdiry = 1, lab_ndgx = 0.5, lab_face = "plain", lab_size = 3.5), 
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = TRUE, color = "#2374AB")
 )
 
-facets <- list(type = "wrap", "rows" = "group_name", "cols" = "indicator_name", "scales" = "free_x", "space" = "free")
+scales <- list(
+  fillcolor = list(palette = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "number", expand = NULL, droplines = TRUE)
+)
 
-fig_bar(fig_data, xvar = "group_cat_val", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "number")
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = NULL
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "group_name", 
+  cols = "indicator_name", 
+  scales = "free_x", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 ```
 
@@ -194,36 +260,67 @@ groups <- GROUPS[c("fullsample", "business_premise", "business_size_agg2", "busi
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_4_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 60), 
+  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Share of men and women MSE owners or manager, by business size, sector and premises",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
-  legend_rev = TRUE,
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(width = 0.9, color = "white", position = "stack", position_width = 0.8, labeltotal = FALSE), 
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, position = "stack", position_width = 0.9, labeltotal = FALSE, color = "white"), 
   valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-palette <- c("#FF7B9C", "#BABFD1")
+palette <- c("#FF7B9C", "#CEE5F2")
 names(palette) <- c("Women", "Men")   
 
-facets <- list(type = "grid", rows = "group_name", cols = "indicator_group", scales = "free_y", space = "free")
-  
-fig_bar_w_fill(fig_data, xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent") + theme(strip.text.y.left = element_text(angle = 0))
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "indicator_group", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = TRUE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.4}
+```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-mse_owner_chars
 #| echo: false
 #| warning: false
@@ -238,35 +335,67 @@ groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_5_data(ests, INDICATORS[indicators])
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Age, education and experience of small business owners or managers",
   subtitle =  "Owners or managers (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
   bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.5, labeltotal = FALSE), 
-  valuelabels = list(show = FALSE, lab_hjust = 0, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
-  errorbars = list(show = TRUE, color = "#2374AB")
+  errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", rows = "indicator_group", cols = "group_cat_val", scales = "free_y", space = "free")
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")  
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1")
-names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette, coord_flip = TRUE, yaxtype = "percent", yaxdroplines = TRUE, legend = FALSE)  + theme(strip.text.y.left = element_text(angle = 0, hjust = 1))
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.45}
+```{r, fig.width = 12, fig.asp = 0.6}
 #| label: fig-mse_owner_psych
 #| echo: false
 #| warning: false
@@ -274,35 +403,68 @@ fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_c
 
 
 indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motivation_oth", 
-                "resp_riskapproach_aggr", "resp_riskapproach_calc", "resp_riskapproach_avoid", 
                 "resp_maingoal_grow",  "resp_maingoal_stab", "resp_maingoal_leave", 
-                "resi_resp_attitude_chllng_1", "resi_resp_attitude_chllng_2", "resi_resp_attitude_chllng_3" , "resi_resp_attitude_chllng_4")
-                #"resp_psych_segment_shc_grow", "resp_psych_segment_shc_stab", "resp_psych_segment_shc_surv")
+                "resp_riskapproach_aggr", "resp_riskapproach_calc", "resp_riskapproach_avoid", 
+                "resi_resp_attitude_chllng_1", "resi_resp_attitude_chllng_2", "resi_resp_attitude_chllng_3" , "resi_resp_attitude_chllng_4", "resp_psych_segment_shc_grow", "resp_psych_segment_shc_stab", "resp_psych_segment_shc_surv")
 
 groups <- GROUPS[c("fullsample")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_6_data(ests, INDICATORS[indicators], wrap_len = 50)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Pyschographic characteristics of SME owners or managers",
+   title = "Pyschographic characteristics of SME owners or managers",
   subtitle = "% of MSE owners or managers",
-  legend_ti = NULL,
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(color = "#41BBD9",  width = 0.8), 
-  valuelabels = list(show = FALSE, lab_hjust = 0, lab_ndgfcty = 100, lab_ndgdiry = 1, lab_ndgx = 0.25, lab_face = "plain"), 
-  errorbars = list(show = TRUE, color = "#2374AB")
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", rows = "indicator_group", cols = "group_cat_val", scales = "free_y", space = "free")
+scales <- list(
+  fillcolor = list(palette = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-fig_bar(fig_data, xvar = "indicator_name", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "percent") + theme(strip.text.y.left = element_text(angle = 0, hjust = 1))
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = NULL
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
 
 ```
 
@@ -319,9 +481,9 @@ selected_indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "r
 
 corr <- gen_corrmatrix(main_data, selected_indicators)
 
-fig_data <- fig_7_data(corr)
+fig_data <- corr_data(corr)
 
-fig_7_chart(fig_data) + theme(strip.text.y.left = element_text(angle = 0))
+corr_chart(fig_data) + theme(strip.text.y.left = element_text(angle = 0))
 
 ```
 
@@ -372,22 +534,38 @@ ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
     map(depvars, model_and_prepfig, maineffects, confounds = confounds, data = main_data, depvar_labels, effect_labels)
   )
-     
+
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
+
 labels <- list(
       title = "Observational estimates of the relationship of owner's gender on the orientation of firms",
       subtitle = "The difference (in percentage points) between women and men owners on motivation, goals and approach to risk is shown with the red arrow",
       y = "Predicted probability (%)",
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of gender
-                      on several outcomes of interest. The 'unadjusted' model does not include any additional controls,
-                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
-                       The regression parameters are used to compute predicted probabilities for male and female business owners with the                       average years of experience running the business in the sample and with primary-level educational attainment.", 175)
+      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of gender on several outcomes of interest. The 'unadjusted' model does not include any additional controls, while the 'adjusted' model includes controls for three variables: years of experience and educational attainment. The regression parameters are used to compute predicted probabilities for male and female business owners with the average years of experience running the business in the sample and with primary-level educational attainment.", 175)
     )
- 
- 
-# Preparing figure
-fig_data <- fig_8_data(ests)
-fig_8_chart(fig_data, labels) + theme(strip.placement = "outside", strip.text.y.left = element_text(face = "bold", angle = 0))
+
+  barparams <- list(
+  bars = list(width = 0.6, color = "grey90"), 
+  valuelabels = list(show = FALSE, lab_vjust = 0, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0.25, lab_face = "plain", lab_size = 3), 
+  arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.25,  lab_face = "plain", lab_size = 3)
+) 
+
+scales <- list(
+  y = list(limits = c(0,1), position = "left"), 
+  x = list(position = "bottom")
+)
+
+ facets <- list(type = "grid", cols ="depvar_label", rows = "model_type", scales = "free", space = "free") 
+    
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
+
 
 ```
 
@@ -404,26 +582,60 @@ groups <- GROUPS[c("resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_9_data(ests, INDICATORS[indicators])
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Co-dependence of MSEs and the owner's household",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(color = "#41BBD9",  width = 0.7), 
-  valuelabels = list(show = TRUE, lab_hjust = 0, lab_ndgfcty = 60, lab_ndgdiry = -1, lab_ndgx = 0.25, lab_face = "plain"), 
-  errorbars = list(show = TRUE, color = "#2374AB")
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_cat_val", "scales" = "free_y", "space" = "free")
+scales <- list(
+  fillcolor = list(palette = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-fig_bar(fig_data, xvar = "indicator_name", yvar = "mean", facets, labels, barparams, coord_flip = TRUE, yaxtype = "percent") + theme(strip.text.y.left = element_text(hjust = 1, angle = 0))
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = NULL
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
@@ -441,27 +653,60 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3", "
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_10_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 50, group_name = 25, group_cat_val = 20), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+fig_data <- tech_adoption_landscape(fig_data, wrap = factor_params[["wrap_sizes"]][["indicator_name"]])
 
 labels <- list(
   title = "Adoption and frequency of use of digital technologies",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-tileparams <- list(
+figparams <- list(
+  geom_type = "tile", # One of "bar" or "tile"
   tiles = list(color = "white"), 
-  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5)
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
 )
 
-facets <- list(type = "grid", "rows" = "technology", "cols" = "group_name", "scales" = "free", "space" = "free")
+scales <- list(
+  fillcolor = list(palette = "identity", direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-palette <- "identity"
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
 
-fig_tile(fig_data, xvar = "frequency", yvar = "group_cat_val", fvar = "fillcolor", facets, labels, tileparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE) + theme(strip.text.y.left = element_text(hjust = 1, angle = 0))
+vars <- list(
+  xvar = "indicator_name", yvar = "group_cat_val", fillvar = "fillcolor"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
 
 ```
 
@@ -484,12 +729,11 @@ ests <- bind_rows(
   )
 
 # Preparing figure
-fig_data <- fig_10a_data(ests)
-
+fig_data <- prep_reg_data(ests)
 
  labels <- list(
       title = "Drivers of overall technology adoption",
-      subtitle = "The effect of each predictor on technology adoption is shows with the red arrow",
+      subtitle = "The effect of each predictor on technology adoption is shown with the red arrow",
       y = "Predicted technology adoption score [0-10]",
       x = NULL,
       caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of several owner and firm-level characteristics. The regression parameters are used to compute predicted probabilities for businesses with different degrees of technology adoption.", 175)
@@ -501,8 +745,15 @@ fig_data <- fig_10a_data(ests)
   arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.25,  lab_face = "plain", lab_size = 3)
 ) 
 
+ miny <- round(min(fig_data$fig_data), 2) 
+maxy <- round(max(fig_data$fig_data), 2) 
+buffer <- (maxy - miny)/100
+miny <- miny - buffer*2
+if (miny > 0) { miny <- 0 }
+maxy <- maxy + buffer*2
+
 scales <- list(
-  y = list(limits = c(0,4), position = "right"), 
+  y = list(limits = c(miny,maxy), position = "right"), 
   x = list(txtwrap = 50, position = "bottom")
 )
 
@@ -525,30 +776,62 @@ groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_11_data(ests, INDICATORS[indicators])
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Use-cases of digital technologies in use by MSEs",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = str_wrap("Notes: The functional use-case categories are defined as follows: 'Communicating with customers' includes use of messaging (e.g. Whatsapp) or social media apps (e.g. Facebook); 'Accessing markets' includes use of e-commerce platforms (e.g. Amazon) or a dedicated business website; 'Enterprise operations' includes use of digital applications or software (e.g. for booking, inventory management), including aritifical intelligence; 'Enterprise finance' includes use of any of the following: a digital POS devices for customer payments (e.g. Cards/debit, mobile money, QR codes), use of digital loans or use of digital insurance", 175)
+    caption = str_wrap("Notes: The functional use-case categories are defined as follows: 'Communicating with customers' includes use of messaging (e.g. Whatsapp) or social media apps (e.g. Facebook); 'Accessing markets' includes use of e-commerce platforms (e.g. Amazon) or a dedicated business website; 'Enterprise operations' includes use of digital applications or software (e.g. for booking, inventory management), including aritifical intelligence; 'Digital payment acceptance' includes use of any in-store POS device that accepts digital customer payments (credit or debit cards, mobile money, QR codes), or online payments. The frequency of use of digital payments acceptance is not available, and corresponds to whether the business has used any means of digitaly payment acceptance in hte past 12 months.", 175)
 )
 
-barparams <- list(
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
   bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
-  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain"),
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "wrap", "rows" = "indicator_group", "cols" = "group_cat_val", "scales" = "fixed", "space" = "free")
-
-palette <- c("#A2C3A4", "#C4F1BE", "#E9B44C")
+palette <- c("#A2C3A4", "#C4F1BE", "#FF9F1C")
 names(palette) <- c("Uses", "30-day active", "7-day active")   
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "user_group", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxdroplines = TRUE, yaxtype = "percent") + theme(strip.placement = "outside") 
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_group", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
@@ -560,35 +843,67 @@ fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "user_gr
 #| fig-cap: "Depth of digital technology adoption"
 
 indicators <- c("tech_cat_none", "tech_cat_any1", "tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
-
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_12_data(ests, INDICATORS[indicators])
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Depth of digital technologies used by MSEs",
   subtitle =  "MSEs (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = str_wrap("Notes: Four use-cases of digital technology are considered here: 'Communicating with customers', 'Accessing markets', 'Enterprise operations' and 'Merchant payments'. MSEs are classified with respect to whether they use digital technology for any one, any two, any three, all four or none of these use-cases.", 175)
 )
 
-barparams <- list(
-  bars = list(width = 0.8, position = "dodge", position_width = 0.8, labeltotal = FALSE, color = "white"), 
-  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
-  catlabels = list(show = TRUE), 
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free_y", "space" = "free")
-
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1",  "#ECA72C", "#41BBD9")
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men", "Stability or survival", "Growth")   
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", yaxdroplines = TRUE, legend = FALSE)
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
 
 ```
 
@@ -602,35 +917,66 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "adopfactors")],
                 names(main_data)[str_detect(names(main_data), "adopbenefits")], 
                 names(main_data)[str_detect(names(main_data), "adopchllng")])
 
-groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_12a_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Digital technology adoption factors, benefits and challenges",
   subtitle =  "MSEs using digital solutions* (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = str_wrap("Notes: *These survey questions were only asked to businesses who reported using any of the following tehcnologies: messaging apps, social media, e-commerce platforms, software for business operations, a website or artificial intelligence.", 175)
+    caption = str_wrap("Notes: *These survey questions were only asked to businesses who reported using any of the following tehcnologies: messaging apps, social media, e-commerce platforms, software for business operations, a website or artificial intelligence.", 175)
 )
 
-barparams <- list(
-  bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.8, labeltotal = FALSE), 
-  valuelabels = list(show = FALSE, lab_hjust = 0, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", rows = "indicator_group", cols = "group_name", scales = "free_y", space = "free")
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men", "Stability or survival", "Growth")   
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#BABFD1")
-names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette, coord_flip = TRUE, yaxtype = "percent", yaxdroplines = TRUE, legend = TRUE)  + theme(strip.text.y.left = element_text(angle = 0, hjust = 1))
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
 
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 ```
 
@@ -654,24 +1000,47 @@ fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_c
 ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
     map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
-  )
+  ) 
 
-# Preparing figure
-fig_data <- fig_13_data(ests)
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
 
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
 
  labels <- list(
       title = "Observational estimates of the effect of digital technology adoption on labor productivity",
       subtitle = "The effect of digital technology adoption on labor productivity is shown with the red arrow",
       y = NULL,
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption
-                      on firm labor productivity. The 'unadjusted' model does not include any additional controls,
-                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
-                       The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption,                    with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
+      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption on firm labor productivity. The 'unadjusted' model does not include any additional controls, while the 'adjusted' model includes controls for three variables: years of experience and educational attainment. The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption, with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
     )
- 
-fig_13_chart(fig_data, labels) + theme(strip.text = element_text(face = "bold"))
+
+  barparams <- list(
+  bars = list(width = 0.6, color = "grey90"), 
+  valuelabels = list(show = FALSE, lab_vjust = 0, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0.25, lab_face = "plain", lab_size = 3), 
+  arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.25,  lab_face = "plain", lab_size = 3)
+) 
+
+
+miny <- round(min(fig_data$fig_data), 2) 
+maxy <- round(max(fig_data$fig_data), 2) 
+buffer <- (maxy - miny)/100
+miny <- miny - buffer*2
+if (miny > 0) { miny <- 0 }
+maxy <- maxy + buffer*2
+
+scales <- list(
+  y = list(limits = c(miny,maxy), position = "left"), 
+  x = list(position = "bottom")
+)
+
+ facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free") 
+    
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
+
 
 ```
 
@@ -700,8 +1069,13 @@ ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
   )
 
-# Preparing figure
-fig_data <- fig_13_data(ests)
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
 
 
  labels <- list(
@@ -714,10 +1088,249 @@ fig_data <- fig_13_data(ests)
                        while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
                        The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption,                    with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
     )
+
+
+ facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free") 
+
+  miny <- round(min(fig_data$fig_data), 2) 
+  maxy <- round(max(fig_data$fig_data), 2) 
+  buffer <- (maxy - miny)/100
+  miny <- miny - buffer*4
+  if (miny > 0) { miny <- 0 }
+  maxy <- maxy + buffer*4
+
+scales <- list(
+  y = list(limits = c(miny,maxy), position = "left"), 
+  x = list(position = "bottom")
+)
+
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
  
-fig_13_chart(fig_data, labels) + theme(strip.text = element_text(face = "bold"))
+```
+
+## Financial services 
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-account_ownership
+#| echo: false
+#| warning: false
+#| fig-cap: "Financical accounts and savings"
+
+
+indicators <- c("fin_account_formal", "fin_owner_save", names(main_data)[str_detect(names(main_data), "bus_savings")])
+
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Account ownership and business savings",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
 
 ```
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-payments
+#| echo: false
+#| warning: false
+#| fig-cap: "Merchant payments"
+
+
+indicators <- c(names(main_data)[str_detect(names(main_data), "merchpay")])
+
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 50, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Merchant payments: Methods used by business to accept customer payments (in past 12 months)",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0,1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-credit_demand
+#| echo: false
+#| warning: false
+#| fig-cap: "Demand for credit"
+
+
+indicators <- c("fin_demandloan", "fin_activeloan_any", "fin_deniedloan", "fin_activeloan_cbnk", "fin_activeloan_mfi", "fin_activeloan_fintech", "fin_activeloan_sacco", "fin_activeloan_group", "fin_activeloan_mm", "fin_activeloan_platform",    "fin_activeloan_supplier", "fin_activeloan_moneylndr",  "fin_activeloan_ff", "fin_activeloan_other" )
+
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Demand for credit and usage of loans (past 12 months)",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = NULL
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
+
+maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, maxy), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+
+```
+
 
 ## Risks and Resilience
 
@@ -725,39 +1338,73 @@ fig_13_chart(fig_data, labels) + theme(strip.text = element_text(face = "bold"))
 #| label: fig-risks_types
 #| echo: false
 #| warning: false
-#| fig-cap: "Shocks "
+#| fig-cap: "Risks: General"
 
 
 indicators <- c("risk_largestimpact_shc_corr", "risk_largestimpact_shc_cost", "risk_largestimpact_shc_crme", "risk_largestimpact_shc_frau", "risk_largestimpact_shc_hlth", "risk_largestimpact_shc_none", "risk_largestimpact_shc_othr", "risk_largestimpact_shc_wthr")
 
-groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2")]
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_14_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests %>% filter(indicator_name != "No risks faced"), factor_params)
 
 labels <- list(
   title = "High impact shocks faced by MSEs",
   subtitle =  "In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business?",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
   bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
   valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
-  catlabels = list(show = TRUE), 
+  catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free_y", "space" = "free")
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#ECA72C", "#41BBD9")
-names(palette) <- c("All businesses", "1 person", "2-10 people", "Manufacturing", "Services")   
+maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", yaxdroplines = TRUE, legend = FALSE)
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, maxy), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free_y", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
@@ -766,38 +1413,70 @@ fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_c
 #| label: fig-risks_climate_types
 #| echo: false
 #| warning: false
-#| fig-cap: "Shocks "
+#| fig-cap: "Risks: Climate"
 
 
 indicators <- c("risk_weather_type_heat", "risk_weather_type_droughts", "risk_weather_type_floodstyphoon", "risk_weather_type_other", "risk_weather_type_any")
-groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2")]
+groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_14_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Climate shocks faced by MSEs",
   subtitle =  "In the last 36 months (3 years), has your business or the supply chain of your business experienced any of the following weather-related risks?",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = "Notes: *For Indonesia and India, extreme rain floods or landslides includes typhoons or cyclones"
 )
 
-barparams <- list(
-  bars = list(width = 0.8, position = "dodge", position_width = 0.8, labeltotal = FALSE, color = "white"), 
-  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
-  catlabels = list(show = TRUE), 
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free_y", "space" = "free")
+palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#ECA72C", "#41BBD9")
-names(palette) <- c("All businesses", "1 person", "2-10 people", "Manufacturing", "Services")    
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_cat_val", facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", yaxdroplines = TRUE, legend = FALSE)
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free_y", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
@@ -806,7 +1485,7 @@ fig_bar_w_fill(fig_data, xvar = "indicator_name", yvar = "mean", fvar = "group_c
 #| label: fig-risks_impacts
 #| echo: false
 #| warning: false
-#| fig-cap: "Shocks "
+#| fig-cap: "Risks: Impacts"
 
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "weather_impact")], names(main_data)[str_detect(names(main_data), "weather_cope")], names(main_data)[str_detect(names(main_data), "weather_cond")])
@@ -815,27 +1494,60 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_15_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Impacts and coping strategies of MSEs",
   subtitle =  "MSEs exposed to climate shock in past 36 months (%)",
-  legend_ti = "",
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-tileparams <- list(
+figparams <- list(
+  geom_type = "tile", # One of "bar" or "tile"
   tiles = list(color = "white"), 
-  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3)
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free", "space" = "free")
+scales <- list(
+  fillcolor = list(palette = "Blues", direction = 1), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-palette <- "Blues"
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
 
-fig_tile(fig_data, xvar = "indicator_name", yvar = "group_cat_val", fvar = "mean", facets, labels, tileparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE) + theme(strip.text.y.left = element_text(hjust = 1, angle = 0))
+vars <- list(
+  xvar = "indicator_name", yvar = "group_cat_val", fillvar = "mean"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
 
 ```
 
@@ -843,7 +1555,7 @@ fig_tile(fig_data, xvar = "indicator_name", yvar = "group_cat_val", fvar = "mean
 #| label: fig-resilience_financial
 #| echo: false
 #| warning: false
-#| fig-cap: "Shocks "
+#| fig-cap: "Financial resilience"
 
 indicators <- c("resi_efunds_firm_diff_1",   "resi_efunds_firm_diff_2", "resi_efunds_firm_diff_3", "resi_efunds_firm_diff_4", 
   "resi_efunds_firm_source_family", "resi_efunds_firm_source_work", "resi_efunds_firm_source_firmcsh", "resi_efunds_firm_source_hhcsh", "resi_efunds_firm_source_borrow", "resi_efunds_firm_source_sellassets", "resi_efunds_firm_source_other")
@@ -852,35 +1564,79 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_16_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
 
-palette <- c("#A2C3A4", "#C4F1BE", "#E9B44C", "#DB504A", "#31AFD4", "#ADCAD6", "#CE6A85", "#985277", "#FAA275", "#FF8C61", "grey80")
-names(palette) <- unique(fig_data$indicator_name)
+fig_data <- prep_fig_data(ests, factor_params)
+
 
 labels <- list(
-  title = NULL,
-  subtitle = NULL,
-  legend_ti = "",
-  legend_nrow = 2, 
-  legend_rev = TRUE,
-  legend_dir = "horizontal", 
+  title = NULL, 
+  subtitle =  NULL, 
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(width = 0.9, position = "stack", color = "white", labeltotal = FALSE), 
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, position = "stack", labeltotal = FALSE, color = "white"), 
   valuelabels = list(show = FALSE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
   catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE, color = "#2374AB")
+  errorbars = list(show = FALSE)
 )
 
-facets <- list(type = "grid", "rows" = "group_name", "cols" = "indicator_group", "scales" = "free", "space" = "free")
+palette <- c("#A2C3A4", "#C4F1BE", "#FF9F1C", "#DB504A", "#31AFD4", "#CEE5F2", "#CE6A85", "#985277", "#FAA275", "#FF8C61", "grey80")
+names(palette) <- unique(fig_data$indicator_name)
 
-p1 <- fig_bar_w_fill(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "efunds_firm_diff")]), xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets = facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = TRUE) + theme(axis.text.y = element_text(face = "plain"), strip.text.y.left = element_text(angle = 0, hjust = 1), legend.position = "bottom") 
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
 
-p2 <- fig_bar_w_fill(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "efunds_firm_source")]), xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets = facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = TRUE) + theme(axis.text.y = element_text(face = "plain"), strip.text.y.left = element_blank(), legend.position = "bottom") 
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  direction = "horizontal",
+  nrows = 2, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "indicator_group", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+p1 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "efunds_firm_diff")]),
+                     vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "indicator_group", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+p2 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "efunds_firm_source")]),
+                     vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)  
 
 p1 + p2 + plot_layout(axes = "collect") + 
   plot_annotation(title = "Financial resilience: Access to and source of emergency funds", subtitle = "MSEs (%)", 
@@ -902,45 +1658,91 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_17_data(ests)
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
 
+fig_data <- prep_fig_data(ests, factor_params)
 
-palette <- c("#DB504A", "#31AFD4", "#A2C3A4", "#E9B44C", "#DB504A", "#DB504A", "#E9B44C", "#A2C3A4")
-names(palette) <- unique(fig_data$indicator_name)
 
 labels <- list(
-  title = NULL,
-  subtitle = NULL,
-  legend_ti = "",
-  legend_nrow = 2, 
-  legend_rev = TRUE,
-  legend_dir = "horizontal", 
+  title = NULL, 
+  subtitle =  NULL, 
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-barparams <- list(
-  bars = list(width = 0.9, position = "stack", color = "white", labeltotal = FALSE), 
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, position = "stack", labeltotal = FALSE, color = "white"), 
   valuelabels = list(show = FALSE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
   catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE, color = "#2374AB")
+  errorbars = list(show = FALSE)
 )
 
-facets <- list(type = "grid", "rows" = "group_name", "cols" = "indicator_group", "scales" = "free", "space" = "free")
+palette <- c("#DB504A", "#31AFD4", "#A2C3A4", "#FF9F1C", "#DB504A", "#DB504A", "#FF9F1C", "#A2C3A4")
+names(palette) <- unique(fig_data$indicator_name)
 
-p1 <- fig_bar_w_fill(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "resi_efunds_hh_owner")]), xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets = facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = TRUE) + theme(axis.text.y = element_text(face = "plain"), strip.text.y.left = element_text(angle = 0, hjust = 1), legend.position = "bottom") 
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
 
-p2 <- fig_bar_w_fill(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "suppchain_cust")]), xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets = facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = TRUE) + theme(axis.text.y = element_text(face = "plain"), strip.text.y.left = element_blank(), legend.position = "bottom") 
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  direction = "horizontal",
+  nrows = 2, 
+  ncols = 1, 
+  reverse = TRUE
+)
 
-p3 <- fig_bar_w_fill(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "network_conf")]), xvar = "group_cat_val", yvar = "mean", fvar = "indicator_name", facets = facets, labels, barparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = TRUE) + theme(axis.text.y = element_text(face = "plain"), strip.text.y.left = element_blank(), legend.position = "bottom") 
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "indicator_group", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+
+p1 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "resi_efunds_hh_owner")]),
+                     vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
+
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "indicator_group", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+
+p2 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "suppchain_cust")]), 
+               vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
+
+p3 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(names(main_data), "network_conf")]), 
+                     vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
 
 
 p1 + p2 + p3 + plot_layout(axes = "collect") + 
   plot_annotation(title = "Non-financial dimensions of business resilience", 
                   subtitle = "MSEs (%)", 
                   theme = theme(plot.title = element_text(size = 12, hjust = 0, face = 'bold', color = 'black'))) 
-
 
 
 ```
@@ -957,26 +1759,60 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
-fig_data <- fig_18_data(ests, INDICATORS[indicators])
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+fig_data <- resilience_capital(fig_data)
 
 labels <- list(
   title = "Resilience capital",
-  subtitle =  "",
-  legend_ti = "",
+  subtitle =  NULL,
   yax_ti = NULL,
   xax_ti = NULL,
   caption = NULL
 )
 
-tileparams <- list(
+figparams <- list(
+  geom_type = "tile", # One of "bar" or "tile"
   tiles = list(color = "white"), 
-  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5)
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
 )
 
-facets <- list(type = "grid", "rows" = "indicator_group", "cols" = "group_name", "scales" = "free", "space" = "free")
+scales <- list(
+  fillcolor = list(palette = "identity", direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
 
-palette <- "identity"
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
 
-fig_tile(fig_data, xvar = "indicator_name", yvar = "group_cat_val", fvar = "fillcolor", facets, labels, tileparams, palette = palette, coord_flip = TRUE, yaxtype = "percent", legend = FALSE) + theme(strip.text.y.left = element_blank()) + geom_vline(xintercept = c(1.5, 2.5), color = "black")
+vars <- list(
+  xvar = "indicator_name", yvar = "group_cat_val", fillvar = "fillcolor"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + geom_vline(xintercept = c(1.5, 2.5), color = "black")
+
 
 ```

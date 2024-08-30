@@ -2,223 +2,184 @@
 # Visualization functions -----------------------
 ######################################################
 
-fig_bar <- function(data, xvar, yvar, facets = NULL, labels, barparams, palette = NULL, coord_flip = FALSE, yaxtype = "number", legend = TRUE) {
-
-  xvar <- sym(xvar)
-  yvar <- sym(yvar)
-
-  p <- ggplot(
-    data = data,
-    aes(
-      x = !!xvar,
-      y = !!yvar
-    )
-  ) +
-
-    # Geoms
-    geom_col(fill =  barparams[["bars"]][["color"]], width =  barparams[["bars"]][["width"]])
-
-    # Error bars
-    if (barparams[["errorbars"]][["show"]]) {
-
-      ymin <- sym(names(data)[str_detect(names(data), "_upp")])
-      ymax <- sym(names(data)[str_detect(names(data), "_low")])
-      p <- p + geom_linerange(aes(ymin = !!ymin, ymax = !!ymax), color = barparams[["errorbars"]][["color"]])
-
+# Generic function to prepare estimates for plotting
+prep_fig_data <- function(ests, factor_params, include_valuelabel = TRUE) {
+  
+  wrap_sizes <- factor_params[["wrap_sizes"]]
+  order_vars <- factor_params[["order_vars"]]
+  reverse_order <- factor_params[["reverse_order"]]
+  
+  ests %>%
+    mutate(
+      indicator_group = style_factors(indicator_group, wrap_sizes[["indicator_group"]], reverse_order[["indicator_group"]], order_vars[["indicator_group"]]), 
+      group_name = style_factors(group_name, wrap_sizes[["group_name"]], reverse_order[["group_name"]], order_vars[["group_name"]]), 
+    ) %>% 
+    group_by(indicator_group) %>% 
+    mutate(
+      indicator_name = style_factors(indicator_name, wrap_sizes[["indicator_name"]], reverse_order[["indicator_name"]], order_vars[["indicator_name"]])
+    ) %>%
+    group_by(group_name) %>% 
+    mutate(
+      group_cat_val = style_factors(group_cat_val, wrap_sizes[["group_cat_val"]], reverse_order[["group_cat_val"]], order_vars[["group_cat_val"]])
+    ) %>% 
+    ungroup() %>%
+    filter(!is.na(group_cat_val)) %>% 
+    filter(group_cat_val != "Don't know") -> fig_data
+   
+  if (include_valuelabel) { 
+    fig_data %>% mutate(valuelabel = paste0(pctclean(mean, 0), "%")) -> fig_data
     }
-
-  if (barparams[["valuelabels"]][["show"]]) {
-
-    maxy <- max(data[[yvar]], na.rm = TRUE)
-    ndg_y <- maxy/barparams[["valuelabels"]][["lab_ndgfcty"]]
-    ndg_y <- ndg_y*barparams[["valuelabels"]][["lab_ndgdiry"]]
-    ndg_x <- barparams[["valuelabels"]][["lab_ndgx"]]
-
-    p <- p +
-    # Valuelabel
-    geom_text(aes(label = valuelabel), hjust = barparams[["valuelabels"]][["lab_hjust"]], nudge_y = ndg_y, nudge_x = ndg_x, fontface = barparams[["valuelabels"]][["lab_face"]])
-
-  }
-
-    p <- p +
-    # Legend
-    guides(fill = guide_legend(title = labels[["legend_ti"]], nrow = 1)) +
-
-    # Figure Labels
-    labs(
-      title = labels[["title"]],
-      subtitle = labels[["subtitle"]],
-      y = labels[["yax_ti"]],
-      x = labels[["xax_ti"]],
-      caption = labels[["caption"]]
-    ) +
-
-    theme_custom() +
-    theme(legend.position = "top")
-
-  if (!is.null(facets)) {
-    fcvar_rows <- sym(facets[["rows"]])
-    fcvar_cols <- sym(facets[["cols"]])
-
-    if (facets[["type"]] == "wrap") {
-
-      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 20)), nrow = 1, scales = facets[["scales"]])
-
-    } else if (facets[["type"]] == "grid") {
-
-      p <- p + facet_grid(rows = vars(str_wrap(!!fcvar_rows, 20)), cols = vars(str_wrap(!!fcvar_cols, 20)), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
-
-      }
-
-  }
-
-  # Scales
-  if (!is.null(palette)) {
-    p <- p + scale_fill_manual(values = palette)
-  }
-
-  if (coord_flip) {
-    p <- p + coord_flip()
-  }
-
-  if (yaxtype == "number") {
-    p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = c(0,0))
-  }
-  else if (yaxtype == "percent") {
-    breaks <- c(0, .20, .40, .60, .80, 1)
-    p <- p +  scale_y_continuous(position = "right", breaks = breaks, labels = scales::label_percent(suffix = ""), expand = c(0,0)) + 
-      geom_hline(yintercept = breaks, color ="white")
-  }
-
-  if (legend == FALSE) {
-    p <- p + theme(legend.position = "none")
-  }
-
-  return(p)
-
+  
+  return(fig_data)
+  
 }
 
-fig_bar_w_fill <- function(data, xvar, yvar, fvar, facets, labels, barparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", yaxdroplines = FALSE, legend = TRUE, errorbars = FALSE) {
+# Generic function to prepare estimates for plotting
+prep_reg_factors <- function(ests, factor_params, include_valuelabel = TRUE) {
+  
+  wrap_sizes <- factor_params[["wrap_sizes"]]
+  order_vars <- factor_params[["order_vars"]]
+  reverse_order <- factor_params[["reverse_order"]]
+  
+  ests %>%
+    mutate(
+      model_type = style_factors(model_type, wrap_sizes[["model_type"]], reverse_order[["model_type"]], order_vars[["model_type"]]), 
+    ) %>% 
+    group_by(model_type) %>% 
+    mutate(
+      depvar_label = style_factors(depvar_label, wrap_sizes[["depvar_label"]], reverse_order[["depvar_label"]], order_vars[["depvar_label"]])
+    ) %>%
+    group_by(model_type, depvar_label) %>% 
+    mutate(
+      effect_label = style_factors(effect_label, wrap_sizes[["effect_label"]], reverse_order[["effect_label"]], order_vars[["effect_label"]])
+    ) %>% 
+    ungroup() -> fig_data
+  
+  if (include_valuelabel) { 
+    fig_data %>% mutate(valuelabel = paste0(pctclean(estimate, 0), "%")) -> fig_data
+  }
+  
+  return(fig_data)
+  
+}
 
-xvar <- sym(xvar)
-yvar <- sym(yvar)
-fvar <- sym(fvar)
+prep_reg_data <- function(data) {
+  
+  data %>%
+    group_by(depvar, confounds_flag) %>%
+    mutate(
+      
+      baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
+      baseline = ifelse(row_number() == 1, NA, baseline), 
+      
+      sig = ifelse(p.value < 0.1, ".", NA),
+      sig = ifelse(p.value < 0.05, "*", sig),
+      sig = ifelse(p.value < 0.01, "**", sig),
+      sig = ifelse(p.value < 0.001, "***", sig),
+      sig = ifelse(is.na(sig), "", sig),
+      
+      valuelabel = numclean(estimate, n = 2),
+      
+      effect_dir = ifelse(estimate < 0, -1, 1),
+      
+      startarrow = baseline,
+      endarrow = fig_data,
+      
+      valuelabel = paste0(valuelabel, sig),
+      valuelabel = ifelse(term == "(Intercept)", NA, valuelabel),
+      
+      valuelabel_pos = ifelse(effect_dir == 1, (endarrow - startarrow)/2 + startarrow, (startarrow - endarrow)/2 + endarrow),
+      
+      barlabel =  numclean(fig_data, n = 2),
+      annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
+      annotation = ifelse(term == "(Intercept)", NA, annotation)
+    )
+  
+}
 
-p <- ggplot(
-  data = data,
-  aes(
-    x = !!xvar,
-    y = !!yvar,
-    fill = !!fvar
-  )
-)
-
+fig_bar <- function(base_plot, data, params) {
+  
   # Geoms
-  if (barparams[["bars"]][["position"]] == "stack") {
-    pos <- position_stack(vjust = barparams[["valuelabels"]][["lab_vjust"]])
-  } else if (barparams[["bars"]][["position"]] == "dodge") {
-    pos <- position_dodge(width = barparams[["bars"]][["position_width"]])
+  if (params[["bars"]][["position"]] == "stack") {
+    pos <- position_stack(vjust = params[["valuelabels"]][["lab_vjust"]])
+  } else if (params[["bars"]][["position"]] == "dodge") {
+    pos <- position_dodge(width = params[["bars"]][["position_width"]])
   }
-
-  p <- p + geom_col(width =  barparams[["bars"]][["width"]], color = barparams[["bars"]][["color"]], position = pos)
-
+  
+  fill = params[["bars"]][["fill"]]
+  
+  if (!is.null(fill)) {
+    p <- base_plot + geom_col(width =  params[["bars"]][["width"]], color = params[["bars"]][["color"]], fill = params[["bars"]][["fill"]], position = pos)
+  } else { 
+    p <- base_plot + geom_col(width =  params[["bars"]][["width"]], color = params[["bars"]][["color"]], position = pos)
+  }
+  
   # Value labels
-  if (barparams[["valuelabels"]][["show"]]) {
+  if (params[["valuelabels"]][["show"]]) {
+    # Reguires variable "valuelabel" to be defined in the dataset
     p <- p +
-      geom_text(aes(label = valuelabel), position = pos, size = barparams[["valuelabels"]][["lab_size"]], hjust = barparams[["valuelabels"]][["lab_hjust"]], fontface = barparams[["valuelabels"]][["lab_face"]])
+      geom_text(aes(label = valuelabel), position = pos, size = params[["valuelabels"]][["lab_size"]], hjust = params[["valuelabels"]][["lab_hjust"]], fontface = params[["valuelabels"]][["lab_face"]])
   }
-
+  
   # Error bars
-  if (barparams[["errorbars"]][["show"]]) {
-
+  if (params[["errorbars"]][["show"]]) {
+    
     ymin <- sym(names(data)[str_detect(names(data), "_upp")])
     ymax <- sym(names(data)[str_detect(names(data), "_low")])
-    p <- p + geom_linerange(aes(ymin = !!ymin, ymax = !!ymax), position = pos, color = barparams[["errorbars"]][["color"]])
-
+    p <- p + geom_linerange(aes(ymin = !!ymin, ymax = !!ymax), position = pos, color = params[["errorbars"]][["color"]])
+    
   }
-
-  if (barparams[["catlabels"]][["show"]]) {
+  
+  if (params[["catlabels"]][["show"]]) {
+    # Reguires variable "catlabel" to be defined in the dataset
     p <- p + geom_text(aes(y = 0, label = catlabel), position = pos, hjust = 0, size = 2.5, fontface = "bold")
   }
-
-  # Legend
-  p <-  p + guides(fill = guide_legend(title = labels[["legend_ti"]], direction = labels[["legend_dir"]], nrow = labels[["legend_nrow"]], reverse = labels[["legend_rev"]])) +
-
-  # Figure Labels
-  labs(
-    title = labels[["title"]],
-    subtitle = labels[["subtitle"]],
-    y = labels[["yax_ti"]],
-    x = labels[["xax_ti"]],
-    caption = labels[["caption"]]
-  ) +
   
-  theme_custom() 
-
-  if (!is.null(facets)) {
-    fcvar_rows <- sym(facets[["rows"]])
-    fcvar_cols <- sym(facets[["cols"]])
-
-    if (facets[["type"]] == "wrap") {
-
-      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 25)), nrow = 1, scales = facets[["scales"]])
-
-    } else if (facets[["type"]] == "grid") {
-
-      p <- p + facet_grid(rows = vars(str_wrap(!!fcvar_rows, 25)), cols = vars(str_wrap(!!fcvar_cols, 25)), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
-
-    }
-
+  if (params[["bars"]][["labeltotal"]]) {
+    # Requires barlabelpos and barlabel variables in data
+    maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
+    ndg_y <- maxy/60
+    p <- p +
+      geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") 
   }
-
-# Scales
-if (!is.null(palette)) {
-    p <- p + scale_fill_manual(values = palette)
+  
+  return(p)
+  
 }
 
-if (coord_flip) {
-  p <- p + coord_flip()
+fig_tile <- function(base_plot, params) { 
+  
+  # Geoms
+  
+  p <- base_plot + geom_tile(color = params[["tiles"]][["color"]])
+  
+  # Value labels
+  if (params[["valuelabels"]][["show"]]) {
+    p <- p +
+      geom_text(aes(label = valuelabel), 
+                size = params[["valuelabels"]][["lab_size"]], 
+                hjust = params[["valuelabels"]][["lab_hjust"]], 
+                fontface = params[["valuelabels"]][["lab_face"]])
+  }
+  
+  return(p)
+  
 }
 
-if (barparams[["bars"]][["labeltotal"]]) {
-  maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
-  ndg_y <- maxy/60
-  p <- p +
-    geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") 
-}
-
-if (yaxtype == "number") {
-  if (barparams[["bars"]][["labeltotal"]]) {
-    p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = c(0,0))
+fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_flip = FALSE) {
+  
+  # Variables to plot -------
+  xvar <- sym(vars[["xvar"]])
+  yvar <- sym(vars[["yvar"]])
+  
+  if (!is.null(vars[["fillvar"]])) {
+    fvar <- sym(vars[["fillvar"]])
   } else { 
-    p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = c(0,0))
-    }
-}
+    fvar = NULL
+  }
   
-if (yaxtype == "percent") {
-    breaks <- c(0, .20, .40, .60, .80, 1)
-    p <- p +  scale_y_continuous(position = "right", breaks = breaks, labels = scales::label_percent(suffix = "")) 
-}
- 
-if (yaxdroplines == TRUE) { 
-  p <- p + geom_hline(yintercept = breaks, color ="white")
-} 
-  
-if (legend == FALSE) {
-  p <- p + theme(legend.position = "none")
-}
-
-return(p)
-
-}
-
-fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette = NULL,  coord_flip = FALSE, yaxtype = "number", legend = TRUE, errorbars = FALSE) {
-  
-  xvar <- sym(xvar)
-  yvar <- sym(yvar)
-  fvar <- sym(fvar)
-  
-  p <- ggplot(
+  # Defining base_plot  -------
+  base_plot <- ggplot(
     data = data,
     aes(
       x = !!xvar,
@@ -227,20 +188,99 @@ fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette
     )
   )
   
-  # Geoms
-
-  p <- p + geom_tile(color = tileparams[["tiles"]][["color"]])
-  
-  # Value labels
-  if (tileparams[["valuelabels"]][["show"]]) {
-    p <- p +
-      geom_text(aes(label = valuelabel), size = tileparams[["valuelabels"]][["lab_size"]], hjust = tileparams[["valuelabels"]][["lab_hjust"]], fontface = tileparams[["valuelabels"]][["lab_face"]])
+  # Adding geoms ------
+  if (params[["geom_type"]] == "bar") { 
+    p <- fig_bar(base_plot, data, params)
+  } else if (params[["geom_type"]] == "tile") { 
+    p <- fig_tile(base_plot, params)
   }
   
-  # Legend & scales
-  p <-  p + guides(fill = guide_legend(title = labels[["legend_ti"]], nrow = 1)) + scale_y_discrete(position = "right") +
+  # Adding facets ------
+  if (!is.null(facets)) {
     
-    # Figure Labels
+    fcvar_rows <- sym(facets[["rows"]])
+    fcvar_cols <- sym(facets[["cols"]])
+    
+    if (facets[["type"]] == "wrap") {
+      p <- p + facet_wrap(
+        vars(!!fcvar_cols), 
+        nrow = 1, 
+        scales = facets[["scales"]])
+    } else if (facets[["type"]] == "grid") {
+      p <- p + facet_grid(
+        rows = vars(!!fcvar_rows), 
+        cols = vars(!!fcvar_cols), 
+        scales = facets[["scales"]], 
+        switch = "y", 
+        space = facets[["space"]])
+    }
+    
+  }
+  
+  # Legend
+  if (legend[["show"]]) { 
+    p <-  p + guides(
+      fill = guide_legend(
+        title = legend[["title"]], 
+        direction = legend[["direction"]], 
+        nrow = legend[["nrows"]], 
+        reverse = legend[["reverse"]])
+    ) 
+  } else { 
+    p <- p + guides(fill = "none")
+  }
+  
+  # Scales ------------
+  
+  # Fill color
+  if (params[["geom_type"]] == "bar") {
+    if (!is.null(scales[["fillcolor"]][["palette"]])) {
+      p <- p + scale_fill_manual(values = scales[["fillcolor"]][["palette"]])
+    }
+  } 
+  
+  else if (params[["geom_type"]] == "tile") {
+  if (!is.null(scales[["fillcolor"]][["palette"]])) {
+    if(scales[["fillcolor"]][["palette"]] == "identity") { 
+      p <- p + scale_fill_identity()
+    }
+    else {
+      p <- p + scale_fill_distiller(palette = scales[["fillcolor"]][["palette"]], direction = scales[["fillcolor"]][["direction"]] )
+    }
+  }
+  }
+  
+  # Y-Axis
+  
+  if (params[["geom_type"]] == "bar") {
+    
+    if (scales[["yaxis"]][["type"]] == "number") {
+      if (params[["bars"]][["labeltotal"]]) {
+        maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
+        p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+      } else { 
+        p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), scales[["yaxis"]][["expand"]] )
+      }
+    }
+  
+    if (scales[["yaxis"]][["type"]] == "percent") {
+      limits <- scales[["yaxis"]][["limits"]]
+      nbreaks <- scales[["yaxis"]][["nbreaks"]]
+      breaks <- seq(limits[1], limits[2], by = (limits[2] - limits[1])/nbreaks)
+      p <- p +  scale_y_continuous(position = "right", limits = limits, breaks = breaks, labels = scales::label_percent(suffix = "")) 
+      if (scales[["yaxis"]][["droplines"]]) { 
+        p <- p + geom_hline(yintercept = breaks, color ="white")
+      } 
+    } 
+  
+  } else { 
+    
+    p <- p + scale_y_discrete(position = "right")
+    
+  }
+  
+  # Figure Labels ------
+  p <- p + 
     labs(
       title = labels[["title"]],
       subtitle = labels[["subtitle"]],
@@ -248,57 +288,36 @@ fig_tile <- function(data, xvar, yvar, fvar, facets, labels, tileparams, palette
       x = labels[["xax_ti"]],
       caption = labels[["caption"]]
     ) +
-    
-    theme_custom() 
+    theme_custom()
   
-  if (!is.null(facets)) {
-    fcvar_rows <- sym(facets[["rows"]])
-    fcvar_cols <- sym(facets[["cols"]])
-    
-    if (facets[["type"]] == "wrap") {
-      
-      p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 30)), nrow = 1, scales = facets[["scales"]])
-      
-    } else if (facets[["type"]] == "grid") {
-      
-      p <- p + facet_grid(rows = vars(!!fcvar_rows), cols = vars(!!fcvar_cols), scales = facets[["scales"]], switch = "y", space = facets[["space"]])
-      
-    }
-    
-  }
-  
-  # Scales
-  if (!is.null(palette)) {
-    if(palette == "identity") { 
-      p <- p + scale_fill_identity()
-    }
-    else {
-      p <- p + scale_fill_distiller(palette = palette, direction = 1)
-    }
-  }
-  
+  # Flip coordinates?
   if (coord_flip) {
     p <- p + coord_flip()
   }
   
-  if (legend == FALSE) {
-    p <- p + theme(legend.position = "none")
-  }
+  if (!is.null(facets)) {
+    # Final touches
+    if (facets[["drop_row_label"]]) { 
+      p <- p + theme(strip.text.y.left = element_blank())
+    }
+    
+    if (facets[["drop_col_label"]]) { 
+      p <- p + theme(strip.text.x.left = element_blank())
+    }
+    
+    if (facets[["add_dividers"]]) { 
+      p <- p + theme(panel.background = element_rect(fill = NA, linetype = "solid", color = "grey75"))  
+    }
+  } 
   
   return(p)
   
 }
 
-
 fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FALSE) {
   
-  data <- data %>% group_by(model_type) %>% 
-    mutate(x = ifelse(term == "(Intercept)", fig_data, NA), 
-           refline = max(x, na.rm = TRUE), 
-           refline = ifelse(row_number() == 1, refline, NA))
-  
   p <- ggplot(data = data,
-         aes(x = fct_rev(fct_inorder(str_wrap(effect_label, scales[["x"]][["txtwrap"]]))),
+         aes(x = effect_label,
              y = fig_data))
     
     if (!is.null(facets)) {
@@ -307,7 +326,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
       
       if (facets[["type"]] == "wrap") {
         
-        p <- p + facet_wrap(vars(str_wrap(!!fcvar_cols, 30)), nrow = 1, scales = facets[["scales"]])
+        p <- p + facet_wrap(vars(!!fcvar_cols), nrow = 1, scales = facets[["scales"]])
         
       } else if (facets[["type"]] == "grid") {
         
@@ -318,7 +337,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
     }
   
     p + geom_col(width =  barparams[["bars"]][["width"]], fill = barparams[["bars"]][["color"]]) + 
-    geom_hline(aes(yintercept = refline), color = "red", size = 0.25, linetype = "dashed") + 
+    geom_hline(aes(yintercept = baseline), color = "red", size = 0.25, linetype = "dashed") + 
     geom_segment(aes(y = startarrow, yend = endarrow), color = "red", arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
     geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white", size= 3.5) -> p
     
@@ -366,3 +385,9 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
     return(p)
     
 }
+
+
+
+
+
+
