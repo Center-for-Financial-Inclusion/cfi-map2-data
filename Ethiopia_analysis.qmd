@@ -1,7 +1,0 @@
----
-title: "Ethiopia"
-lightbox: true
-params:
-  country: Ethiopia
----
-{{< include cfi_map2.qmd >}}
