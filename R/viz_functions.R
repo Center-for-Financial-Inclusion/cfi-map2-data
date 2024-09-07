@@ -3,7 +3,7 @@
 ######################################################
 
 # Generic function to prepare estimates for plotting
-prep_fig_data <- function(ests, factor_params, include_valuelabel = TRUE) {
+prep_fig_data <- function(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "mean", valuelabel_type = "pct", valuelabel_thresh = NULL) {
   
   wrap_sizes <- factor_params[["wrap_sizes"]]
   order_vars <- factor_params[["order_vars"]]
@@ -27,7 +27,18 @@ prep_fig_data <- function(ests, factor_params, include_valuelabel = TRUE) {
     filter(group_cat_val != "Don't know") -> fig_data
    
   if (include_valuelabel) { 
-    fig_data %>% mutate(valuelabel = paste0(pctclean(mean, 0), "%")) -> fig_data
+    value = sym(valuelabel_target)
+    if (valuelabel_type == "pct") {
+      fig_data %>% mutate(valuelabel = paste0(pctclean(!!value, 0), "%")) -> fig_data
+      if (!is.null(valuelabel_thresh)) { 
+        fig_data %>% mutate(valuelabel = ifelse(!!value < valuelabel_thresh, NA, valuelabel)) -> fig_data
+        }
+    } else { 
+      fig_data %>% mutate(valuelabel = paste0(numclean(!!value))) -> fig_data
+      if (!is.null(valuelabel_thresh)) { 
+        fig_data %>% mutate(valuelabel = ifelse(!!value < valuelabel_thresh, NA, valuelabel)) -> fig_data
+      }
+      }
     }
   
   return(fig_data)
@@ -97,6 +108,44 @@ prep_reg_data <- function(data) {
   
 }
 
+prep_reg_data_allcountries <- function(data) {
+  
+  data %>%
+    group_by(country, depvar, confounds_flag) %>%
+    mutate(
+      
+      baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
+      baseline = ifelse(row_number() == 1, NA, baseline), 
+      
+      sig = ifelse(p.value < 0.1, ".", NA),
+      sig = ifelse(p.value < 0.05, "*", sig),
+      sig = ifelse(p.value < 0.01, "**", sig),
+      sig = ifelse(p.value < 0.001, "***", sig),
+      sig = ifelse(is.na(sig), "", sig),
+      
+      valuelabel = numclean(estimate, n = 2),
+      
+      effect_dir = ifelse(estimate < 0, -1, 1),
+      
+      startarrow = baseline,
+      endarrow = fig_data,
+      
+      valuelabel = paste0(valuelabel, sig),
+      valuelabel = ifelse(term == "(Intercept)", NA, valuelabel),
+      
+      valuelabel_pos = ifelse(effect_dir == 1, (endarrow - startarrow)/2 + startarrow, (startarrow - endarrow)/2 + endarrow),
+      
+      barlabel =  numclean(fig_data, n = 2),
+      annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
+      annotation = ifelse(term == "(Intercept)", NA, annotation), 
+      
+      city = CITIES[country]
+      
+    )
+  
+}
+
+
 fig_bar <- function(base_plot, data, params) {
   
   # Geoms
@@ -137,8 +186,12 @@ fig_bar <- function(base_plot, data, params) {
   
   if (params[["bars"]][["labeltotal"]]) {
     # Requires barlabelpos and barlabel variables in data
-    maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
-    ndg_y <- maxy/60
+    if (params[["bars"]][["labeltotal_ndgy"]]) {
+      maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
+      ndg_y <- maxy/60
+    } else {
+      ndg_y = 0
+    }
     p <- p +
       geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") 
   }
@@ -204,7 +257,8 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     if (facets[["type"]] == "wrap") {
       p <- p + facet_wrap(
         vars(!!fcvar_cols), 
-        nrow = 1, 
+        nrow = facets[["wrap_nrows"]], 
+        ncol = facets[["wrap_ncols"]], 
         scales = facets[["scales"]])
     } else if (facets[["type"]] == "grid") {
       p <- p + facet_grid(
@@ -256,8 +310,10 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     
     if (scales[["yaxis"]][["type"]] == "number") {
       if (params[["bars"]][["labeltotal"]]) {
+        if (params[["bars"]][["labeltotal_extendmax"]]) {
         maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
-        p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+          p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+        }
       } else { 
         p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), scales[["yaxis"]][["expand"]] )
       }
@@ -380,6 +436,13 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
   
     if (coord_flip) {
       p <- p + coord_flip()
+    }
+    
+    if (!is.null(facets)) {
+      # Final touches
+      if (facets[["drop_row_label"]]) { 
+        p <- p + theme(strip.text.y.left = element_blank())
+      }
     }
     
     return(p)

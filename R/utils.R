@@ -114,7 +114,6 @@ style_factors <- function(x, size, reverse_order, order_var) {
   
   }
   
-  
 # ++++++++++++++++++++++++++++
 # flattenCorrMatrix
 # ++++++++++++++++++++++++++++

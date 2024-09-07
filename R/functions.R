@@ -63,6 +63,7 @@ prep_enumeration_data <- function(country) {
 
   data <- data %>%
     mutate(
+      country = country,
       fullsample = "All businesses",
       business_total = 1,
       business_eligible = ifelse(Eligibility == 1, 1, 0),
@@ -169,8 +170,9 @@ prep_weights <- function(business_data, blocks_data, country, weight_params) {
   if (country %in% c("India", "Brazil")) {
     n = length(unique(blocks_data$Initial_block_ID))
   } else {
-    n = weight_params[[COUNTRY]][["n"]]
+    n = weight_params[[country]][["n"]]
   }
+  
 
   business_data %>%
     left_join(blocks_data, by = "Initial_block_ID") %>%
@@ -178,7 +180,7 @@ prep_weights <- function(business_data, blocks_data, country, weight_params) {
     mutate(
       # For blocks that were not in the tracking sheet, these were visited but no businesses were found (i.e. residential etc)
       N_blocks_percluster = ifelse(is.na(N_blocks_percluster), 1, N_blocks_percluster),
-      N = weight_params[[COUNTRY]][["N"]],
+      N = weight_params[[country]][["N"]],
       n = n,
       m = N_blocks_percluster,
       I = N_business_interviwed_percluster,
@@ -191,7 +193,7 @@ prep_weights <- function(business_data, blocks_data, country, weight_params) {
       p2 = I/B,
       weight_msme = 1/(p1*p2)
     )
-
+  
   }
 
 # Functions to prepare MAIN interview data ----------
@@ -231,7 +233,7 @@ prep_main_data <- function(raw_data, weights, country) {
     add_worker <- 0
     }
   
-  main_raw_data %>%
+  raw_data %>%
 
     left_join(weights, by = join_by(Initial_block_ID)) %>%
 
@@ -269,8 +271,10 @@ prep_main_data <- function(raw_data, weights, country) {
         business_sector_agg3 == "Don't know" ~ "dk"
       ),
 
-      business_registered = ifelse(Q74 == 1, 1, 0),
-      business_registered = ifelse(Q74 %in% c(97, 99), NA, business_registered),
+      business_registered_yes = ifelse(Q74 == 1, 1, 0),
+      business_registered_yes = ifelse(Q74 %in% c(97, 99), NA, business_registered_yes),
+      business_registered_no = ifelse(Q74 == 2, 1, 0),
+      business_registered_no = ifelse(Q74 %in% c(97, 99), NA, business_registered_no),
       business_registration_status = names(attributes(Q74)$labels[Q74]),
       #business_sector_agg3 = factor(business_sector_agg4, levels = c("Services: retail & wholesale trade", "Services: other", "Manufacturing", "Construction & other"), ordered = TRUE),
 
@@ -280,7 +284,8 @@ prep_main_data <- function(raw_data, weights, country) {
       #business_size_agg2 = factor(business_size_agg2, levels = c("1 person", "2-10 people"), ordered = TRUE),
 
       # Respondent characteristics
-      resp_owner = ifelse(Q4 %in% c(1,3), 1, 0), # Is the respondent the owner or a manager?
+      resp_type_owner = ifelse(Q4 %in% c(1,3), 1, 0), # Is the respondent the owner or a manager?
+      resp_type_manager = ifelse(Q4 %in% c(2,4), 1, 0), 
       resp_owner_str = case_when(
         Q4 %in% c(1, 3) ~ "Owner", 
         Q4 == 2 ~ "Manager", 
@@ -412,9 +417,9 @@ prep_main_data <- function(raw_data, weights, country) {
               (resp_riskapproach_aggr == 1 | resp_riskapproach_calc == 1), "Growth", NA),
       # Owner started business du to lack of opportunities & wants to avoid risks
       resp_psych_segment = ifelse(
-              resp_motivation_lackopp == 1 &
+              resp_motivation_entrep != 1 &
               (resp_maingoal_leave == 1 | resp_maingoal_stab == 1) & 
-              resp_riskapproach_avoid == 1, "Survival", resp_psych_segment
+              (resp_riskapproach_avoid == 1 | resp_riskapproach_calc == 1), "Survival", resp_psych_segment
         ),
       resp_psych_segment = ifelse(is.na(resp_psych_segment), "Stability", resp_psych_segment),
 
@@ -590,21 +595,27 @@ prep_main_data <- function(raw_data, weights, country) {
 
       # Business performance ----------
       fx = unlist(FX_RATES[country]),
+      ppp = unlist(PPP_RATES[country]), 
       perf_mpy = Q75, # Months per year of operations
       perf_mpy = ifelse(Q75 %in% c(97, 99), NA, perf_mpy),
       perf_hrspw = Q76, # hourse per week of operation
       perf_hrspw = ifelse(Q76 %in% c(97, 99), NA, perf_hrspw),
-      perf_rev = as.numeric(zap_labels(main_raw_data$Q78)),
+      perf_rev = as.numeric(zap_labels(raw_data$Q78)),
       perf_rev = ifelse(Q78 %in% c(97,99), NA, perf_rev),
       perf_rev_reports = ifelse(!is.na(perf_rev), 1, 0), 
       perf_rev_usd = perf_rev/fx,
+      perf_rev_ppp = perf_rev/ppp,
       perf_hrspy = perf_hrspw*4*perf_mpy, #Total hours per year of operation
-      perf_hrspy = perf_hrspy/12, #Avg. Hours per month of operation
-      perf_revphr = perf_rev/perf_hrspy,
+      perf_hrspm = perf_hrspy/12, #Avg. Hours per month of operation
+      perf_hrspd = perf_hrspm/30.5, #Avg. Hours per day of operation
+      perf_revphr = perf_rev/perf_hrspm,
       perf_revphrpemp = perf_revphr/business_size, # Revenue per hour per employee
       perf_revphrpemp_usd = perf_revphrpemp/fx, # Revenue per hour per employee
+      perf_revphrpemp_ppp = perf_revphrpemp/ppp, # Revenue per hour per employee
+      perf_revpdypemp_usd = (perf_revphrpemp*perf_hrspd)/fx, # Revenue per hour per employee
+      perf_revpdypemp_ppp = (perf_revphrpemp*perf_hrspd)/ppp, # Revenue per hour per employee
       
-      ###### FINANCIAL SERVICES ----------------
+      # FINANCIAL SERVICES ----------------
       
       # Business has formal account
       fin_account_formal = ifelse(Q30 == 1, 1, 0),
@@ -793,7 +804,7 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_openbanking_use = ifelse(Q48 == 1, 1, 0), 
       fin_openbanking_use = ifelse(Q48 %in% c(97,98), NA, fin_openbanking_use), 
       
-      ##### CONSUMER PROTECTION RISKS ---------
+      # CONSUMER PROTECTION RISKS ---------
       
       # Loan repayment difficulty
       cp_loanrepaydiff = ifelse(Q49 == 1, 1, 0), 
@@ -851,7 +862,7 @@ prep_main_data <- function(raw_data, weights, country) {
       cp_dfs_stopped = ifelse(Q55 == 1, 1, 0), 
       cp_dfs_stopped = ifelse(Q55 %in% c(97, 99), 1, 0), 
       
-      ###### RISKS & RESILIENCE -------- 
+      #RISKS & RESILIENCE -------- 
       
       # In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business
       risk_largestimpact_str = names(attributes(Q56)$labels[Q56]),
@@ -895,6 +906,7 @@ prep_main_data <- function(raw_data, weights, country) {
       risk_weather_cope_remi = ifelse(Q59_9 == 1, 1, ifelse(Q59_9 == 2, 0, NA)),
       risk_weather_cope_asst = ifelse(Q59_10 == 1, 1, ifelse(Q59_10 == 2, 0, NA)),
       risk_weather_cope_noth = ifelse(Q59_11 == 1, 1, ifelse(Q59_11 == 2, 0, NA)),
+      risk_weather_cope_noth = ifelse(is.na(risk_weather_cope_noth) & risk_weather_type_any == 1, 0, risk_weather_cope_noth),
       risk_weather_cope_othr = ifelse(Q59_12 == 1, 1, ifelse(Q59_12 == 2, 0, NA)),
       
       risk_weather_cond_ntrc = ifelse(Q60 == 1, 1, 0), 
@@ -929,9 +941,9 @@ prep_main_data <- function(raw_data, weights, country) {
       
       # Asked only to owners
       resi_efunds_hh_owner_yes = ifelse(Q64 == 1, 1, ifelse(Q64 %in% c(97,99), NA, 0)), 
-      resi_efunds_hh_owner_yes = ifelse(resp_owner == 0, 0, resi_efunds_hh_owner_yes), 
+      resi_efunds_hh_owner_yes = ifelse(resp_type_owner == 0, 0, resi_efunds_hh_owner_yes), 
       resi_efunds_hh_owner_no = ifelse(Q64 == 2, 1, ifelse(Q64 %in% c(97,99), NA, 0)), 
-      resi_efunds_hh_owner_no = ifelse(resp_owner == 0, 0, resi_efunds_hh_owner_no), 
+      resi_efunds_hh_owner_no = ifelse(resp_type_owner == 0, 0, resi_efunds_hh_owner_no), 
       
       resi_suppchain_cust_diff_1 = ifelse(Q65 == 1, 1, ifelse(Q65 %in% c(97,99), NA, 0)), 
       resi_suppchain_cust_diff_2 = ifelse(Q65 %in% c(2, 3), 1, ifelse(Q65 %in% c(97,99), NA, 0)), 
@@ -971,9 +983,9 @@ prep_main_data <- function(raw_data, weights, country) {
 
       # Index of how closely tied up (only defined for respondents that are owners) business is with owner's personal finances
       business_hh_noboundaries = ifelse(business_premise_shc_1 == 1 & resp_pcthhincfrmbus_high == 1 & business_finances_notseparate == 1, 1, 0),
-      business_hh_noboundaries = ifelse(resp_owner == 1, business_hh_noboundaries, NA),
+      business_hh_noboundaries = ifelse(resp_type_owner == 1, business_hh_noboundaries, NA),
       business_hh_codep_index = business_premise_shc_1 + resp_pcthhincfrmbus_high + business_finances_notseparate,
-      business_hh_codep_index = ifelse(resp_owner == 1, business_hh_codep_index, NA),
+      business_hh_codep_index = ifelse(resp_type_owner == 1, business_hh_codep_index, NA),
       business_hh_codep_index = business_hh_codep_index/3 # Re-scaling so that index has range of 0-1
 
     ) %>%
@@ -1060,11 +1072,7 @@ compute_summary_clusterlevel_1g <- function(inidcators, groups, data, weights, p
 
 }
 
-compute_summary_clusterlevel_2g <- function(inidcators, groups_l1, groups_l2, data, weights, psu = NULL, keep = NULL) {
-
-  data <- data %>%
-    left_join(weights, by = c("Initial_block_ID")) %>%
-    mutate(fullsample = "All businesses")
+compute_summary_clusterlevel_2g <- function(inidcators, groups_l1, groups_l2, data, psu = NULL, keep = NULL) {
 
   combinations <- expand.grid(indicators, names(groups_l2), stringsAsFactors = FALSE)
   is <- combinations[[1]]
@@ -1221,9 +1229,12 @@ prep_fig <- function(terms, depvar_labels, effect_labels) {
 
 }
 
-model_and_prepfig <-function(depvar, maineffect, confounds, data, depvar_labels, effect_labels) {
+model_and_prepfig <-function(depvar, maineffect, confounds, data, depvar_labels, effect_labels, selected_country = NULL) {
+  if (!is.null(selected_country)) { 
+    data <- data %>% filter(country == selected_country)
+    }
   terms <- capture_terms_clse(depvar, maineffect, confounds, data)
-  fig <- prep_fig(terms, depvar_labels, effect_labels)
+  fig <- prep_fig(terms, depvar_labels, effect_labels) %>% mutate(country = selected_country)
   return(fig)
 }
 

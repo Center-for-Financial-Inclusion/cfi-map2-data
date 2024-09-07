@@ -4,8 +4,10 @@
 
 #####################################################################################
 
-COUNTRIES <- c("Indonesia", "Brazil", "Ethiopia", "Nigeria", "India")
-CITIES <- c("Jakarta", "Sao Paulo", "Addis Ababa", "Lagos", "Delhi")
+#COUNTRIES <- c("Indonesia", "Brazil", "Ethiopia", "Nigeria", "India")
+COUNTRIES <- c("Indonesia", "Ethiopia", "Nigeria", "India")
+CITIES <- c("Jakarta", "Addis Ababa", "Lagos", "Delhi")
+
 names(CITIES) <- COUNTRIES
 
 WEIGHT_PARAMS <- list(
@@ -27,10 +29,23 @@ FX_RATES <- list(
   "India" = 83.31
 )
 
-INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total businesses (N)",
+#PPP conversion factor, GDP (LCU per international $)
+#International Comparison Program, World Bank | World Development Indicators database, World Bank | Eurostat-OECD PPP Programme.
+
+PPP_RATES <- list(
+  "Indonesia" = 4821.6,
+  "Brazil" = 2.4,
+  "Ethiopia" = 22.2,
+  "Nigeria" = 165.8,
+  "India" = 20.2
+)
+
+INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total businesses (N)"
                 "business_total" = "Population estimate: Total businesses (N)",
                 "resp_sex_men" = "Gender: Men",
                 "resp_sex_women" = "Gender: Women",
+                "resp_type_owner" = "Respondent type: Owner of business", 
+                "resp_type_manager" = "Respondent type: Manager or other", 
                 "resp_education_agg2_shc_priorless" = "Educational attainment: Primary or less",
                 "resp_education_agg2_shc_secormore" = "Educational attainment: Secondary or higher",
                 "resp_education_agg4_shc_non" = "Educational attainment: Some primary or none",
@@ -70,11 +85,17 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
                 "business_size_agg2_shc_2_10" = "Size: 2-10 people",
                 "business_sector_agg2_shc_mfc" = "Sector: Manufacturing",
                 "business_sector_agg2_shc_srv" = "Sector: Services",
+                
+                "business_sector_agg3_shc_mfc" = "Sector: Manufacturing",        
+                "business_sector_agg3_shc_srv_resale" = "Sector: Services, trade (re-sale)",
+                "business_sector_agg3_shc_srv_oth" = "Sector: Services, other (eg. transport, construction)",
+                
                 "business_premise_shc_1" = "Premises: Household",
                 "business_premise_shc_2" = "Premises: Permanent" ,
                 "business_premise_shc_3" = "Premises: Semi-permanent",
-                "business_premise_shc_4" = "Premises: Other",
-                "business_registered" = "Registration: Business is registered with tax collection bureau",
+                #"business_premise_shc_4" = "Premises: Other",
+                "business_registered_yes" = "Registration with tax authority:  Yes",
+                "business_registered_no" = "Registration with tax authority:  No",
                 
                 "resp_pcthhincfrmbus_high" = "Business-household co-dependence: Business contributes over 50% of owner's household income",
                 "business_finances_notseparate" = "Business-household co-dependence: Business either does not have a formal financial account or is not separate from owner's account",
@@ -96,7 +117,7 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
                 "tech_uses_ecommerce" = "E-commerce platforms: Uses",
                 "tech_uses_software" = "Software for operations: Uses",
                 "tech_uses_ai" = "Artificial intelligence: Ever used",
-                "tech_uses_digpayments" = "Merchant digital payments: Used in past 12 mos",
+                "tech_uses_digpayments" = "Digital payments acceptance: Used in past 12 mos",
                 "tech_uses_digloans" = "Digital loans: Used in past 12 mos",
                 "tech_uses_diginsurance" = "Digital insurance: Uses",
                 "tech_uses_messaging_30da" = "Messaging apps: 30-day active",
@@ -124,7 +145,7 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
                 "tech_uses_software_shc_mol" = "Software for operations: Monthly or less",  
                 "tech_uses_software_shc_nam" = "Software for operations: Stopped using",
                 "tech_uses_software_shc_nvr" = "Software for operations: Never used", 
-                "tech_uses_adoption_score" = "Digital technology adoption score: [0 min -10 max]",
+                "tech_uses_adoption_score" = "Digital technology adoption score: Mean [0 min -10 max]",
                 "tech_function_comms" = "Communicating with customers: Uses",
                 "tech_function_mkts" = "Accessing markets: Uses",
                 "tech_function_ops" = "Enterprise operations: Uses",
@@ -154,11 +175,15 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
                 "tech_adopchllng_infra" = "Adoption challenges: Lack of phones, computers or internet",                
                 "tech_adopchllng_other" = "Adoption challenges: Other", 
                 
-                "perf_rev_reports" = "Businesss performence: Reported monthly revenue (%)", 
+                "perf_rev_reports" = "Businesss performence: Business reported monthly revenue (%)", 
                 "perf_rev" = "Business performance: Revenues (past month) [LCU]",
                 "perf_rev_usd" = "Business performance: Revenues (past month) [USD]",
+                "perf_rev_ppp" = "Business performance: Revenues (past month) [International $]",
                 "perf_revphrpemp" = "Business performance: Hourly sales per employee [LCU]",
                 "perf_revphrpemp_usd" = "Business performance: Hourly sales per employee [USD]", 
+                "perf_revphrpemp_ppp" = "Business performance: Hourly sales per employee [International $]", 
+                "perf_revpdypemp_usd" = "Buseinss performance: Daily sales per employee [USD]", 
+                "perf_revpdypemp_ppp" = "Buseinss performance: Daily sales per employee [International $]", 
                 
                  "fin_account_formal" = "Account ownership: Business use a formal account with a financial institution to manage its finances and payment",             
                  "fin_owner_save" = "Business savings: Business owner able to save money regularly out of business income",             
@@ -228,10 +253,10 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
                 "fin_digital_challenges_diff" = "Challenges with digital financial services: Difficulty using the technology",   
                 "fin_digital_challenges_cost" = "Challenges with digital financial services: High costs of implementation and maintenance", 
                 "fin_digital_challenges_trust" = "Challenges with digital financial services: Lack of trust in digital tools' security and privacy", 
-                "fin_digital_challenges_rel" = "Challenges", 
-                "fin_digital_challenges_infra" = "", 
-                "fin_digital_challenges_other" = "", 
-                "fin_digital_challenges_none" = "", 
+                "fin_digital_challenges_rel" = "Challenges with digital financial services: Available digital tools are not relevant", 
+                "fin_digital_challenges_infra" = "Challenges with digital financial services: Lack of phones, computers or internet", 
+                "fin_digital_challenges_other" = "Challenges with digital financial services: Other", 
+                "fin_digital_challenges_none" = "Challenges with digital financial services: No challenges", 
                 
                 "fin_openbanking_use" = "Open banking: Has used open banking to securely share financial information between providers", 
                 
@@ -337,6 +362,7 @@ INDICATORS <- c("N_business_total_percluster" = "Population estimate: Total busi
 ) 
 
 GROUPS <- c("fullsample" = "All businesses",
+            "city" = "City", 
             "business_premise" = "Premises type",
             "business_size_agg2" = "Business size",
             "business_sector_agg2" = "Industrial sector",

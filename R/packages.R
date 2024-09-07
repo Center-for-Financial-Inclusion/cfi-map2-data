@@ -13,7 +13,7 @@ library(RColorBrewer)
 library(patchwork)
 library(FactoMineR)
 library(factoextra)
-
+library(wbstats)
 #library(corrplot)
 #library(ggcorrplot)
 

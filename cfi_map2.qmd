@@ -1,4 +1,5 @@
 
+
 ```{r}
 #| include: false
 
@@ -11,7 +12,7 @@ source("R/viz_functions.R")
 
 # Select country:
 COUNTRY <- params$country
-#COUNTRY <- "Ethiopia"
+#COUNTRY <- "India"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
@@ -44,6 +45,11 @@ N_bs_interviewed = summary["business_interviewed"]
 N_clusters_w_interviews = sum(businesses_percluster$N_business_interviwed_percluster > 0)
 N_clusters_w_zero_businesses = sum(businesses_percluster$N_business_total_percluster == 0)
   
+enum_data <- enum_data %>%
+    left_join(weights_cluster, by = c("Initial_block_ID")) %>%
+    mutate(fullsample = "All businesses")
+  
+
 ```
 
 ## Fieldwork summary
@@ -70,8 +76,8 @@ N_clusters_w_zero_businesses = sum(businesses_percluster$N_business_total_perclu
 indicators <- c("business_total")
 groups_l1 <- "business_size_agg2"
 groups_l2 <- GROUPS[c("business_sector_agg3")]
-
-ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data, weights_cluster, keep = "total")
+  
+ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data, keep = "total")
 fig_data <- total_businesses(ests)
 title <- total_businesses_title(ests, fig_data)
 
@@ -85,7 +91,7 @@ labels <- list(
 
 figparams <- list(
   geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.8, position = "stack", labeltotal = TRUE, color = "white"), 
+  bars = list(width = 0.8, position = "stack", labeltotal = TRUE, labeltotal_ndgy = TRUE,labeltotal_extendmax = TRUE, color = "white"), 
   valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE)
@@ -234,6 +240,8 @@ vars <- list(
 facets <- list(
   type = "wrap", 
   rows = "group_name", 
+  nrows = 1, 
+  ncols = 2,
   cols = "indicator_name", 
   scales = "free_x", 
   space = "free", 
@@ -562,7 +570,7 @@ scales <- list(
   x = list(position = "bottom")
 )
 
- facets <- list(type = "grid", cols ="depvar_label", rows = "model_type", scales = "free", space = "free") 
+ facets <- list(type = "grid", cols ="depvar_label", rows = "model_type", scales = "free", space = "free", drop_row_label = FALSE) 
     
  fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
 
@@ -580,7 +588,7 @@ indicators <- c("business_premise_shc_1", "resp_pcthhincfrmbus_high", "business_
 
 groups <- GROUPS[c("resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_type_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean")
 
 
 factor_params <- list(
@@ -1037,7 +1045,7 @@ scales <- list(
   x = list(position = "bottom")
 )
 
- facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free") 
+ facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free", drop_row_label = FALSE) 
     
  fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
 
@@ -1090,7 +1098,7 @@ fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelab
     )
 
 
- facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free") 
+ facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free", drop_row_label = FALSE) 
 
   miny <- round(min(fig_data$fig_data), 2) 
   maxy <- round(max(fig_data$fig_data), 2) 
@@ -1480,6 +1488,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 
 ```
+
 
 ```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-risks_impacts
