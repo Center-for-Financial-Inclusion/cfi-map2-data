@@ -1,0 +1,7 @@
+---
+title: "Indonesia"
+lightbox: true
+params:
+  country: Indonesia
+---
+{{< include cfi_map2.qmd >}}
