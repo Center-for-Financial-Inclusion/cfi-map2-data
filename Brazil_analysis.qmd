@@ -1,0 +1,8 @@
+---
+title: "Brazil"
+lightbox: true
+params:
+  country: Brazil
+---
+{{< include cfi_map2.qmd >}}
+
