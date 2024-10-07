@@ -1964,9 +1964,7 @@ groups_l1 <- "city"
 groups_l2 <- GROUPS[c("fullsample")]
 
 # Adjustment for India
-if (COUNTRY == "India") { 
-  main_data_all <- main_data_all %>% mutate(cp_complaint_resolved_yes = ifelse(resp_sex_str == "Women", 0, cp_complaint_resolved_yes))
-}
+main_data_all <- main_data_all %>% mutate(cp_complaint_resolved_yes = ifelse(country == "India" & resp_sex_str == "Women", 0, cp_complaint_resolved_yes))
 
 ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme", psu = NULL, keep = "mean")
 
