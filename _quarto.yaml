@@ -5,6 +5,7 @@ project:
   render:
     - index.qmd
     - cfi_map2_global.qmd
+    - Brazil_analysis.qmd
     - Indonesia_analysis.qmd
     - Ethiopia_analysis.qmd
     - Nigeria_analysis.qmd
