@@ -302,7 +302,7 @@ params:
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Non-financial dimensions of business resilience](Indonesia_analysis_files/figure-html/fig-resilience_nonfinancial-1.png){#fig-resilience_nonfinancial width=1152}
+![Other dimensions of business resilience](Indonesia_analysis_files/figure-html/fig-resilience_nonfinancial-1.png){#fig-resilience_nonfinancial width=1152}
 :::
 :::
 
@@ -311,7 +311,7 @@ params:
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Access to connectivity and devices](Indonesia_analysis_files/figure-html/fig-resilience_overview-1.png){#fig-resilience_overview width=1152}
+![Resilience capital](Indonesia_analysis_files/figure-html/fig-resilience_overview-1.png){#fig-resilience_overview width=1152}
 :::
 :::
 

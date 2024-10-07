@@ -13,14 +13,14 @@ params:
 
 ## Fieldwork summary
 
-  * Enumeration was completed in 72 out of 96 initial sampled blocks.
-  * 18 of the 72 initial sampled blocks enumerated resulted in expansion to adjacent blocks
-  * 184 blocks (including both initial sampled and expansion blocks) were enumerated. 
-  * In total, 4460 business were found during enumeration
-  * Of all businesses, 2\,887 \(65%\) were eligible for the study
-  * Of eligible businesses, 905 \(31%\) were selected at random for interview
-  * Of selected businesses, 812 \(90%\) were successfully interviewed 
-  * Successful interviews originate from 20 initial sampled blocks
+  * Enumeration was completed in 79 out of 98 initial sampled blocks.
+  * 54 of the 79 initial sampled blocks enumerated resulted in expansion to adjacent blocks
+  * 468 blocks (including both initial sampled and expansion blocks) were enumerated. 
+  * In total, 6313 business were found during enumeration
+  * Of all businesses, 4\,944 \(78%\) were eligible for the study
+  * Of eligible businesses, 4\,736 \(96%\) were selected at random for interview
+  * Of selected businesses, 811 \(17%\) were successfully interviewed 
+  * Successful interviews originate from 59 initial sampled blocks
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}

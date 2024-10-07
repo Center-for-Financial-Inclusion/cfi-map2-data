@@ -13,7 +13,7 @@ source("R/viz_functions.R")
 
 # Select country:
 #COUNTRY <- params$country
-COUNTRY <- "Indonesia"
+COUNTRY <- "India"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
@@ -1875,7 +1875,12 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "cp_issues|cp_comp
 
 groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")  %>% 
+# Adjustment for India
+if (COUNTRY == "India") { 
+  main_data <- main_data %>% mutate(cp_complaint_resolved_yes = ifelse(resp_sex_str == "Women", 0, cp_complaint_resolved_yes))
+}
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean") %>% 
   mutate(indicator_group = ifelse(str_detect(indicator, "cope"), "Coping strategy", indicator_group))
 
 factor_params <- list(
