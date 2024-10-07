@@ -16,6 +16,8 @@ website:
     right:
       - href: cfi_map2_global.qmd
         text: Global
+      - href: Brazil_analysis.qmd
+        text: Brazil
       - href: Indonesia_analysis.qmd
         text: Indonesia
       - href: Ethiopia_analysis.qmd
