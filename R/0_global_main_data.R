@@ -46,7 +46,7 @@ maindata_package <- function(country, enum_data, weight_msme) {
   
   main_data <- prep_main_data(main_raw_data, weight_msme, country) %>% filter(!is.na(weight_msme))
   # Adding mca (pyschology) dimensions to data
-  #main_data <- add_pca_todata(main_data)
+  main_data <- add_pca_todata(main_data)
   
   return(main_data)
   

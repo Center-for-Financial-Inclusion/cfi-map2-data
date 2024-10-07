@@ -6,15 +6,17 @@
 
 select <- dplyr::select
 
-#COUNTRIES <- c("Indonesia", "Brazil", "Ethiopia", "Nigeria", "India")
-COUNTRIES <- c("Indonesia", "Ethiopia", "Nigeria", "India")
-CITIES <- c("Jakarta", "Addis Ababa", "Lagos", "Delhi")
+COUNTRIES <- c("Indonesia", "Brazil", "Ethiopia", "Nigeria", "India")
+CITIES <- c("Jakarta", "Sao Paulo", "Addis Ababa", "Lagos", "Delhi")
+
+#COUNTRIES <- c("Indonesia", "Ethiopia", "Nigeria", "India")
+#CITIES <- c("Jakarta", "Addis Ababa", "Lagos", "Delhi")
 
 names(CITIES) <- COUNTRIES
 
 WEIGHT_PARAMS <- list(
   "Indonesia" = list("N" = 26293, "n" = 96, "restricted_blocks" = c(23582, 26105, 21436, 16723), "grid_area" = 593),
-  "Brazil" = list("N" = NULL, "n" = NULL,  "restricted_blocks" = NULL, "grid_area" = 1015),
+  "Brazil" = list("N" = 38017, "n" = 98,  "restricted_blocks" = NULL, "grid_area" = 1015),
   "Ethiopia" = list("N" = 15842, "n" = 98, "restricted_blocks" = c(3585,10239), "grid_area" = 361),
   "Nigeria" = list("N" = 9282, "n" = 99,  "restricted_blocks" = c(2851), "grid_area" = 208),
   "India" = list("N" = 30880, "n" = 98,  "restricted_blocks" = NULL, "grid_area" = 893)
@@ -41,6 +43,9 @@ PPP_RATES <- list(
   "Nigeria" = 165.8,
   "India" = 20.2
 )
+
+SOURCE <- c("Source: 2024 CFI/MAP2 small firm survey.")
+CAP_WRAP <- 150 
 
 INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total businesses (N)"
                 "business_total" = "Population estimate: Total businesses (N)",
@@ -83,6 +88,8 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resp_psych_segment_shc_grow" = "Pyschographic orientation: Growth",
                 "resp_psych_segment_shc_stab" = "Pyschographic orientation: Stability",
                 "resp_psych_segment_shc_surv" = "Pyschographic orientation: Survival",
+                
+                "business_size" = "Total employment (N)", 
                 "business_size_agg2_shc_1" = "Size: 1 person",
                 "business_size_agg2_shc_2_10" = "Size: 2-10 people",
                 "business_sector_agg2_shc_mfc" = "Sector: Manufacturing",
@@ -100,19 +107,22 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "business_registered_no" = "Registration with tax authority:  No",
                 
                 "resp_pcthhincfrmbus_high" = "Business-household co-dependence: Business contributes over 50% of owner's household income",
+                "business_account_separate_v2" = "Business-household co-dependence: Business owns a formal account that is separate from owner's account",
                 "business_finances_notseparate" = "Business-household co-dependence: Business either does not have a formal financial account or is not separate from owner's account",
                 "business_hh_noboundaries" = "Business-household co-dependence: Business operations and finances are not separate from household",
+                "business_hh_separate" = "Business-household co-dependence: Business operations and finances are separate from household",
                 "business_hh_codep_index" = "Business-household co-dependence: Index",
                 
                 "tech_has_internet" = "Internet connectivity: Has",
                 "tech_has_device" = "Mobile phone/computer/tablet: Uses",
                 "tech_has_both" = "Digital technology adoption: Has internet and uses device",
                 "tech_has_none" = "Digital technology adoption: Does not have internet and does not use device",
-                "tech_cat_none" = "Digital technology adoption: No digital technology used",
+                "tech_cat_none" = "Digital technology adoption: No digital technology application used",
                 "tech_cat_any1" = "Digital technology adoption: Any 1 use case",
                 "tech_cat_any2" = "Digital technology adoption: Any 2 use cases",
                 "tech_cat_any3" = "Digital technology adoption: Any 3 use cases",
                 "tech_cat_all4" = "Digital technology adoption: All 4 use cases",
+                "tech_cat_any3all4"= "Digital technology adoption: Any 3 or all 4 use cases",
                 "tech_uses_messaging" = "Messaging apps: Uses",
                 "tech_uses_socialmedia" = "Social media: Uses",
                 "tech_uses_website" = "Website: Has",
@@ -152,6 +162,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "tech_function_mkts" = "Accessing markets: Uses",
                 "tech_function_ops" = "Enterprise operations: Uses",
                 "tech_function_epay" = "Digital payment acceptance: Uses",
+                "tech_function_epay_expos" = "Digital payment acceptance (excludes POS card payments): Uses", 
                 "tech_function_efin" = "Enterprise digital finance: Uses",
                 "tech_function_comms_30da" = "Communicating with customers: 30-day active",
                 "tech_function_mkts_30da" = "Accessing markets: 30-day active",
@@ -159,6 +170,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "tech_function_comms_7da" = "Communicating with customers: 7-day active",
                 "tech_function_mkts_7da" = "Accessing markets: 7-day active",
                 "tech_function_ops_7da" = "Enterprise operations: 7-day active",
+                "tech_function_mkts_ops" = "Accessing markets/ business operations: Uses", 
                 "tech_adopfactors_demand" = "Adoption factors: Demand from customers/suppliers",            
                 "tech_adopfactors_support" = "Adoption factors: Obtaining support to use tech",            
                 "tech_adopfactors_comp" = "Adoption factors: Competitive pressure",                
@@ -195,7 +207,10 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "perf_investment" = "Dynamism: In past 1 year, business added equipment or moved to new premise", 
                 "perf_newservices" = "Dynamism: In past 1 year, business introduced new products or services", 
                 
-                 "fin_account_formal" = "Account ownership: Business use a formal account with a financial institution to manage its finances and payment",             
+                 "fin_account_formal" = "Account ownership: Business use a formal account with a financial institution to manage its finances and payment",   
+                 "fin_account_formal_v2" = "Account ownership: Composite indicator based on account + savings",   
+                 "fin_account_formal_v3" = "Account ownership: Composite indicator based on account + savings + payments",  
+                 "fin_account_formal_v4" = "Account ownership: Composite indicator based on account + savings + payments + loans",  
                  "fin_owner_save" = "Business savings: Business owner able to save money regularly out of business income",             
                  "fin_bus_savings_cbnk"= "Business savings account: Commercial bank",         
                  "fin_bus_savings_mfi" = "Business savings account: Microfinance institution",
@@ -273,6 +288,9 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_digital_challenges_none" = "Challenges with digital financial services: No challenges", 
                 
                 "fin_openbanking_use" = "Open banking: Has used open banking to securely share financial information between providers", 
+                
+                "fin_insurance_any" = "Insurance: Currently has any type of insurance", 
+                "fin_access_score" = "Breadth of financial access: Score [0-4]", 
                 
                 "cp_loanrepaydiff" = "Loan repayment difficulty: Business has been unable to pay a full loan installment on-time for any funds that it borrowed",
                 "cp_loanrepaydiff_cope_notpay" = "Loan repayment difficulty: I did not repay",      
@@ -362,16 +380,17 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resi_resp_attitude_chllng_3" = "Response to prior business challenges: Sought new opportunities to expand or pivot",
                  "resi_resp_attitude_chllng_4" = "Response to prior business challenges: I didn't face any significant challenges", 
                 
-                 "resi_network_conf_3" = "Confidence in social network support: Not confident at all", 
+                 "resi_network_conf_3" = "Confidence in social network support: Not confident", 
                  "resi_network_conf_2" = "Confidence in social network support: Somewhat confident", 
                  "resi_network_conf_1" = "Confidence in social network support: Very confident", 
                 
                 "resi_capital_financial" = "Resilience capital: Financial, Can raise emergency funds without major difficulty", 
                 "resi_capital_linkages" = "Resilience capital: Structural, Can overcome loss of main customer or supplier without major difficulty", 
-                "resi_capital_hh" = "Resilience capital: Financial, Business resources not vulnerable to household shocks", 
+                "resi_capital_hh" = "Resilience capital: Financial, Business resources insulated from household shocks", 
                 "resi_capital_network" = "Resilience capital: Social, Confident that network can support business if needed", 
-                "resi_capital_score_v1" = "Resilience capital: Overall resilience score [0 min -4 max]", 
-                "resi_capital_score_v2" = "Resilience capital: Overall resilience score [0 min -3 max]"
+                "resi_capital_score_v1" = "Resilience capital: Overall, Resilience score [0 min - 4 max]", 
+                "resi_capital_score_v2" = "Resilience capital: Overall, Resilience score (excluding household finance component) [0 min - 3 max]", 
+                "resi_capital_score_v3" = "Resilience capital: Overall, Resilience score [0 min - 7 max]"
                 
 ) 
 
@@ -379,6 +398,7 @@ GROUPS <- c("fullsample" = "All businesses",
             "city" = "City", 
             "business_premise" = "Premises type",
             "business_size_agg2" = "Business size",
+            "business_sector_str" = "Industrial sector",
             "business_sector_agg2" = "Industrial sector",
             "business_sector_agg3" = "Industrial sector",
             "resp_experience_agg5" = "Experience running business (years)",

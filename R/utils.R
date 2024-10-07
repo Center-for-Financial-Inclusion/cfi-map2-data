@@ -71,6 +71,10 @@ invert <- function(x) {
   x <- ifelse(x == 1, 0, 1)
 }
 
+roundupN <- function(x, n = 5) {
+  (ceil(x*100/n, 1)*n)/100
+} 
+
 # Factor functions 
 
 wrap_factor <- function(x, size = NULL) { 
@@ -138,7 +142,7 @@ theme_custom <- function(scale_f = 1, ...) {
     theme(
       plot.margin = margin(10, 5, 5, 5, "pt"),
       plot.subtitle = element_text(size = 11.5*scale_f, face = 'plain'),
-      plot.title = element_text(size = 12*scale_f, hjust = 0, face = 'bold', color = 'black'),
+      plot.title = element_text(size = 14.25*scale_f, hjust = 0, face = 'bold', color = 'black'),
       axis.text.x = element_text(hjust = 0.5),
       axis.text.y = element_text(hjust = 1),
       axis.title.y = element_text(color="black", size = 10*scale_f, angle = 90, vjust = 1, hjust = 1),

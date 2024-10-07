@@ -66,6 +66,54 @@ sample_chars <- function(ests, groups) {
   
 }
 
+# Share of businesses by sector
+
+sector_agg0_to_agg3 <- function(data) { 
+  
+  data %>% 
+    group_by(business_sector_str, business_sector_agg3) %>% 
+    filter(row_number() == 1) %>% 
+    select(business_sector_str, business_sector_agg3)
+  
+}
+
+sample_sector <- function(ests, agg0_to_agg3) {
+  
+  ests %>%
+    group_by(subgroup) %>%
+    mutate(
+      size_total = sum(total),
+      share = total/size_total
+    ) %>% ungroup() %>%
+    mutate(
+      valuelabel = paste0(pctclean(share, 1), "%")
+    ) %>%
+    filter(!is.na(group_cat_val) | group_cat_val != "Don't know") %>% 
+    left_join(agg0_to_agg3, by = join_by(group_cat_val == business_sector_str)) %>% 
+    mutate(
+      group_cat_val = fct_reorder(group_cat_val, share)
+    )
+  
+}
+
+sample_sector_bycity <- function(ests, agg0_to_agg3) {
+  
+  ests %>%
+    group_by(city, subgroup) %>%
+    mutate(
+      size_total = sum(total),
+      share = total/size_total
+    ) %>% ungroup() %>%
+    mutate(
+      valuelabel = paste0(pctclean(share, 1), "%")
+    ) %>%
+    filter(!is.na(group_cat_val) | group_cat_val != "Don't know") %>% 
+    left_join(agg0_to_agg3, by = join_by(group_cat_val == business_sector_str)) %>% 
+    mutate(
+      group_cat_val = fct_reorder(group_cat_val, share)
+    )
+  
+}
 
 ########################################################################
 # 2. Small firm owner ------------------------------------
@@ -123,7 +171,7 @@ corr_chart <- function(data) {
       x = NULL,
       title = "The relationship between MSE owner's motivations, goals and attitudes to risk",
       subtitle = 'Correlation coefficient',
-      caption = 'Notes: Correlation coefficients significant with a p-value of 0.05 or less are labeled with an *.'
+      caption = str_wrap(paste(SOURCE, 'Notes: Correlation coefficients significant with a p-value of 0.05 or less are labeled with an *.'), 170)
     ) +
     theme(strip.text.y = element_text(face = "bold"), legend.position = "none")
   
@@ -243,13 +291,15 @@ resilience_capital <- function(ests) {
   ests %>%
     filter(!is.na(indicator_name)) %>% 
     mutate(
-      indicator_type = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2"), "cont", "disc"), 
-      valuelabel = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2"), numclean(mean,1), paste0(round(mean*100, 0), "%")), 
-      valuecat = ifelse(indicator %not_in% c("resi_capital_score_v1", "resi_capital_score_v2"), cut(mean, breaks = seq(1,9,1)/8, labels = seq(1,8,1)), NA), 
+      indicator_type = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), "cont", "disc"), 
+      valuelabel = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), numclean(mean,1), paste0(round(mean*100, 0), "%")), 
+      valuecat = ifelse(indicator %not_in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), cut(mean, breaks = seq(1,9,1)/8, labels = seq(1,8,1)), NA), 
       valuecat = ifelse(indicator %in% c("resi_capital_score_v1"), cut(mean, breaks = (seq(1,9,1)/8)*4, labels = seq(1,8,1)), valuecat), 
       valuecat = ifelse(indicator %in% c("resi_capital_score_v2"), cut(mean, breaks = (seq(1,9,1)/8)*3, labels = seq(1,8,1)), valuecat), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v3"), cut(mean, breaks = (seq(1,9,1)/8)*7, labels = seq(1,8,1)), valuecat), 
       fillcolor = palette[valuecat] 
-    ) 
+    ) %>% 
+    separate(indicator_name, into = c("indicator_group2", "indicator_name"), sep = ",", )
   
 }
 

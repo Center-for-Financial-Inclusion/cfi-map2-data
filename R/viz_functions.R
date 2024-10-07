@@ -77,7 +77,7 @@ prep_reg_factors <- function(ests, factor_params, include_valuelabel = TRUE) {
 prep_reg_data <- function(data) {
   
   data %>%
-    group_by(depvar, confounds_flag) %>%
+    group_by(depvar, model_type) %>%
     mutate(
       
       baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
@@ -227,7 +227,7 @@ fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt
     ) + 
     # Customize the plot
     theme_custom() +
-    theme(legend.position = c(0.3,0.1), 
+    theme(legend.position = c(0.2,0.15), 
           legend.direction = "horizontal", 
           legend.title = element_text(color = "white"), 
           legend.text = element_text(color = "white"), 
@@ -406,9 +406,11 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
         if (params[["bars"]][["labeltotal_extendmax"]]) {
         maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
           p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
-        }
+        } else { 
+          p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+          }
       } else { 
-        p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), scales[["yaxis"]][["expand"]] )
+        p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
       }
     }
   
@@ -437,7 +439,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
       x = labels[["xax_ti"]],
       caption = labels[["caption"]]
     ) +
-    theme_custom()
+    theme_custom(scale_f = 1.2)
   
   # Flip coordinates?
   if (coord_flip) {
@@ -451,7 +453,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     }
     
     if (facets[["drop_col_label"]]) { 
-      p <- p + theme(strip.text.x.left = element_blank())
+      p <- p + theme(strip.text.x.top = element_blank())
     }
     
     if (facets[["add_dividers"]]) { 
@@ -463,7 +465,11 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
   
 }
 
-fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FALSE) {
+fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = NULL, coord_flip = FALSE) {
+  
+  if (is.null(effect_desc)) { 
+    effect_desc <- "Effect size"
+  }
   
   p <- ggplot(data = data,
          aes(x = effect_label,
@@ -487,7 +493,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
   
     p + geom_col(width =  barparams[["bars"]][["width"]], fill = barparams[["bars"]][["color"]]) + 
     geom_hline(aes(yintercept = baseline), color = "red", size = 0.25, linetype = "dashed") + 
-    geom_segment(aes(y = startarrow, yend = endarrow), color = "red", arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
+    geom_segment(aes(y = startarrow, yend = endarrow, color = effect_desc), arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
     geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white", size= 3.5) -> p
     
     # Value labels
@@ -515,6 +521,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
       
     #geom_text(aes(y = 0.95, label = annotation), hjust = 0, color = "black", nudge_x = 0, size = 3.5) +
     p + 
+    guides(color = guide_legend(title = NULL, position = "bottom")) + 
     # Figure Labels
     labs(
       title = labels[["title"]],
@@ -525,6 +532,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, coord_flip = FA
     ) +
     scale_y_continuous(limits = scales[["y"]][["limits"]], label = scales::label_number(), position = scales[["y"]][["position"]]) +
     scale_x_discrete(position = scales[["x"]][["position"]]) +
+    scale_color_manual(values = c("red")) + 
     theme_custom() -> p
   
     if (coord_flip) {

@@ -8,21 +8,24 @@ source("R/packages.R")
 source("R/utils.R")
 source("R/globals.R")
 source("R/functions.R")
+source("R/specific_functions.R") # Preparing specialized (non-generic) functions
 source("R/viz_functions.R")
 
 # Select country:
-COUNTRY <- params$country
-#COUNTRY <- "Ethiopia"
+#COUNTRY <- params$country
+COUNTRY <- "Indonesia"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
 source("R/0_weights.R")
 # Preparing main interview data  
 source("R/0_main_data.R")
-# Preparing specialized (non-generic) functions
-source("R/specific_functions.R")
 
 source("R/weights_out.R")
+
+enum_data <- enum_data %>%
+    left_join(weights_cluster, by = c("Initial_block_ID")) %>%
+    mutate(fullsample = "All businesses")
 
 # Add check that number of rows in main dataset = number of rows in raw dataset
 ```
@@ -45,10 +48,6 @@ N_bs_interviewed = summary["business_interviewed"]
 N_clusters_w_interviews = sum(businesses_percluster$N_business_interviwed_percluster > 0)
 N_clusters_w_zero_businesses = sum(businesses_percluster$N_business_total_percluster == 0)
   
-enum_data <- enum_data %>%
-    left_join(weights_cluster, by = c("Initial_block_ID")) %>%
-    mutate(fullsample = "All businesses")
-  
 
 ```
 
@@ -68,6 +67,7 @@ enum_data <- enum_data %>%
 #| echo: false
 #| warning: false
 #| fig-cap: "Geographic distribution of enumerated blocks"
+#| cap-location: margin
 
 library(sf)
 library(raster)
@@ -82,7 +82,7 @@ boundary <- get_boundary(polygons)
 block_data <- businesses_perblock %>% select(BlockID, N_business_total_percluster) %>% mutate(BlockID = as.character(BlockID))
 
 # Merging in number of enumerated businesses per block 
-if (COUNTRY %in% c("Brazil")) {
+if (COUNTRY %in% c("Alaska")) {
 
   block_data <- businesses_perblock %>% select(BlockID, N_business_total_percluster) %>% mutate(BlockID = as.character(BlockID))
   
@@ -109,11 +109,13 @@ fig_geo(boundary, polygons, raster_img, COUNTRY, map = map, color_opt = "rocket"
 
 ## The business landscape 
 
+
 ```{r, fig.width = 12, fig.asp = 0.35}
 #| label: fig-nbus_size_and_sector
 #| echo: false
 #| warning: false
-#| fig-cap: "Businesses enumerated by size and sector"
+#| fig-cap: "Estimated business population by size and sector"
+#| cap-location: margin
 
 # Number of firms by size and sector
 
@@ -126,11 +128,11 @@ fig_data <- total_businesses(ests)
 title <- total_businesses_title(ests, fig_data)
 
 labels <- list(
-  title = title,
+  title = str_wrap(title, 80),
   subtitle =  "Businesses (N)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
@@ -166,12 +168,15 @@ fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.35}
 #| label: fig-mse_chars
 #| echo: false
 #| warning: false
-#| fig-cap: "Small businesses by gender, size and sector"
-
+#| fig-cap: "MSE sample characteristics"
+#| cap-location: margin
 
 indicators <- c("business_total")
 groups <- GROUPS[c("business_size_agg2", "business_sector_agg3", "business_premise", "business_registration_status", "resp_owner_str", "resp_sex_str")]
@@ -180,11 +185,11 @@ ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weigh
 fig_data <- sample_chars(ests, groups)
 
 labels <- list(
-  title = "Characteristics of MSEs* in study sample",
+  title = "Characteristics of Micro and Small Enterprises (MSEs) in study sample",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = "Notes: MSEs correspond to businesses with 1-10 employees including the owner"
+  caption = paste(SOURCE, "Notes: MSEs correspond to businesses with 1-10 employees including the owner")
 )
 
 figparams <- list(
@@ -222,21 +227,98 @@ fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord
 ```
 
 
+---
+
+```{r, fig.width = 12, fig.asp = 0.55}
+#| label: fig-mse_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "MSEs by sector of production"
+#| cap-location: margin
+
+indicators <- c("business_total")
+groups <- GROUPS[c("business_sector_str")]
+
+ests_all <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "total") %>% mutate(subgroup = "All businesses")
+ests_men <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_men == 1), weights = "weight_msme", psu = NULL, keep = "total") %>% mutate(subgroup = "Men owned\nor managed")
+ests_women <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_women == 1), weights = "weight_msme", psu = NULL, keep = "total")  %>% mutate(subgroup = "Women owned\nor managed")
+  
+fig_data <- sample_sector(bind_rows(ests_all, ests_men, ests_women), sector_agg0_to_agg3(main_data))
+
+labels <- list(
+  title = "MSEs by sector of production",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = paste(SOURCE, "Notes: MSEs correspond to businesses with 1-10 employees including the owner")
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, position = "stack", color = "white", labeltotal = FALSE), 
+  valuelabels = list(show = FALSE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
+)
+
+palette <- c("#41BBD9", "#CEE5F2", "#FF9F1C")
+names(palette) <- c("Services: trade (re-sale)", "Services: other (eg. transport, construction)", "Manufacturing")
+
+maxy <- roundupN(max(fig_data$share, na.rm = TRUE))
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, maxy), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 3, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "share", fillvar = "business_sector_agg3"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "subgroup", 
+  cols = "subgroup",
+  nrows = 1, 
+  ncols = 1,
+  scales = "fixed", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.35}
 #| label: fig-mses_productivity
 #| echo: false
 #| warning: false
 #| fig-cap: "MSE revenues and productivity"
+#| cap-location: margin
 
 # Firm performance: Monthly revenue and normalized sales per employee
+fig_notes <- "Notes: MSEs reported monthly revenue in local currency, these values are converted to USD using June 1 2024 exchange rates obtained from UN treasury data. Daily sales per employee is computed by standardizing revenues across firms using data on the months per year and the hours per week the business is in operation."
 
-indicators <- c("perf_rev_reports", "perf_rev_usd", "perf_revphrpemp_usd")
+indicators <- c("perf_rev_reports", "perf_rev_usd", "perf_revpdypemp_usd")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 60, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
+  wrap_sizes = list(indicator_name = 30, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
@@ -246,14 +328,16 @@ fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = FALSE) %>%
     mean = ifelse(indicator == "perf_rev_reports", mean*100, mean), 
     mean_low = ifelse(indicator == "perf_rev_reports", mean_low*100, mean_low), 
     mean_upp = ifelse(indicator == "perf_rev_reports", mean_upp*100, mean_upp), 
-    valuelabel = round(mean, 2))
+    indicator_name = fct_inorder(indicator_name), 
+    valuelabel = ifelse(indicator %in% c("perf_rev_reports", "perf_rev_usd"), round(mean, 0), round(mean, 2))
+    )
 
 labels <- list(
   title = "MSE revenues and productivity",
-  subtitle = "Current USD (Average)",
+  subtitle = "Mean sales and standardized daily sales per worker",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -261,12 +345,12 @@ figparams <- list(
   bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
   valuelabels = list(show = TRUE, lab_hjust = 1, lab_ndgfcty = 1000, lab_ndgdiry = 1, lab_ndgx = 0.5, lab_face = "plain", lab_size = 3.5), 
   catlabels = list(show = FALSE), 
-  errorbars = list(show = TRUE, color = "#2374AB")
+  errorbars = list(show = FALSE, color = "#2374AB")
 )
 
 scales <- list(
   fillcolor = list(palette = NULL), 
-  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "number", expand = NULL, droplines = TRUE)
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "number", expand = c(0.1, 0.1), droplines = TRUE)
 )
 
 legend <- list(
@@ -298,12 +382,17 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-mse_perf_subj
 #| echo: false
 #| warning: false
 #| fig-cap: "Changes in MSE outcomes in past year"
+#| cap-location: margin
 
+fig_notes <- c("Notes: The data in this figure is based on the firm owner or manager's own evaluation of changes in sales, the number of employees and investments compared to the same time 12 months ago.")
 
 indicators <- c("perf_sales_up", "perf_sales_same", "perf_sales_down", "perf_emp_up", "perf_emp_same",  "perf_emp_down", "perf_investment", "perf_newservices")       
 
@@ -324,19 +413,22 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
   geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.9, color = "white", position = "dodge", fill = "#CEE5F2", position_width = 0.5, labeltotal = FALSE), 
+  bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.5, labeltotal = FALSE), 
   valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
+palette <- c("grey90", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "Women", "Men")  
+
 scales <- list(
-  fillcolor = list(palette = NULL), 
+  fillcolor = list(palette = palette), 
   yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = TRUE)
 )
 
@@ -349,7 +441,7 @@ legend <- list(
 )
 
 vars <- list(
-  xvar = "indicator_name", yvar = "mean", fillvar = NULL
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
 )
 
 facets <- list(
@@ -367,6 +459,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
 ## The small firm owner
 
 ```{r, fig.width = 12, fig.asp = 0.4}
@@ -374,7 +467,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 #| echo: false
 #| warning: false
 #| fig-cap: "Gender composition of MSEs by sise and sector"
-
+#| cap-location: margin
 
 indicators <- c("resp_sex_men", "resp_sex_women")
 groups <- GROUPS[c("fullsample", "business_premise", "business_size_agg2", "business_sector_agg3")]
@@ -390,11 +483,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Share of men and women MSE owners or manager, by business size, sector and premises",
+  title = "Share of men and women MSE owners or managers, by business size, sector and premises",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
@@ -441,12 +534,15 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-mse_owner_chars
 #| echo: false
 #| warning: false
 #| fig-cap: "MSE owner characteristics"
-
+#| cap-location: margin
 
 indicators <- c("resp_education_agg4_shc_non", "resp_education_agg4_shc_pri", "resp_education_agg4_shc_sec", "resp_education_agg4_shc_trt", 
                  "resp_experience_agg5_shc_1", "resp_experience_agg5_shc_2_5", "resp_experience_agg5_shc_6_10", "resp_experience_agg5_shc_11_20", "resp_experience_agg5_shc_20", 
@@ -457,7 +553,7 @@ groups <- GROUPS[c("fullsample", "resp_sex_str")]
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
+  wrap_sizes = list(indicator_name = 80, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
@@ -465,22 +561,22 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Age, education and experience of small business owners or managers",
+  title = "Age, education and experience of MSE owners or managers",
   subtitle =  "Owners or managers (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
   geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.5, labeltotal = FALSE), 
+  bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.9, labeltotal = FALSE), 
   valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+palette <- c("grey90", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")  
 
 scales <- list(
@@ -503,7 +599,7 @@ vars <- list(
 facets <- list(
   type = "grid", 
   rows = "indicator_group", 
-  cols = "group_cat_val", 
+  cols = "group_name", 
   scales = "free_y", 
   space = "free", 
   drop_row_label = FALSE, 
@@ -516,12 +612,17 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.6}
 #| label: fig-mse_owner_psych
 #| echo: false
 #| warning: false
 #| fig-cap: "Pyschographic characrteristics of SME owners or managers, by gender"
+#| cap-location: margin
 
+fig_notes <- c("Notes: Only owners were asked about the motivation for starting the business and the primary goal for the business over the next year. MSEs are classified into one of 3 'psychographic orientations' based on owner responses about motivations, goals and attitude to risk. 'Growth' oriented firms are those with owners who see themsevles as entreprenuers, want to grow the business over the next 12 months and who have a medium to high tolerance for risk. 'Survial' oriented firms are those whose owners started the business due to lack of opportunities or other reasons, whose main goal is to cover costs or leave the business and who have a medium to low tolerance for risk. 'Stability' firms are those who neither meet the criteria for 'Growth' or 'Survival'.")
 
 indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motivation_oth", 
                 "resp_maingoal_grow",  "resp_maingoal_stab", "resp_maingoal_leave", 
@@ -533,7 +634,7 @@ groups <- GROUPS[c("fullsample")]
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 60, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
+  wrap_sizes = list(indicator_name = 80, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
@@ -541,11 +642,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-   title = "Pyschographic characteristics of SME owners or managers",
-  subtitle = "% of MSE owners or managers",
+   title = "Pyschographic characteristics of MSE owners or managers",
+  subtitle = "MSE owners or managers (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -580,7 +681,7 @@ facets <- list(
   scales = "free_y", 
   space = "free", 
   drop_row_label = FALSE, 
-  drop_col_label = FALSE, 
+  drop_col_label = TRUE, 
   add_dividers = TRUE
 )
 
@@ -589,12 +690,16 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-resp_psyc_corr
 #| echo: false
 #| warning: false
 #| fig-cap: "Correlation between owner's motivations, goals and attitudes to risk"
-
+#| cap-location: margin
+#| 
 selected_indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motivation_oth",
                             "resp_maingoal_grow", "resp_maingoal_leave", "resp_maingoal_stab",
                             "resp_riskapproach_aggr", "resp_riskapproach_avoid", "resp_riskapproach_calc") 
@@ -608,11 +713,14 @@ corr_chart(fig_data) + theme(strip.text.y.left = element_text(angle = 0))
 
 ```
 
+---
+
 ```{r, fig.width = 12, fig.asp = 0.65}
 #| label: fig-resp_psyc_mca
 #| echo: false
 #| warning: false
 #| fig-cap: "Correlation between owner's motivations, goals and attitudes to risk"
+#| cap-location: margin
 
 mca <- runmca_psych(main_data, showgraph = FALSE)
 
@@ -634,12 +742,17 @@ p4 <- fviz_contrib(mca, choice = "var", axes = 2, top = 15)
 (p1 + p2) / (p3 + p4)
 ```
 
+---
+
 ```{r, fig.width = 12, fig.asp = 0.5}
 #| label: fig-reg_growth_gender
 #| echo: false
 #| warning: false
-#| fig-cap: "Correlation between owner's motivations, goals and attitudes to risk"
+#| fig-cap: "Relationship between owner's gender and motivations, goals and attitudes to risk"
+#| cap-location: margin
 
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the effect of gender on several outcomes of interest. The 'unadjusted' model does not include any controls, while the 'adjusted' model includes controls for two variables: years of experience and educational attainment. The regression parameters are used to compute predicted probabilities for male and female business owners with the average years of experience running the business in the sample and with primary-level educational attainment."
+  
 # Defining regressions
   #depvars <- c("resp_psych_segment_shc_grow", "resp_psych_segment_shc_stab", "resp_psych_segment_shc_surv")
   #depvar_labels <- c("Growth and risk oriented", "Stability oriented", "Survival oriented")
@@ -658,18 +771,19 @@ ests <- bind_rows(
 
 factor_params <- list(
   wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
-  reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
+  reverse_order = list(depvar_label = FALSE, effect_label = FALSE, model_type = FALSE), 
   order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
 )
 
-fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE)) %>% 
+  mutate(effect_label = ifelse(effect_label == "Gender: Women", "Women", "Men"))
 
 labels <- list(
-      title = "Observational estimates of the relationship of owner's gender on the orientation of firms",
-      subtitle = "The difference (in percentage points) between women and men owners on motivation, goals and approach to risk is shown with the red arrow",
+      title = "Observational estimates of the effect of owner's gender on the orientation of firms",
+      subtitle = "", 
       y = "Predicted probability (%)",
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of gender on several outcomes of interest. The 'unadjusted' model does not include any additional controls, while the 'adjusted' model includes controls for three variables: years of experience and educational attainment. The regression parameters are used to compute predicted probabilities for male and female business owners with the average years of experience running the business in the sample and with primary-level educational attainment.", 175)
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
     )
 
   barparams <- list(
@@ -685,23 +799,28 @@ scales <- list(
 
  facets <- list(type = "grid", cols ="depvar_label", rows = "model_type", scales = "free", space = "free", drop_row_label = FALSE) 
     
- fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The difference (in percentage points) between women and men owners on motivation, goals and approach to risk", coord_flip = FALSE)
 
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.3}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.35}
 #| label: fig-mse_hh_owner
 #| echo: false
 #| warning: false
 #| fig-cap: "MSEs and codependence with owner's household"
+#| cap-location: margin
 
+fig_notes <- c("Notes: Only owners were asked (1) whether the formal account used for managing the firms finances and payments is separate from their personal or hosuehold account and (2) the share of total household monthly income that comes from the business. 'Business operations and finances are separate from the household' is a composite indicator to identify businesses that (1) operate outside of the owner's household AND (2) have a formal financial account that is separate from the owner's personal or household account")
 
-indicators <- c("business_premise_shc_1", "resp_pcthhincfrmbus_high", "business_finances_notseparate", "business_hh_noboundaries")
+indicators <- c("business_premise_shc_1", "resp_pcthhincfrmbus_high", "business_account_separate_v2", "business_hh_separate")
 
 groups <- GROUPS[c("resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_type_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_type_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean") %>% mutate(indicator_name = ifelse(indicator_name == "Household", "Business operates from household premises", indicator_name))
 
 
 factor_params <- list(
@@ -710,14 +829,14 @@ factor_params <- list(
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
 
-fig_data <- prep_fig_data(ests, factor_params)
+fig_data <- prep_fig_data(ests, factor_params) 
 
 labels <- list(
-  title = "Co-dependence of MSEs and the owner's household",
+  title = "Co-dependence of MSE and the owner's household",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -751,9 +870,9 @@ facets <- list(
   cols = "group_cat_val", 
   scales = "free_y", 
   space = "free", 
-  drop_row_label = FALSE, 
+  drop_row_label = TRUE, 
   drop_col_label = FALSE, 
-  add_dividers = TRUE
+  add_dividers = FALSE
 )
 
 fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
@@ -768,6 +887,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 #| echo: false
 #| warning: false
 #| fig-cap: "Access to connectivity and devices"
+#| cap-location: margin
 
 indicators <- c("tech_has_device", "tech_has_internet", "tech_uses_website", names(main_data)[str_detect(names(main_data), "^(tech.+).(shc.+)$")], "tech_uses_ai", "tech_uses_digpayments", "tech_uses_digloans", "tech_uses_adoption_score")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3", "resp_sex_str")]
@@ -784,11 +904,11 @@ fig_data <- prep_fig_data(ests, factor_params)
 fig_data <- tech_adoption_landscape(fig_data, wrap = factor_params[["wrap_sizes"]][["indicator_name"]])
 
 labels <- list(
-  title = "Adoption and frequency of use of digital technologies",
+  title = "Digital technologies: Adoption and frequency of use",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
@@ -832,16 +952,21 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 ```
 
 
-```{r, fig.width = 12, fig.asp = 0.4}
+---
+
+```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-reg_digtech_drivers
 #| echo: false
 #| warning: false
 #| fig-cap: "Relationship between digital technology adoption and firm-level labor productivity"
+#| cap-location: margin
 
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the relationship of several owner and firm-level characteristics with digital technology adoption measured using a score that ranges from 0 to 10 depending on the firm's use of ten distinct technologies. The regression parameters are used to compute predicted probabilities to show the marginal effect of each characteristic on digital technology adoption. Age and experience are mean centered and the effect shown corresponds to an increase in 5 years. The height of 'Baseline' corresponds to the predicted digital technology adoption score for firms run by an owner with mean age, mean experience, with primary-level or less educaitonal attainment."
+  
 # Defining regressions
   depvars <- c("tech_uses_adoption_score")
   depvar_labels <- INDICATORS[depvars]
-  maineffects <- c("resp_sex_women", "resp_age_c_5yi", "resp_experience_c_5yi", "resp_education_agg2_shc_secormore", "resp_motivation_entrep", "resp_maingoal_grow", "resp_riskapproach_aggr")
+  maineffects <- c("resp_sex_women", "resp_age_c_5yi", "resp_experience_c_5yi", "resp_education_agg2_shc_secormore", "resp_motivation_entrep", "resp_maingoal_grow", "resp_riskapproach_aggr", "business_sector_agg3_shc_srv_oth", "business_sector_agg3_shc_mfc")
   effect_labels <- c("(Intercept)" = "Baseline", INDICATORS[maineffects])
 
 # Running regressions
@@ -849,15 +974,22 @@ ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
   )
 
-# Preparing figure
-fig_data <- prep_reg_data(ests)
+
+# Preparing figure data
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 70, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = TRUE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
 
  labels <- list(
-      title = "Drivers of overall technology adoption",
-      subtitle = "The effect of each predictor on technology adoption is shown with the red arrow",
+      title = "Predictors of overall technology adoption",
+      subtitle = NULL,
       y = "Predicted technology adoption score [0-10]",
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of several owner and firm-level characteristics. The regression parameters are used to compute predicted probabilities for businesses with different degrees of technology adoption.", 175)
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
     )
  
  barparams <- list(
@@ -878,19 +1010,25 @@ scales <- list(
   x = list(txtwrap = 50, position = "bottom")
 )
 
-fig_regests(fig_data, labels, facets = NULL, barparams, scales, coord_flip = TRUE)
+fig_regests(fig_data, labels, facets = NULL, barparams, scales, effect_desc = "The effect of each predictor on technology adoption", coord_flip = TRUE)
 
 ```
+
+
+---
 
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-digtech_usecases
 #| echo: false
 #| warning: false
 #| fig-cap: "Digital technology adoption by use case"
+#| cap-location: margin
+
+fig_notes <- "Notes: The functional use-case categories are defined as follows: 'Communicating with customers' includes use of messaging (e.g. Whatsapp) or social media apps (e.g. Facebook); 'Accessing markets' includes use of e-commerce platforms (e.g. Amazon) or a dedicated business website; 'Enterprise operations' includes use of digital applications or software (e.g. for booking, inventory management), including aritifical intelligence; 'Digital payment acceptance' includes use of any in-store POS device that accepts digital customer payments (credit or debit cards, mobile money, QR codes), or online payments. The frequency of use of digital payments acceptance is not available, and corresponds to whether the business has used any means of digital payment acceptance in the past 12 months."
 
 #indicators <- c("tech_cat_none", "tech_uses_messaging", "tech_uses_socialmedia", "tech_uses_website", "tech_uses_ecommerce", "tech_uses_software", "tech_uses_ai", "tech_uses_digpayments", "tech_uses_digloans")
 
-indicators <- c("tech_function_comms", "tech_function_mkts", "tech_function_ops", "tech_function_epay", "tech_function_comms_30da", "tech_function_mkts_30da", "tech_function_ops_30da", 
+indicators <- c("tech_function_comms", "tech_function_mkts", "tech_function_ops", "tech_function_epay", "tech_function_epay_expos", "tech_function_comms_30da", "tech_function_mkts_30da", "tech_function_ops_30da", 
                 "tech_function_comms_7da", "tech_function_mkts_7da", "tech_function_ops_7da")
 
 groups <- GROUPS[c("fullsample", "resp_sex_str")]
@@ -906,11 +1044,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Use-cases of digital technologies in use by MSEs",
+  title = "Applications of digital technologies used by MSEs",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-    caption = str_wrap("Notes: The functional use-case categories are defined as follows: 'Communicating with customers' includes use of messaging (e.g. Whatsapp) or social media apps (e.g. Facebook); 'Accessing markets' includes use of e-commerce platforms (e.g. Amazon) or a dedicated business website; 'Enterprise operations' includes use of digital applications or software (e.g. for booking, inventory management), including aritifical intelligence; 'Digital payment acceptance' includes use of any in-store POS device that accepts digital customer payments (credit or debit cards, mobile money, QR codes), or online payments. The frequency of use of digital payments acceptance is not available, and corresponds to whether the business has used any means of digitaly payment acceptance in hte past 12 months.", 175)
+    caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -957,13 +1095,19 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-digtech_use_depth
 #| echo: false
 #| warning: false
 #| fig-cap: "Depth of digital technology adoption"
+#| cap-location: margin
 
-indicators <- c("tech_cat_none", "tech_cat_any1", "tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
+fig_notes <- "Notes: Four use-cases of digital technology are considered here: 'Communicating with customers', 'Accessing markets', 'Enterprise operations' and 'Digital payment acceptance'. MSEs are classified with respect to whether they use digital technology for any one, any two, any three, all four or none of these use-cases."
+
+indicators <- c("tech_cat_none", "tech_cat_any1", "tech_cat_any2", "tech_cat_any3all4")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
@@ -977,11 +1121,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Depth of digital technologies used by MSEs",
+  title = "Depth of digital applications used by MSEs",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = str_wrap("Notes: Four use-cases of digital technology are considered here: 'Communicating with customers', 'Accessing markets', 'Enterprise operations' and 'Merchant payments'. MSEs are classified with respect to whether they use digital technology for any one, any two, any three, all four or none of these use-cases.", 175)
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -992,7 +1136,7 @@ figparams <- list(
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
+palette <- c("grey90", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men", "Stability or survival", "Growth")   
 
 scales <- list(
@@ -1028,12 +1172,18 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.5}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.55}
 #| label: fig-tech_adoptionfactors
 #| echo: false
 #| warning: false
 #| fig-cap: "Digital technology adoption factors"
+#| cap-location: margin
 
+fig_notes <- "Notes: The data in this figure pertains to the following 3 questions:(1) What are the factors that encouraged you to adopt and actively use the digital technologies you indicated before? (2) What benefits has the use of digital technologies had on your business? (3) What are the main challenges the business has faced in using digital technologies?. These survey questions were only asked to businesses who reported using any of the following tehcnologies: messaging apps, social media, e-commerce platforms, software for business operations, a website or artificial intelligence."
+  
 indicators <- c(names(main_data)[str_detect(names(main_data), "adopfactors")],
                 names(main_data)[str_detect(names(main_data), "adopbenefits")], 
                 names(main_data)[str_detect(names(main_data), "adopchllng")])
@@ -1052,10 +1202,10 @@ fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Digital technology adoption factors, benefits and challenges",
-  subtitle =  "MSEs using digital solutions* (%)",
+  subtitle =  "MSEs using digital solutions (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-    caption = str_wrap("Notes: *These survey questions were only asked to businesses who reported using any of the following tehcnologies: messaging apps, social media, e-commerce platforms, software for business operations, a website or artificial intelligence.", 175)
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1066,7 +1216,7 @@ figparams <- list(
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
+palette <- c("grey90", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2",  "#FF9F1C", "#1768AC")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men", "Stability or survival", "Growth")   
 
 scales <- list(
@@ -1101,30 +1251,35 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.45}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.5}
 #| label: fig-reg_revprhr_digtechusecase
 #| echo: false
 #| warning: false
 #| fig-cap: "Relationship between digital technology adoption and firm-level labor productivity"
+#| cap-location: margin
 
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption on firm labor productivity. The 'unadjusted' model does not include any controls, while the 'adjusted' model includes controls for two variables: years of experience and educational attainment. An additional adjusted model controls for experience, education and psychological characteristics of the owner related to motivation, growth orientation and risk tolerance. The regression parameters are used to compute predicted probabilities to show the marginal effect of digital technology adoption on productivity. The height of 'Baseline' corresponds to the predicted productivity for firms run by an owner with mean years of experience, and secondary-level educaitonal attainment."
+  
 # Defining regressions
-  depvars <- c("perf_revphrpemp_usd")
+  depvars <- c("perf_revpdypemp_usd")
   depvar_labels <- INDICATORS[depvars]
-  maineffects <- c("tech_function_comms", "tech_function_mkts","tech_function_ops","tech_function_epay")
-  if (COUNTRY == "India") { 
-     maineffects <- c("tech_function_comms", "tech_function_mkts","tech_function_ops")
-    }
+  maineffects <- c("tech_function_comms", "tech_function_mkts_ops","tech_function_epay")
   effect_labels <- c("(Intercept)" = "No digital solutions used", INDICATORS[maineffects])
   confounds <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt")
+  confounds2 <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt", "psych_mca_dim1", "psych_mca_dim2")
   
 # Running regressions
 ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
-    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
-  ) 
-
+    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels), 
+    map(depvars, model_and_prepfig, maineffects, confounds2, data = main_data, depvar_labels, effect_labels, model_type_override = "Model: Adjusted (+ pyschographics)") 
+  ) %>% mutate(effect_label = str_replace(effect_label, ": Uses", ""))
+    
 factor_params <- list(
-  wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
+  wrap_sizes = list(depvar_label = 20, effect_label = 10, model_type = 25), 
   reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
   order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
 )
@@ -1133,10 +1288,10 @@ fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelab
 
  labels <- list(
       title = "Observational estimates of the effect of digital technology adoption on labor productivity",
-      subtitle = "The effect of digital technology adoption on labor productivity is shown with the red arrow",
+      subtitle = "", 
       y = NULL,
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption on firm labor productivity. The 'unadjusted' model does not include any additional controls, while the 'adjusted' model includes controls for three variables: years of experience and educational attainment. The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption, with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
     )
 
   barparams <- list(
@@ -1160,38 +1315,41 @@ scales <- list(
 
  facets <- list(type = "grid", rows ="depvar_label", cols = "model_type", scales = "free", space = "free", drop_row_label = FALSE) 
     
- fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The effect of digital technology adoption on labor productivity", coord_flip = FALSE)
 
 
 ```
 
+
+---
 
 ```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-reg_revprhr_digtechdepth
 #| echo: false
 #| warning: false
 #| fig-cap: "Relationship between depth of digital technology adoption and firm-level labor productivity"
+#| cap-location: margin
 
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption on firm labor productivity. The 'unadjusted' model does not include any controls, while the 'adjusted' model includes controls for two variables: years of experience and educational attainment. An additional adjusted model controls for experience, education and psychological characteristics of the owner related to motivation, growth orientation and risk tolerance. The regression parameters are used to compute predicted probabilities to show the marginal effect of digital technology adoption on productivity. The height of 'Baseline' corresponds to the predicted productivity for firms run by an owner with mean years of experience, and secondary-level educaitonal attainment."
 
 # Defining regressions
-  depvars <- c("perf_revphrpemp_usd")
+  depvars <- c("perf_revpdypemp_usd")
   depvar_labels <- INDICATORS[depvars]
-  maineffects <- c("tech_cat_any1", "tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
-   effect_labels <- c("(Intercept)" = "No digital solutions used", INDICATORS[maineffects])
-  if (COUNTRY == "India") { 
-     maineffects <- c("tech_cat_any2", "tech_cat_any3", "tech_cat_all4")
-      effect_labels <- c("(Intercept)" = "Any 1 use-case", INDICATORS[maineffects])
-    }
-  confounds <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt", "resp_maingoal_grow", "resp_riskapproach_aggr")
+  maineffects <- c("tech_cat_any1", "tech_cat_any2", "tech_cat_any3all4")
+  effect_labels <- c("(Intercept)" = "No digital solutions used", INDICATORS[maineffects])
+   
+  confounds <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt")
+  confounds2 <- c("resp_experience_c", "resp_education_agg4_shc_non", "resp_education_agg4_shc_pri",  "resp_education_agg4_shc_trt", "psych_mca_dim1", "psych_mca_dim2")
   
 # Running regressions
 ests <- bind_rows(
     map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data, depvar_labels, effect_labels),
-    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels)
-  )
+    map(depvars, model_and_prepfig, maineffects, confounds, data = main_data, depvar_labels, effect_labels), 
+    map(depvars, model_and_prepfig, maineffects, confounds2, data = main_data, depvar_labels, effect_labels, model_type_override = "Model: Adjusted (+ pyschographics)") 
+  ) %>% mutate(effect_label = str_replace(effect_label, "Digital technology adoption:", ""))
 
 factor_params <- list(
-  wrap_sizes = list(depvar_label = 20, effect_label = 15, model_type = 25), 
+  wrap_sizes = list(depvar_label = 20, effect_label = 12, model_type = 25), 
   reverse_order = list(depvar_label = TRUE, effect_label = FALSE, model_type = FALSE), 
   order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
 )
@@ -1201,13 +1359,10 @@ fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelab
 
  labels <- list(
       title = "Observational estimates of the effect of depth of digital technology adoption on labor productivity",
-      subtitle = "The effect of digital technology adoption on labor productivity is shows with the red arrow",
+      subtitle = "",
       y = NULL,
       x = NULL,
-      caption = str_wrap("Notes: The results shown are based on a linear regression model that measures the effect of digital technology adoption
-                      on firm labor productivity. The 'unadjusted' model does not include any additional controls,
-                       while the 'adjusted' model includes controls for three variables: years of experience and educational attainment.
-                       The regression parameters are used to compute predicted probabilities for businesses with different types of technology adoption,                    with the average years of experience running the business in the sample and with secondary-level educational attainment.", 175)
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
     )
 
 
@@ -1225,27 +1380,31 @@ scales <- list(
   x = list(position = "bottom")
 )
 
- fig_regests(fig_data, labels, facets = facets, barparams, scales, coord_flip = FALSE)
+ fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The effect of digital technology adoption on labor productivity", coord_flip = FALSE)
  
 ```
 
+
+
 ## Financial services 
 
-```{r, fig.width = 12, fig.asp = 0.5}
+```{r, fig.width = 12, fig.asp = 0.55}
 #| label: fig-account_ownership
 #| echo: false
 #| warning: false
 #| fig-cap: "Financical accounts and savings"
+#| cap-location: margin
 
+fig_notes <- c("Notes: Business savings account types are based on responses to the following question: Where are the business savings primarily kept? Common responses under other include: 'At home', 'Don't have savings' or saving with relatives, friends or neighbors. Savings account transaction channels are based on the following question: What are the options for transacting with this savings account? OTC represents 'Over the counter' and corresponds to the response option 'In-person through a physical branch location.")
 
-indicators <- c("fin_account_formal", "fin_owner_save", names(main_data)[str_detect(names(main_data), "bus_savings")])
+indicators <- c("fin_account_formal", "fin_account_formal_v2", "fin_account_formal_v3", "fin_account_formal_v4", "fin_owner_save", names(main_data)[str_detect(names(main_data), "bus_savings")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
@@ -1257,7 +1416,7 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1268,7 +1427,7 @@ figparams <- list(
   errorbars = list(show = FALSE, color = "#2374AB")
 )
 
-palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+palette <- c("grey90", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
 scales <- list(
@@ -1304,12 +1463,17 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-payments
 #| echo: false
 #| warning: false
 #| fig-cap: "Merchant payments"
+#| cap-location: margin
 
+fig_notes <- c("Notes: The data in this question correspond to responses to the question 'In the last 12 months, what methods has the business used to accept payments from customers?'")
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "merchpay")])
 
@@ -1326,11 +1490,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Merchant payments: Methods used by business to accept customer payments (in past 12 months)",
+  title = "Merchant payments: Methods used by business to accept customer payments",
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1377,12 +1541,16 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 ```
 
 
-```{r, fig.width = 12, fig.asp = 0.5}
+---
+
+```{r, fig.width = 12, fig.asp = 0.6}
 #| label: fig-credit_demand
 #| echo: false
 #| warning: false
 #| fig-cap: "Demand for credit"
+#| cap-location: margin
 
+fig_notes <- c("Notes: 'Used a loan or tried to obtain one in past 12 months' indicates whether the MSE had actively used a loan in the past 12 months OR tried to obtain a loan but coud not get one. The reasons for using credit are based on the following 'How did this business use the loans that were active in the last 12 months?', the reported percentages are for the subset of firms that had an active loan in the past 12 months")
 
 indicators <- names(main_data)[str_detect(names(main_data), "activeloan")]
 indicators <- indicators[!str_detect(indicators, "da")]
@@ -1405,7 +1573,7 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1419,7 +1587,7 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
@@ -1455,13 +1623,14 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 ```
 
 
+---
 
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-credit_denied
 #| echo: false
 #| warning: false
 #| fig-cap: "Barriers to credit"
-
+#| cap-location: margin
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "denied")])
 
@@ -1482,7 +1651,7 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
@@ -1496,9 +1665,7 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
-buffer <- maxy/10
-maxy <- maxy + buffer
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
@@ -1532,12 +1699,18 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.5}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.55}
 #| label: fig-dfs_impacts
 #| echo: false
 #| warning: false
 #| fig-cap: "Impacts of digital financial services"
+#| cap-location: margin
 
+fig_notes <- "Notes: This figure shows responses to two questions asked to users of digital financial services (including savings, loans, payments and insurance): (1) What effects has the use of financial services used through a phone, app, or computer on your business? (2) What are the main challenges the business has faced in using financial services used through a phone, app, or computer on your business?"
+  
 indicators <- c("fin_dfs_user", names(main_data)[str_detect(names(main_data), "digital_benefits|digital_challenges")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
@@ -1557,7 +1730,7 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1571,9 +1744,7 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
-buffer <- maxy/10
-maxy <- maxy + buffer
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
@@ -1607,14 +1778,19 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+
 ## Consumer protection
 
-```{r, fig.width = 12, fig.asp = 0.4}
+```{r, fig.width = 12, fig.asp = 0.5}
 #| label: fig-cp_loanrepayment
 #| echo: false
 #| warning: false
 #| fig-cap: "Challenges with loan repayment"
+#| cap-location: margin
 
+fig_notes <- "Notes: The two questions on loan repayment difficulty were only asked to MSEs that had an active loan in the past 12 months, the questions are: (1) In the last 12 months, has the business been unable to pay a full loan installment on-time for any funds that it borrowed? and (2) How did you cope with this difficulty to repay?"
+  
 indicators <- c(names(main_data)[str_detect(names(main_data), "loanrepaydiff")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
@@ -1632,10 +1808,10 @@ fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Challenges with loan repayment",
-  subtitle =  "MSEs (%)",
+  subtitle =  "MSEs with active loans in the past 12 months (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1649,9 +1825,7 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
-buffer <- maxy/10
-maxy <- maxy + buffer
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
@@ -1685,15 +1859,21 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.55}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.6}
 #| label: fig-cp_issues
 #| echo: false
 #| warning: false
 #| fig-cap: "Consumer protection issues"
+#| cap-location: margin
+
+fig_notes <- "Notes: This figure shows responses to five questions relating to consumer risks, disputes and redress: (1) In the last 12 months, have you encountered any of the following issues with financial services?, (2) When you encountered an issue with digital financial services, did you raise an official complaint?, (3) Why didn't you raise a complaint?, (4) If you raised an official complaint, was the issue resolved? and (5) Have you ever stopped using any digital financial services due to fear of, or experiencing, the risks discussed above?"
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "cp_issues|cp_complaint|cp_dfs_stopped")])
 
-groups <- GROUPS[c("fullsample")]
+groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")  %>% 
   mutate(indicator_group = ifelse(str_detect(indicator, "cope"), "Coping strategy", indicator_group))
@@ -1711,12 +1891,12 @@ labels <- list(
   subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
   geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.8, position = "dodge", position_width = 0.9, fill = "#CEE5F2", labeltotal = FALSE, color = "white"), 
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
   valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
   catlabels = list(show = FALSE), 
   errorbars = list(show = FALSE, color = "#2374AB")
@@ -1725,13 +1905,11 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
-buffer <- maxy/10
-maxy <- maxy + buffer
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
-  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+  yaxis = list(limits = c(0, maxy), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
 )
 
 legend <- list(
@@ -1743,7 +1921,7 @@ legend <- list(
 )
 
 vars <- list(
-  xvar = "indicator_name", yvar = "mean", fillvar = NULL
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
 )
 
 facets <- list(
@@ -1762,6 +1940,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 ```
 
 
+
 ## Risks and Resilience
 
 ```{r, fig.width = 12, fig.asp = 0.4}
@@ -1769,7 +1948,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 #| echo: false
 #| warning: false
 #| fig-cap: "Risks: General"
-
+#| cap-location: margin
 
 indicators <- c("risk_largestimpact_shc_corr", "risk_largestimpact_shc_cost", "risk_largestimpact_shc_crme", "risk_largestimpact_shc_frau", "risk_largestimpact_shc_hlth", "risk_largestimpact_shc_none", "risk_largestimpact_shc_othr", "risk_largestimpact_shc_wthr")
 
@@ -1787,10 +1966,10 @@ fig_data <- prep_fig_data(ests %>% filter(indicator_name != "No risks faced"), f
 
 labels <- list(
   title = "High impact shocks faced by MSEs",
-  subtitle =  "In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business?",
+  subtitle =  str_wrap("In the last 36 months (3 years), which of the following risks had the largest impact (most costly) in terms of losses or expenses incurred by the business?", 120), 
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = SOURCE
 )
 
 figparams <- list(
@@ -1804,9 +1983,7 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
-maxy <- round(max(fig_data$mean, na.rm = TRUE), 2)
-buffer <- maxy/10
-maxy <- maxy + buffer
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
 
 scales <- list(
   fillcolor = list(palette = palette), 
@@ -1841,12 +2018,15 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.35}
 #| label: fig-risks_climate_types
 #| echo: false
 #| warning: false
 #| fig-cap: "Risks: Climate"
-
+#| cap-location: margin
 
 indicators <- c("risk_weather_type_heat", "risk_weather_type_droughts", "risk_weather_type_floodstyphoon", "risk_weather_type_other", "risk_weather_type_any")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
@@ -1863,10 +2043,10 @@ fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
   title = "Climate shocks faced by MSEs",
-  subtitle =  "In the last 36 months (3 years), has your business or the supply chain of your business experienced any of the following weather-related risks?",
+  subtitle =  str_wrap("In the last 36 months (3 years), has your business or the supply chain of your business experienced any of the following weather-related risks?", 120), 
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = "Notes: *For Indonesia and India, extreme rain floods or landslides includes typhoons or cyclones"
+  caption = str_wrap(paste(SOURCE, "Notes: *For Indonesia and India, extreme rain, floods or landslides includes typhoons or cyclones"), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1880,9 +2060,11 @@ figparams <- list(
 palette <- c("grey70", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
 names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")   
 
+maxy <- roundupN(max(fig_data$mean, na.rm = TRUE))
+
 scales <- list(
   fillcolor = list(palette = palette, direction = NULL), 
-  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+  yaxis = list(limits = c(0, maxy), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
 )
 
 legend <- list(
@@ -1913,13 +2095,16 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
+---
 
-```{r, fig.width = 12, fig.asp = 0.45}
+```{r, fig.width = 12, fig.asp = 0.5}
 #| label: fig-risks_impacts
 #| echo: false
 #| warning: false
 #| fig-cap: "Risks: Impacts"
+#| cap-location: margin
 
+fig_notes <- c("Notes: This figure shows responses to three questions related to the impact of weather shocks: (1) Please think about the weather risk that affected you the most in the last 36 months and describe how the weather risk impacted your business operations, (2) What actions did the business take to cope with the impacts of this weather risk? abd (3) What is the condition of the business now, compared to before the weather risk occurred?")
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "weather_impact")], names(main_data)[str_detect(names(main_data), "weather_cope")], names(main_data)[str_detect(names(main_data), "weather_cond")])
 
@@ -1936,11 +2121,11 @@ factor_params <- list(
 fig_data <- prep_fig_data(ests, factor_params)
 
 labels <- list(
-  title = "Impacts and coping strategies of MSEs",
-  subtitle =  "MSEs exposed to climate shock in past 36 months (%)",
+  title = "Climate shocks: Impacts and coping strategies",
+  subtitle =  "MSEs exposed to a climate shock in past 36 months (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -1984,11 +2169,17 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.4}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.45}
 #| label: fig-resilience_financial
 #| echo: false
 #| warning: false
 #| fig-cap: "Financial resilience"
+#| cap-location: margin
+
+fig_notes <- c("Notes: This figure is based on responses to two questions: (1) Imagine that your business had an emergency and needed to pay money equivalent to 1 month of business revenue, how difficult would it be for you to come up with that amount in the next 7 days? and (2) What would be the MAIN source of money that the business would use to come up with this lump sum amount? The percentages in the right panel correspond to the % of MSEs reporting that raising emergency funds is possible.")
 
 indicators <- c("resi_efunds_firm_diff_1",   "resi_efunds_firm_diff_2", "resi_efunds_firm_diff_3", "resi_efunds_firm_diff_4", 
   "resi_efunds_firm_source_family", "resi_efunds_firm_source_work", "resi_efunds_firm_source_firmcsh", "resi_efunds_firm_source_hhcsh", "resi_efunds_firm_source_borrow", "resi_efunds_firm_source_sellassets", "resi_efunds_firm_source_other")
@@ -2072,21 +2263,33 @@ p2 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(na
                      vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)  
 
 p1 + p2 + plot_layout(axes = "collect") + 
-  plot_annotation(title = "Financial resilience: Access to and source of emergency funds", subtitle = "MSEs (%)", 
-                  theme = theme(plot.title = element_text(size = 12, hjust = 0, face = 'bold', color = 'black'))) 
+  plot_annotation(title = "Financial resilience: Access to- and source of- emergency funds", 
+                  subtitle = "MSEs (%)", 
+                  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP), 
+                  theme = theme(plot.title = element_text(size = 14, hjust = 0, face = 'bold', color = 'black'), 
+                                      plot.caption=element_text(hjust=0, color="gray30", size=12),
+                                      plot.title.position = "plot",
+                                      plot.caption.position = "plot")) 
 
 ```
 
-```{r, fig.width = 12, fig.asp = 0.4}
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.5}
 #| label: fig-resilience_nonfinancial
 #| echo: false
 #| warning: false
-#| fig-cap: "Non-financial dimensions of business resilience"
+#| fig-cap: "Other dimensions of business resilience"
+#| cap-location: margin
+
+fig_notes <- "Notes: This figure is based on responses to three questions (1) (To owners only) If your household has an emergency that requires  [1/20 of GNI per capita] in cash within the next 7 days, would you need to take resources from the business to cover this emergency, (2) If your main customer were to permanently stop purchasing from your business, or if your main suplier were to close operations, how difficult would this be for your business? and (3) If you needed support to sustain your business operations, how confident are you in relying on your network?"
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "efunds_hh_owner")],
                 names(main_data)[str_detect(names(main_data), "suppchain_cust")], 
                 names(main_data)[str_detect(names(main_data), "network_conf")])
-  
+indicators <- indicators[!str_detect(indicators, "score")]
+
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "resp_sex_str")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
@@ -2099,6 +2302,9 @@ factor_params <- list(
 
 fig_data <- prep_fig_data(ests, factor_params)
 
+fct_levels <- c("No", "Yes", "Not difficult at all",  "Somewhat difficult", "Very difficult", "Very confident", "Somewhat confident", "Not confident")
+
+fig_data <- fig_data %>% mutate(indicator_name = fct_rev(factor(indicator_name, levels = fct_levels, ordered = TRUE)))
 
 labels <- list(
   title = NULL, 
@@ -2128,7 +2334,7 @@ legend <- list(
   show = TRUE, 
   title = NULL, 
   direction = "horizontal",
-  nrows = 2, 
+  nrows = 3, 
   ncols = 1, 
   reverse = TRUE
 )
@@ -2173,19 +2379,27 @@ p3 <- fig_flex(fig_data %>% filter(indicator %in% names(main_data)[str_detect(na
 
 
 p1 + p2 + p3 + plot_layout(axes = "collect") + 
-  plot_annotation(title = "Non-financial dimensions of business resilience", 
+  plot_annotation(title = "Other dimensions of business resilience", 
                   subtitle = "MSEs (%)", 
-                  theme = theme(plot.title = element_text(size = 12, hjust = 0, face = 'bold', color = 'black'))) 
-
+                  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP), 
+                  theme = theme(plot.title = element_text(size = 14, hjust = 0, face = 'bold', color = 'black'), 
+                                      plot.caption=element_text(hjust=0, color="gray30", size=12),
+                                      plot.title.position = "plot",
+                                      plot.caption.position = "plot")) 
 
 ```
 
+
+---
 
 ```{r, fig.width = 12, fig.asp = 0.4}
 #| label: fig-resilience_overview
 #| echo: false
 #| warning: false
-#| fig-cap: "Access to connectivity and devices"
+#| fig-cap: "Resilience capital"
+#| cap-location: margin
+
+fig_notes <- "Notes: The overall resilience score is obtained by taking the sum of the four binary components of resilience capital, a higher score denotes greater potential resilience to shocks."
 
 indicators <- c(names(main_data)[str_detect(names(main_data), "resi_capital")])
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "resp_sex_str")]
@@ -2193,20 +2407,20 @@ groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 80, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
+  wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
 
 fig_data <- prep_fig_data(ests, factor_params)
-fig_data <- resilience_capital(fig_data)
+fig_data <- resilience_capital(fig_data) %>% mutate(indicator_group2 = fct_inorder(indicator_group2))
 
 labels <- list(
   title = "Resilience capital",
-  subtitle =  NULL,
+  subtitle =  "MSEs (%)",
   yax_ti = NULL,
   xax_ti = NULL,
-  caption = NULL
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
 )
 
 figparams <- list(
@@ -2236,16 +2450,16 @@ vars <- list(
 
 facets <- list(
   type = "grid", 
-  rows = "indicator_group", 
+  rows = "indicator_group2", 
   cols = "group_name", 
   scales = "free", 
   space = "free",
-  drop_row_label = TRUE, 
+  drop_row_label = FALSE, 
   drop_col_label = FALSE, 
   add_dividers = FALSE
 )
 
-fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + geom_vline(xintercept = c(1.5, 2.5), color = "black")
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
 
 
 ```
