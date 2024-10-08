@@ -141,15 +141,13 @@ lightbox: true
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Relationship between overall technology adoption & resilience](cfi_map2_global_files/figure-html/fig-reg_digtech_resilience-1.png){#fig-reg_digtech_resilience width=1152}
-:::
-:::
-
-::: {.cell .caption-margin}
-::: {.cell-output-display}
 ![Digital technology adoption by use case](cfi_map2_global_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
 :::
 :::
+
+
+---
+
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
@@ -157,17 +155,30 @@ lightbox: true
 :::
 :::
 
+
+--- 
+
+
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Digital technology adoption factors](cfi_map2_global_files/figure-html/fig-tech_adoptionfactors-1.png){#fig-tech_adoptionfactors width=1152}
 :::
 :::
 
+
+--- 
+
+
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Relationship between digital technology adoption and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_revprhr_digtechusecase-1.png){#fig-reg_revprhr_digtechusecase width=1152}
 :::
 :::
+
+
+--- 
+
+
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
@@ -312,5 +323,11 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Relationship between prior exposure to weather shock and investment in adaptation](cfi_map2_global_files/figure-html/fig-reg_resilience_digtechadoption-1.png){#fig-reg_resilience_digtechadoption width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between overall technology adoption & resilience](cfi_map2_global_files/figure-html/fig-reg_digtech_resilience-1.png){#fig-reg_digtech_resilience width=1152}
 :::
 :::

@@ -178,6 +178,21 @@ params:
 :::
 :::
 
+--- 
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between internet-connectivity and firm-level labor productivity](India_analysis_files/figure-html/fig-reg_revprhr_internet-1.png){#fig-reg_revprhr_internet width=1152}
+:::
+:::
+
+--- 
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between digital technology and firm-level labor productivity](India_analysis_files/figure-html/fig-reg_revprhr_digitaladoption-1.png){#fig-reg_revprhr_digitaladoption width=1152}
+:::
+:::
 
 ---
 

@@ -74,24 +74,43 @@ prep_reg_factors <- function(ests, factor_params, include_valuelabel = TRUE) {
   
 }
 
-prep_reg_data <- function(data) {
+prep_reg_data <- function(data, depvarlog = FALSE) {
   
   data %>%
-    group_by(depvar, model_type) %>%
+    group_by(country, depvar, model_type) %>%
     mutate(
       
-      baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
-      baseline = ifelse(row_number() == 1, NA, baseline), 
+      b = max(ifelse(term == "(Intercept)", fig_data, NA), na.rm = TRUE),
+      baseline_label_pos = ifelse(row_number() == 1, b, NA), 
+      baseline_label = ifelse(row_number() == 1, round(b, 1), NA), 
+      baseline = ifelse(row_number() == 1, NA, b), 
       
       sig = ifelse(p.value < 0.1, ".", NA),
       sig = ifelse(p.value < 0.05, "*", sig),
       sig = ifelse(p.value < 0.01, "**", sig),
       sig = ifelse(p.value < 0.001, "***", sig),
-      sig = ifelse(is.na(sig), "", sig),
-      
+      sig = ifelse(is.na(sig), "", sig)
+    ) -> data 
+  
+  if (depvarlog) { 
+    threshold <- 1
+    
+    data %>% 
+      group_by(depvar, model_type) %>%
+      mutate(
+        estimate = ifelse(term != "(Intercept)", exp(estimate)*b - b, exp(estimate)) 
+      ) -> data
+  } else {
+    threshold <- 0
+  }
+  
+  data %>% 
+    group_by(depvar, model_type) %>%
+    
+    mutate(
+      effect_dir = ifelse(estimate < threshold, -1, 1),
+  
       valuelabel = numclean(estimate, n = 2),
-      
-      effect_dir = ifelse(estimate < 0, -1, 1),
       
       startarrow = baseline,
       endarrow = fig_data,
@@ -103,18 +122,22 @@ prep_reg_data <- function(data) {
       
       barlabel =  numclean(fig_data, n = 2),
       annotation = paste("R-sqrd:", round(adj_rsquared, 3), sep = " "),
-      annotation = ifelse(term == "(Intercept)", NA, annotation)
+      annotation = ifelse(term == "(Intercept)", NA, annotation), 
+      
+      city = CITIES[country]
     )
-  
+
 }
 
-prep_reg_data_allcountries <- function(data) {
+prep_reg_data_allcountries <- function(data, depvarlog = FALSE) {
   
   data %>%
-    group_by(country, depvar, confounds_flag) %>%
+    group_by(country, depvar, model_type) %>%
     mutate(
       
       baseline = max(ifelse(term == "(Intercept)", estimate, NA), na.rm = TRUE),
+      baseline_label_pos = ifelse(row_number() == 1, baseline, NA), 
+      baseline_label = ifelse(row_number() == 1, round(baseline, 1), NA), 
       baseline = ifelse(row_number() == 1, NA, baseline), 
       
       sig = ifelse(p.value < 0.1, ".", NA),
@@ -227,10 +250,10 @@ fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt
     ) + 
     # Customize the plot
     theme_custom() +
-    theme(legend.position = c(0.2,0.15), 
+    theme(legend.position = "bottom", 
           legend.direction = "horizontal", 
-          legend.title = element_text(color = "white"), 
-          legend.text = element_text(color = "white"), 
+          legend.title = element_text(color = "black"), 
+          legend.text = element_text(color = "black"), 
           legend.key.width = unit(1.75, 'cm')) +
     
     coord_sf()
@@ -503,7 +526,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
                     size = barparams[["valuelabels"]][["lab_size"]], 
                     nudge_x = barparams[["valuelabels"]][["lab_ndgx"]], 
                     nudge_y = barparams[["valuelabels"]][["lab_ndgy"]], 
-                    hjust = barparams[["valuelabels"]][["lab_vjust"]], 
+                    vjust = barparams[["valuelabels"]][["lab_vjust"]], 
                     hjust = barparams[["valuelabels"]][["lab_hjust"]], 
                     fontface = barparams[["valuelabels"]][["lab_face"]])
     }
@@ -514,11 +537,22 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
                     size = barparams[["arrowlabels"]][["lab_size"]], 
                     nudge_x = barparams[["arrowlabels"]][["lab_ndgx"]], 
                     nudge_y = barparams[["arrowlabels"]][["lab_ndgy"]], 
-                    hjust = barparams[["arrowlabels"]][["lab_vjust"]], 
+                    vjust = barparams[["arrowlabels"]][["lab_vjust"]], 
                     hjust = barparams[["arrowlabels"]][["lab_hjust"]], 
                     fontface = barparams[["arrowlabels"]][["lab_face"]])
       }  
-      
+    # Baseline label
+    if (barparams[["baselinelabel"]][["show"]]) {
+      p <- p +
+        geom_text(aes(y = baseline_label_pos, label = baseline_label), color = "black", 
+                  size = barparams[["baselinelabel"]][["lab_size"]], 
+                  nudge_x = barparams[["baselinelabel"]][["lab_ndgx"]], 
+                  nudge_y = barparams[["baselinelabel"]][["lab_ndgy"]], 
+                  vjust = barparams[["baselinelabel"]][["lab_vjust"]], 
+                  hjust = barparams[["baselinelabel"]][["lab_hjust"]], 
+                  fontface = barparams[["baselinelabel"]][["lab_face"]])
+    }  
+    
     #geom_text(aes(y = 0.95, label = annotation), hjust = 0, color = "black", nudge_x = 0, size = 3.5) +
     p + 
     guides(color = guide_legend(title = NULL, position = "bottom")) + 
@@ -530,7 +564,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
       x = labels[["x"]],
       caption = labels[["caption"]]
     ) +
-    scale_y_continuous(limits = scales[["y"]][["limits"]], label = scales::label_number(), position = scales[["y"]][["position"]]) +
+    scale_y_continuous(limits = scales[["y"]][["limits"]], labels = scales::label_number(), breaks = scales::breaks_pretty(n = scales[["y"]][["nbreaks"]]), position = scales[["y"]][["position"]]) +
     scale_x_discrete(position = scales[["x"]][["position"]]) +
     scale_color_manual(values = c("red")) + 
     theme_custom() -> p

@@ -350,8 +350,8 @@ prep_main_data <- function(raw_data, weights, country) {
       business_registration_status = ifelse(Q77 %in% c(97,99), NA, business_registration_status), 
       #business_sector_agg3 = factor(business_sector_agg4, levels = c("Services: retail & wholesale trade", "Services: other", "Manufacturing", "Construction & other"), ordered = TRUE),
 
-      business_size = ifelse(Q6 == 0, 1, Q6) + add_worker,
-      business_size_agg2 = ifelse(Q6 == 1, "1 person", "2-10 people"),
+      business_size = ifelse(Q6 == 0, 1, Q6),
+      business_size_agg2 = ifelse(business_size == 1, "1 person", "2-10 people"),
       business_size_agg2_shc = ifelse(business_size_agg2 == "1 person", "1", "2_10"),
       #business_size_agg2 = factor(business_size_agg2, levels = c("1 person", "2-10 people"), ordered = TRUE),
 
@@ -692,7 +692,9 @@ prep_main_data <- function(raw_data, weights, country) {
       perf_revphrpemp_usd = perf_revphrpemp/fx, # Revenue per hour per employee
       perf_revphrpemp_ppp = perf_revphrpemp/ppp, # Revenue per hour per employee
       perf_revpdypemp_usd = (perf_revphrpemp*8)/fx, # Revenue per day per employee
+      perf_revpdypemp_usd_log = log(perf_revpdypemp_usd), # Revenue per day per employee
       perf_revpdypemp_ppp = (perf_revphrpemp*8)/ppp, # Revenue per day per employee
+      perf_revpdypemp_ppp_log = log(perf_revpdypemp_ppp), 
       
       perf_sales_up = ifelse(Q68 == 1, 1, 0), 
       perf_sales_up = ifelse(Q68 %in% c(97,99), NA, perf_sales_up), 
@@ -1383,7 +1385,7 @@ capture_terms <- function(depvar, maineffect, confounds, data) {
 capture_terms_clse <- function(depvar, maineffects, confounds, data) {
 
   # Function captures the effects of simple linear regression model with clustered standard errors
-
+  
   if (!is.null(confounds)) {
     f <- as.formula(paste(depvar, "~", paste(c(maineffects, confounds), collapse = "+")))
     flag <- 1
@@ -1404,7 +1406,7 @@ capture_terms_clse <- function(depvar, maineffects, confounds, data) {
 
 }
 
-prep_fig <- function(terms, depvar_labels, effect_labels, model_type_override = NULL) {
+prep_fig <- function(terms, depvar_labels, effect_labels, depvarlog = FALSE, model_type_override = NULL) {
   
   terms %>% mutate(
     depvar_label = factor(depvar_labels[depvar], levels = depvar_labels, ordered = TRUE),
@@ -1413,6 +1415,10 @@ prep_fig <- function(terms, depvar_labels, effect_labels, model_type_override = 
     fig_data = ifelse(term != "(Intercept)", estimate + fig_data, estimate),
     model_type = factor(ifelse(confounds_flag == 0, "Model: Unadjusted", "Model: Adjusted"), levels = c("Model: Unadjusted", "Model: Adjusted"), ordered = TRUE)
   ) -> terms
+  
+  if(depvarlog) { 
+    terms %>% mutate(fig_data = exp(fig_data)) -> terms
+  }
   
   if (!is.null(model_type_override)){ 
     terms %>% mutate(
@@ -1424,12 +1430,12 @@ prep_fig <- function(terms, depvar_labels, effect_labels, model_type_override = 
 
 }
 
-model_and_prepfig <-function(depvar, maineffect, confounds, data, depvar_labels, effect_labels, selected_country = NULL, model_type_override = NULL) {
+model_and_prepfig <-function(depvar, maineffect, confounds, data, depvar_labels, effect_labels, selected_country = NULL, depvarlog = FALSE, model_type_override = NULL) {
   if (!is.null(selected_country)) { 
     data <- data %>% filter(country == selected_country)
     }
   terms <- capture_terms_clse(depvar, maineffect, confounds, data)
-  fig <- prep_fig(terms, depvar_labels, effect_labels, model_type_override) %>% mutate(country = selected_country)
+  fig <- prep_fig(terms, depvar_labels, effect_labels, depvarlog, model_type_override) %>% mutate(country = selected_country)
   return(fig)
 }
 

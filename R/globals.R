@@ -45,7 +45,7 @@ PPP_RATES <- list(
 )
 
 SOURCE <- c("Source: 2024 CFI/MAP2 small firm survey.")
-CAP_WRAP <- 150 
+CAP_WRAP <- 145 
 
 INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total businesses (N)"
                 "business_total" = "Population estimate: Total businesses (N)",
@@ -158,6 +158,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "tech_uses_software_shc_nam" = "Software for operations: Stopped using",
                 "tech_uses_software_shc_nvr" = "Software for operations: Never used", 
                 "tech_uses_adoption_score" = "Digital technology adoption score: Mean [0 min -10 max]",
+                "tech_uses_adoption_score_c" = "Uses 1 additional digital technology",
                 "tech_function_comms" = "Communicating with customers: Uses",
                 "tech_function_mkts" = "Accessing markets: Uses",
                 "tech_function_ops" = "Enterprise operations: Uses",
@@ -197,7 +198,9 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "perf_revphrpemp_usd" = "Business performance: Hourly sales per employee [USD]", 
                 "perf_revphrpemp_ppp" = "Business performance: Hourly sales per employee [International $]", 
                 "perf_revpdypemp_usd" = "Buseinss performance: Daily sales per employee [USD]", 
+                "perf_revpdypemp_usd_log" = "Buseinss performance: Daily sales per employee [USD, Log scale]", 
                 "perf_revpdypemp_ppp" = "Buseinss performance: Daily sales per employee [International $]", 
+                "perf_revpdypemp_ppp_log" = "Buseinss performance: Daily sales per employee [International $, Log scale]", 
                 "perf_sales_up" = "Sales in past year: Increased", 
                 "perf_sales_same" = "Sales in past year: Remained the same", 
                 "perf_sales_down" = "Sales in past year: Decreased", 
