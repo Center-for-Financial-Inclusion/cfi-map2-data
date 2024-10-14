@@ -8,23 +8,6 @@ lightbox: true
 
 
 
-## Key messages
-
-
-::: {.cell .caption-margin}
-::: {.cell-output-display}
-![Digital adoption vs. Resilience](cfi_map2_global_files/figure-html/fig-key_mess_1-1.png){#fig-key_mess_1 width=1152}
-:::
-:::
-
-::: {.cell .caption-margin}
-::: {.cell-output-display}
-![Digital adoption vs. productivity](cfi_map2_global_files/figure-html/fig-key_mess_2-1.png){#fig-key_mess_2 width=1152}
-:::
-:::
-
-
-
 ## The business landscape 
 
 
@@ -141,7 +124,7 @@ lightbox: true
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Digital technology adoption by use case](cfi_map2_global_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
+![Applications of digital technology](cfi_map2_global_files/figure-html/fig-digtech_usecases-1.png){#fig-digtech_usecases width=1152}
 :::
 :::
 
@@ -161,7 +144,37 @@ lightbox: true
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Digital technology adoption factors](cfi_map2_global_files/figure-html/fig-tech_adoptionfactors-1.png){#fig-tech_adoptionfactors width=1152}
+![Non-financial digital technology adoption factors](cfi_map2_global_files/figure-html/fig-tech_adoptionfactors-1.png){#fig-tech_adoptionfactors width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between internet-connectivity and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_revprhr_internet-1.png){#fig-reg_revprhr_internet width=1152}
+:::
+:::
+
+
+--- 
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between digital technology and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_revprhr_digitaladoption-1.png){#fig-reg_revprhr_digitaladoption width=1152}
+:::
+:::
+
+
+--- 
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between general digital technology adoption and subjective growth](cfi_map2_global_files/figure-html/fig-reg_growth_digtech-1.png){#fig-reg_growth_digtech width=1152}
 :::
 :::
 
@@ -233,6 +246,48 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Impacts of digital financial services](cfi_map2_global_files/figure-html/fig-dfs_impacts-1.png){#fig-dfs_impacts width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Insurance usage](cfi_map2_global_files/figure-html/fig-ins-1.png){#fig-ins width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_revprhr_finserv-1.png){#fig-reg_revprhr_finserv width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and financial resilience](cfi_map2_global_files/figure-html/fig-reg_resilience_finserv-1.png){#fig-reg_resilience_finserv width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and firm growth](cfi_map2_global_files/figure-html/fig-reg_growth_finserv-1.png){#fig-reg_growth_finserv width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and capital investment](cfi_map2_global_files/figure-html/fig-reg_capex_finserv-1.png){#fig-reg_capex_finserv width=1152}
 :::
 :::
 

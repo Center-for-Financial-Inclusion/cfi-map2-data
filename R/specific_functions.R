@@ -77,7 +77,7 @@ sector_agg0_to_agg3 <- function(data) {
   
 }
 
-sample_sector <- function(ests, agg0_to_agg3) {
+sample_sector <- function(ests, agg0_to_agg3, round = 1) {
   
   ests %>%
     group_by(subgroup) %>%
@@ -86,7 +86,7 @@ sample_sector <- function(ests, agg0_to_agg3) {
       share = total/size_total
     ) %>% ungroup() %>%
     mutate(
-      valuelabel = paste0(pctclean(share, 1), "%")
+      valuelabel = paste0(pctclean(share, round), "%")
     ) %>%
     filter(!is.na(group_cat_val) | group_cat_val != "Don't know") %>% 
     left_join(agg0_to_agg3, by = join_by(group_cat_val == business_sector_str)) %>% 
@@ -96,7 +96,7 @@ sample_sector <- function(ests, agg0_to_agg3) {
   
 }
 
-sample_sector_bycity <- function(ests, agg0_to_agg3) {
+sample_sector_bycity <- function(ests, agg0_to_agg3, round = 1) {
   
   ests %>%
     group_by(city, subgroup) %>%
@@ -105,7 +105,7 @@ sample_sector_bycity <- function(ests, agg0_to_agg3) {
       share = total/size_total
     ) %>% ungroup() %>%
     mutate(
-      valuelabel = paste0(pctclean(share, 1), "%")
+      valuelabel = paste0(pctclean(share, round), "%")
     ) %>%
     filter(!is.na(group_cat_val) | group_cat_val != "Don't know") %>% 
     left_join(agg0_to_agg3, by = join_by(group_cat_val == business_sector_str)) %>% 
@@ -278,6 +278,38 @@ fig_13_chart <- function(data, labels) {
 }
 
 ########################################################################
+# 4. Financial services ------------------------------------
+########################################################################
+
+insurance_landscape <- function(ests, wrap) {
+  
+  cats <- c("Lo", "Mlo", "Mhi", "Hi")
+  blues <- brewer.pal(4, "Blues")
+  names(blues) <- cats
+  reds <- brewer.pal(4, "Reds")
+  names(reds) <- cats
+  
+  ests %>%
+    filter(!is.na(indicator_name)) %>% 
+    mutate(
+      valuelabel = paste0(round(mean*100, 0), "%"), 
+      valuecat = case_when(
+        mean < 0.25 ~ "Lo", 
+        mean >= 0.25 & mean < 0.5 ~ "Mlo", 
+        mean >= 0.5 & mean < 0.75 ~ "Mhi", 
+        mean >= 0.75 ~ "Hi"),
+      valuecat2 = case_when(
+        mean < 2.5 ~ "Lo", 
+        mean >= 2.5 & mean < 5 ~ "Mlo", 
+        mean >= 5 & mean < 7.5 ~ "Mhi", 
+        mean >= 7.5 ~ "Hi"),
+      fillcolor = ifelse(indicator_name %in% str_wrap(c("Not aware", "Never used", "Stopped using"), wrap), reds[valuecat], blues[valuecat]), 
+      txtcolor = ifelse(indicator_name %in% str_wrap(c("Not aware", "Never used", "Stopped using"), wrap), "white", "black")
+    ) 
+  
+}
+
+########################################################################
 # 5. Risks & Resilience section ------------------------------------
 ########################################################################
 
@@ -291,12 +323,13 @@ resilience_capital <- function(ests) {
   ests %>%
     filter(!is.na(indicator_name)) %>% 
     mutate(
-      indicator_type = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), "cont", "disc"), 
-      valuelabel = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), numclean(mean,1), paste0(round(mean*100, 0), "%")), 
-      valuecat = ifelse(indicator %not_in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3"), cut(mean, breaks = seq(1,9,1)/8, labels = seq(1,8,1)), NA), 
-      valuecat = ifelse(indicator %in% c("resi_capital_score_v1"), cut(mean, breaks = (seq(1,9,1)/8)*4, labels = seq(1,8,1)), valuecat), 
-      valuecat = ifelse(indicator %in% c("resi_capital_score_v2"), cut(mean, breaks = (seq(1,9,1)/8)*3, labels = seq(1,8,1)), valuecat), 
-      valuecat = ifelse(indicator %in% c("resi_capital_score_v3"), cut(mean, breaks = (seq(1,9,1)/8)*7, labels = seq(1,8,1)), valuecat), 
+      indicator_type = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3", "resi_capital_score_v3_norm"), "cont", "disc"), 
+      valuelabel = ifelse(indicator %in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3", "resi_capital_score_v3_norm"), numclean(mean,1), paste0(round(mean*100, 0), "%")), 
+      valuecat = ifelse(indicator %not_in% c("resi_capital_score_v1", "resi_capital_score_v2", "resi_capital_score_v3", "resi_capital_score_v3_norm"), cut(mean, breaks = seq(1,9,1)/8, labels = seq(1,8,1)), NA), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v1"), cut(mean, breaks = (seq(1,9,1)/9)*4, labels = seq(1,8,1), include.lowest = TRUE), valuecat), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v2"), cut(mean, breaks = (seq(1,9,1)/9)*3, labels = seq(1,8,1), include.lowest = TRUE), valuecat), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v3"), cut(mean, breaks = (seq(1,9,1)/9)*7, labels = seq(1,8,1), include.lowest = TRUE), valuecat), 
+      valuecat = ifelse(indicator %in% c("resi_capital_score_v3_norm"), cut(mean, breaks = (seq(1,9,1)/9)*1, labels = seq(1,8,1), include.lowest = TRUE), valuecat), 
       fillcolor = palette[valuecat] 
     ) %>% 
     separate(indicator_name, into = c("indicator_group2", "indicator_name"), sep = ",", )

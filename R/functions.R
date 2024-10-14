@@ -672,7 +672,10 @@ prep_main_data <- function(raw_data, weights, country) {
       
       tech_function_index = (tech_function_total + tech_function_30da_total)/7,
 
+      tech_function_any = ifelse(tech_function_comms == 1 | tech_function_mkts == 1 | tech_function_ops == 1 | tech_function_epay == 1, 1, 0), 
+      
       # Business performance ----------
+      
       fx = unlist(FX_RATES[country]),
       ppp = unlist(PPP_RATES[country]), 
       perf_mpy = Q75, # Months per year of operations
@@ -715,6 +718,10 @@ prep_main_data <- function(raw_data, weights, country) {
       
       perf_newservices = ifelse(Q71 == 1, 1, 0), 
       perf_newservices = ifelse(Q71 %in% c(97,99), NA, perf_newservices), 
+      
+      perf_growth_subj_any = ifelse(perf_sales_up == 1 | perf_emp_up == 1, 1, 0), 
+  
+      perf_growthdyn_subj_score = perf_sales_up + perf_emp_up + perf_investment + perf_newservices, 
       
       # Financial services ----------------
       
@@ -791,6 +798,11 @@ prep_main_data <- function(raw_data, weights, country) {
                                       fin_merchpay_instant == 1 | 
                                       fin_merchpay_qr == 1, 1, 0), 
       
+      fin_merchpay_extrnsfpos = ifelse(fin_merchpay_online == 1 | 
+                                      fin_merchpay_mobmoney == 1 | 
+                                      fin_merchpay_instant == 1 | 
+                                      fin_merchpay_qr == 1, 1, 0), 
+      
       # Owner used a credit card for business purposes
       fin_owner_creditcard = ifelse(Q36 == 1, 1, 0), 
       fin_owner_creditcard = ifelse(Q36 %in% c(97,99), NA, fin_owner_creditcard), 
@@ -819,7 +831,10 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_activeloan_other = ifelse(Q37_11 == 1, 1, 0), 
       fin_activeloan_other = ifelse(Q37_11 %in% c(97,99), NA, fin_activeloan_other), 
       
-      fin_activeloan_any = ifelse(Q37_1 == 1 | Q37_2 == 1 | Q37_3 == 1 | Q37_4 == 1 | Q37_5 == 1 | Q37_6 == 1 | Q37_7 == 1 | Q37_8 == 1 | Q37_9 == 1 | Q37_10 == 1 | Q37_11 == 1, 1, 0), 
+      fin_activeloan_agg_fi = ifelse(fin_activeloan_cbnk == 1 | fin_activeloan_mfi == 1, 1, 0), 
+      fin_activeloan_agg_nbfi = ifelse(fin_activeloan_fintech == 1 | fin_activeloan_sacco == 1 | fin_activeloan_mm == 1 | fin_activeloan_platform == 1, 1, 0), 
+      fin_activeloan_agg_inf = ifelse(fin_activeloan_ff == 1 | fin_activeloan_group == 1 | fin_activeloan_supplier == 1 | fin_activeloan_moneylndr == 1, 1, 0), 
+      fin_activeloan_agg_any = ifelse(Q37_1 == 1 | Q37_2 == 1 | Q37_3 == 1 | Q37_4 == 1 | Q37_5 == 1 | Q37_6 == 1 | Q37_7 == 1 | Q37_8 == 1 | Q37_9 == 1 | Q37_10 == 1 | Q37_11 == 1, 1, 0), 
       
       # Did business apply for loan digitally? 
       fin_activeloan_da_cbnk = ifelse(Q38_1 == 1, 1, 0), 
@@ -836,7 +851,7 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_activeloan_da_mm = ifelse(Q38_6 %in% c(97,99), NA, fin_activeloan_da_mm), 
       
       fin_activeloan_da_any = ifelse(fin_activeloan_da_cbnk == 1 | fin_activeloan_da_mfi == 1 | fin_activeloan_da_fintech == 1 | fin_activeloan_da_sacco == 1 | fin_activeloan_da_group == 1 | fin_activeloan_da_mm == 1, 1, 0), 
-      fin_activeloan_da_any = ifelse(fin_activeloan_any == 0, 0, fin_activeloan_da_any),
+      fin_activeloan_da_any = ifelse(fin_activeloan_agg_any == 0, 0, fin_activeloan_da_any),
       
       # DId this business want a loan but could not obtain it?
       fin_deniedloan = ifelse(Q39 == 1, 1, 0),
@@ -863,7 +878,7 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_activeloan_use_other = ifelse(Q42_5 %in% c(97,99), NA, fin_activeloan_use_other), 
       
       # OVerall loan demand
-      fin_demandloan = ifelse(fin_activeloan_any == 1 | fin_deniedloan == 1, 1, 0), 
+      fin_demandloan = ifelse(fin_activeloan_agg_any == 1 | fin_deniedloan == 1, 1, 0), 
       
       # Supplier credit 
       fin_suppliercredit = ifelse(Q41 == 1, 1, 0), 
@@ -876,37 +891,6 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_channels_trust_digital = ifelse(Q43 %in% c(97,99), NA, fin_channels_trust_digital),
       fin_channels_trust_indiff = ifelse(Q43 == 3, 1, 0), 
       fin_channels_trust_indiff = ifelse(Q43 %in% c(97,99), NA, fin_channels_trust_indiff),
-      
-      # User of digital financial services
-      fin_dfs_user = ifelse(
-        Q33 == 6 | 
-          Q34 %in% c(2,3) | 
-          Q35_5 == 1  | 
-          Q35_6 == 1 | 
-          Q35_7 == 1 | 
-          Q35_8 == 1 | 
-          Q37_6 == 1 | 
-          Q37_7 == 1 | 
-          Q38_1 == 1 |
-          Q38_2 == 1 |
-          Q38_3 == 1 |
-          Q38_4 == 1 |
-          Q38_5 == 1 |
-          Q45_1 == 1 |
-          Q45_2 == 1 |
-          Q45_3 == 1 |
-          Q45_4 == 1 |
-          Q45_5 == 1 |
-          B2_1 == 1 |
-          B2_2 == 1 |
-          B2_3 == 1 |
-          B2_4 == 1 |
-          B2_5 == 1 |
-          B2_6 == 1 |
-          B2_7 == 1 |
-          B2_8 == 1 |
-          B2_9 == 1 |
-          B2_10 == 1, 1, 0), 
       
       # Benefits of digital financial services: 
       fin_digital_benefits_cus = ifelse(Q46_1 == 1, 1, 0), 
@@ -937,22 +921,22 @@ prep_main_data <- function(raw_data, weights, country) {
       # Loan repayment difficulty
       cp_loanrepaydiff = ifelse(Q49 == 1, 1, 0), 
       cp_loanrepaydiff = ifelse(Q49 %in% c(97, 99), NA, cp_loanrepaydiff), 
-      cp_loanrepaydiff = ifelse(Q49 %in% c(98) | fin_activeloan_any == 0, NA, cp_loanrepaydiff), 
+      cp_loanrepaydiff = ifelse(Q49 %in% c(98) | fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff), 
       
       cp_loanrepaydiff_cope_notpay = ifelse(Q50_1 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_notpay = ifelse(Q50_1 %in% c(97, 99) | fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_notpay), 
+      cp_loanrepaydiff_cope_notpay = ifelse(Q50_1 %in% c(97, 99) | fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_notpay), 
       cp_loanrepaydiff_cope_restr = ifelse(Q50_2 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_restr = ifelse(Q50_2 %in% c(97, 99)| fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_restr),
+      cp_loanrepaydiff_cope_restr = ifelse(Q50_2 %in% c(97, 99)| fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_restr),
       cp_loanrepaydiff_cope_borr = ifelse(Q50_3 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_borr = ifelse(Q50_3 %in% c(97, 99) | fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_borr),
+      cp_loanrepaydiff_cope_borr = ifelse(Q50_3 %in% c(97, 99) | fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_borr),
       cp_loanrepaydiff_cope_work = ifelse(Q50_4 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_work = ifelse(Q50_4 %in% c(97, 99) | fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_work),
+      cp_loanrepaydiff_cope_work = ifelse(Q50_4 %in% c(97, 99) | fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_work),
       cp_loanrepaydiff_cope_sellasst = ifelse(Q50_5 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_sellasst = ifelse(Q50_5 %in% c(97, 99)| fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_sellasst),
+      cp_loanrepaydiff_cope_sellasst = ifelse(Q50_5 %in% c(97, 99)| fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_sellasst),
       cp_loanrepaydiff_cope_usedhh = ifelse(Q50_6 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_usedhh = ifelse(Q50_6 %in% c(97, 99)| fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_usedhh),
+      cp_loanrepaydiff_cope_usedhh = ifelse(Q50_6 %in% c(97, 99)| fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_usedhh),
       cp_loanrepaydiff_cope_other = ifelse(Q50_7 == 1, 1, 0), 
-      cp_loanrepaydiff_cope_other = ifelse(Q50_7 %in% c(97, 99) | fin_activeloan_any == 0, NA, cp_loanrepaydiff_cope_other),
+      cp_loanrepaydiff_cope_other = ifelse(Q50_7 %in% c(97, 99) | fin_activeloan_agg_any == 0, NA, cp_loanrepaydiff_cope_other),
       
       # Issues experienced with financial services
       cp_issues_fraud = ifelse(Q51_1 == 1, 1, 0), 
@@ -1127,48 +1111,258 @@ prep_main_data <- function(raw_data, weights, country) {
       resi_capital_score_v3 = resi_efunds_firm_score + resi_efunds_hh_owner_score + resi_suppchain_score + resi_network_conf_score, 
       resi_capital_score_v3_norm = resi_capital_score_v3/7
       
-    ) -> raw_data 
-  
-    if (country %in% c("Indonesia", "Brazil")) {
-      raw_data %>% mutate(
-        
-        # Currently uses any form of insurance
-        fin_insurance_life = ifelse(B1_1 == 1, 1, 0), 
-        fin_insurance_hlth = ifelse(B1_2 == 1, 1, 0), 
-        fin_insurance_acc =  ifelse(B1_3 == 1, 1, 0), 
-        fin_insurance_fun =  ifelse(B1_4 == 1, 1, 0), 
-        fin_insurance_home = ifelse(B1_5 == 1, 1, 0),  
-        fin_insurance_bus =  ifelse(B1_6 == 1, 1, 0),   
-        fin_insurance_auto = ifelse(B1_7 == 1, 1, 0),
-        fin_insurance_indx = ifelse(B1_8 == 1, 1, 0),  
-        fin_insurance_oth =  ifelse(B1_9 == 1, 1, 0), 
-        fin_insurance_any = ifelse(fin_insurance_life == 1 | fin_insurance_hlth == 1 | fin_insurance_acc == 1 | fin_insurance_fun == 1 | fin_insurance_home == 1 | fin_insurance_bus == 1 | fin_insurance_auto == 1 | fin_insurance_indx == 1 | fin_insurance_oth == 1, 1, 0), 
-        # FinAccess score 
-        fin_access_score = fin_account_formal + fin_merchpay_noncash + fin_activeloan_any + fin_insurance_any
-      ) -> raw_data
-      
-    } else { 
-      raw_data %>% mutate(
-        # Currently uses any form of insurance
-        fin_insurance_life = ifelse(Q44_1 == 1, 1, ifelse(Q44_1 == 2, 0, NA)), 
-        fin_insurance_hlth = ifelse(Q44_2 == 1, 1, ifelse(Q44_2 == 2, 0, NA)), 
-        fin_insurance_acc =  ifelse(Q44_3 == 1, 1, ifelse(Q44_3 == 2, 0, NA)), 
-        fin_insurance_bus =  ifelse(Q44_4 == 1, 1, ifelse(Q44_4 == 2, 0, NA)),   
-        fin_insurance_auto = ifelse(Q44_5 == 1, 1, ifelse(Q44_5 == 2, 0, NA)), 
-        fin_insurance_any = ifelse(fin_insurance_life == 1 | fin_insurance_hlth == 1 | fin_insurance_acc == 1 | fin_insurance_bus == 1 | fin_insurance_auto == 1, 1, 0), 
-      # FinAccess score 
-      fin_access_score = fin_account_formal + fin_merchpay_noncash + fin_activeloan_any + fin_insurance_any
-      ) -> raw_data
-      
-    }
-
-    raw_data %>% 
+    ) %>% 
     dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
                                   "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
                                   "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc",
-                                  "risk_largestimpact_shc")) %>%
+                                  "risk_largestimpact_shc")) -> raw_data 
+  
+    # Insurance ----
+    
+    if (country %in% c("Brazil", "Indonesia")) {
+      
+      raw_data %>% mutate(
+  
+        fin_insur_lif_shc = case_when(
+          B1_1 == 1 ~ "cu", #Currently use
+          B1_1 == 2 ~ "su", # Stopped using
+          B1_1 == 3 ~ "nh", # Never had
+          B1_1 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_hlt_shc = case_when(
+          B1_2 == 1 ~ "cu", #Currently use
+          B1_2 == 2 ~ "su", # Stopped using
+          B1_2 == 3 ~ "nh", # Never had
+          B1_2 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_acc_shc = case_when(
+          B1_3 == 1 ~ "cu", #Currently use
+          B1_3 == 2 ~ "su", # Stopped using
+          B1_3 == 3 ~ "nh", # Never had
+          B1_3 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_fun_shc = case_when(
+          B1_4 == 1 ~ "cu", #Currently use
+          B1_4 == 2 ~ "su", # Stopped using
+          B1_4 == 3 ~ "nh", # Never had
+          B1_4 == 4 ~ "na" # Not aware
+        ),       
+        fin_insur_hom_shc = case_when(
+          B1_5 == 1 ~ "cu", #Currently use
+          B1_5 == 2 ~ "su", # Stopped using
+          B1_5 == 3 ~ "nh", # Never had
+          B1_5 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_bus_shc = case_when(
+          B1_6 == 1 ~ "cu", #Currently use
+          B1_6 == 2 ~ "su", # Stopped using
+          B1_6 == 3 ~ "nh", # Never had
+          B1_6 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_aut_shc = case_when(
+          B1_7== 1 ~ "cu", #Currently use
+          B1_7 == 2 ~ "su", # Stopped using
+          B1_7 == 3 ~ "nh", # Never had
+          B1_7 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_idx_shc = case_when(
+          B1_8== 1 ~ "cu", #Currently use
+          B1_8 == 2 ~ "su", # Stopped using
+          B1_8 == 3 ~ "nh", # Never had
+          B1_8 == 4 ~ "na" # Not aware
+        ), 
+        fin_insur_oth_shc = case_when(
+          B1_9 == 1 ~ "cu", #Currently use
+          B1_9 == 2 ~ "su", # Stopped using
+          B1_9 == 3 ~ "nh", # Never had
+          B1_9 == 4 ~ "na" # Not aware
+        ), 
+        
+      # Digital access to insurance
+      fin_insur_lif_da = ifelse(B2_1 == 1, 1, ifelse(B2_1 == 2, 0, NA)), 
+      fin_insur_hlt_da = ifelse(B2_2 == 1, 1, ifelse(B2_2 == 2, 0, NA)), 
+      fin_insur_acc_da = ifelse(B2_3 == 1, 1, ifelse(B2_3 == 2, 0, NA)), 
+      fin_insur_fun_da = ifelse(B2_4 == 1, 1, ifelse(B2_4 == 2, 0, NA)), 
+      fin_insur_hom_da = ifelse(B2_5 == 1, 1, ifelse(B2_5 == 2, 0, NA)), 
+      fin_insur_bus_da = ifelse(B2_6 == 1, 1, ifelse(B2_6 == 2, 0, NA)), 
+      fin_insur_aut_da = ifelse(B2_7 == 1, 1, ifelse(B2_7 == 2, 0, NA)), 
+      fin_insur_idx_da = ifelse(B2_8 == 1, 1, ifelse(B2_8 == 2, 0, NA)), 
+      fin_insur_oth_da = ifelse(B2_9 == 1, 1, ifelse(B2_9 == 2, 0, NA)), 
+      
+      # Life or health insurance cover for specific family member
+      
+      fin_insur_lifhlt_slf = ifelse(B3_O1 == 1 | B3_O2 == 1 | B3_O3 == 1 | B3_O4 == 1 | B3_O5 == 1 | B3_O6 == 1 | B3_O7 == 1 | B3_O8 == 1, 1, 0), 
+      fin_insur_lifhlt_spo = ifelse(B3_O1 == 2 | B3_O2 == 2 | B3_O3 == 2 | B3_O4 == 2 | B3_O5 == 2 | B3_O6 == 2 | B3_O7 == 2 | B3_O8 == 2, 1, 0), 
+      fin_insur_lifhlt_chi = ifelse(B3_O1 == 3 | B3_O2 == 3 | B3_O3 == 3 | B3_O4 == 3 | B3_O5 == 3 | B3_O6 == 3 | B3_O7 == 3 | B3_O8 == 3, 1, 0), 
+      fin_insur_lifhlt_par = ifelse(B3_O1 == 4 | B3_O2 == 4 | B3_O3 == 4 | B3_O4 == 4 | B3_O5 == 4 | B3_O6 == 5 | B3_O7 == 4 | B3_O8 == 4, 1, 0), 
+      fin_insur_lifhlt_oth = ifelse(B3_O1 == 5 | B3_O2 == 5 | B3_O3 == 5 | B3_O4 == 5 | B3_O5 == 5 | B3_O6 == 5 | B3_O7 == 5 | B3_O8 == 5, 1, 0), 
+      
+      # Types of health insurance used
+      
+      fin_insur_hlt_op = ifelse(A1_1 == 1, 1, ifelse(A1_1 == 2, 0, NA)), 
+      fin_insur_hlt_ip = ifelse(A1_2 == 1, 1, ifelse(A1_2 == 2, 0, NA)), 
+      fin_insur_hlt_sr = ifelse(A1_3 == 1, 1, ifelse(A1_3 == 2, 0, NA)),  
+      fin_insur_hlt_vi = ifelse(A1_4 == 1, 1, ifelse(A1_4 == 2, 0, NA)),   
+      fin_insur_hlt_dn = ifelse(A1_5 == 1, 1, ifelse(A1_5 == 2, 0, NA)),  
+      fin_insur_hlt_ca = ifelse(A1_6 == 1, 1, ifelse(A1_6 == 2, 0, NA)), 
+      fin_insur_hlt_di = ifelse(A1_7 == 1, 1, ifelse(A1_7 == 2, 0, NA)), 
+      fin_insur_hlt_em = ifelse(A1_8 == 1, 1, ifelse(A1_8 == 2, 0, NA)), 
+      fin_insur_hlt_px = ifelse(A1_9 == 1, 1, ifelse(A1_9 == 2, 0, NA)), 
+      fin_insur_hlt_tm = ifelse(A1_10 == 1, 1, ifelse(A1_10 == 2, 0, NA)), 
+      fin_insur_hlt_ot = ifelse(A1_11 == 1, 1, ifelse(A1_11 == 2, 0, NA)), 
+      
+      # Business with employees offers health insurance benefit to employees? 
+      
+      fin_insur_hlth_empbft = ifelse(A2 == 1, 1, 0), 
+      fin_insur_hlth_empbft = ifelse(A2 %in% c(3, 4), NA, fin_insur_hlth_empbft), 
+      
+      ) %>% dummy_cols(select_columns = c("fin_insur_lif_shc", 
+                                          "fin_insur_hlt_shc", 
+                                          "fin_insur_acc_shc", 
+                                          "fin_insur_fun_shc", 
+                                          "fin_insur_hom_shc", 
+                                          "fin_insur_bus_shc", 
+                                          "fin_insur_aut_shc", 
+                                          "fin_insur_idx_shc", 
+                                          "fin_insur_oth_shc")) -> raw_data
+      
+      raw_data %>% 
+        mutate(
+          fin_insur_lifhlt_slf = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1, fin_insur_lifhlt_slf, NA), 
+          fin_insur_lifhlt_spo = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1, fin_insur_lifhlt_spo, NA), 
+          fin_insur_lifhlt_chi = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1, fin_insur_lifhlt_chi, NA), 
+          fin_insur_lifhlt_par = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1, fin_insur_lifhlt_par, NA), 
+          fin_insur_lifhlt_oth = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1, fin_insur_lifhlt_par, NA), 
+          
+          fin_insur_hlt_op = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_op, NA), 
+          fin_insur_hlt_ip = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_ip, NA), 
+          fin_insur_hlt_sr = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_sr, NA), 
+          fin_insur_hlt_vi = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_vi, NA), 
+          fin_insur_hlt_dn = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_dn, NA), 
+          fin_insur_hlt_ca = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_ca, NA), 
+          fin_insur_hlt_di = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_di, NA), 
+          fin_insur_hlt_em = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_em, NA), 
+          fin_insur_hlt_px = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_px, NA), 
+          fin_insur_hlt_tm = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_tm, NA), 
+          fin_insur_hlt_ot = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_ot, NA)
+        ) -> raw_data
+    } 
+    
+      if (country %in% c("Indonesia")) {
+        
+        raw_data %>% mutate(
+          fin_insur_isl_shc = case_when(
+            B1_10 == 1 ~ "cu", #Currently use
+            B1_10 == 2 ~ "su", # Stopped using
+            B1_10 == 3 ~ "nh", # Never had
+            B1_10 == 4 ~ "na" # Not aware
+          ), 
+          fin_insur_isl_da = ifelse(B2_10 == 1, 1, ifelse(B2_10 == 2, 0, NA)), 
+        ) %>% dummy_cols(select_columns = c("fin_insur_isl_shc")) -> raw_data 
+        
+      }
+  
+    if (country %in% c("Indonesia", "Brazil")) { 
+      
+      if ("fin_insur_idx_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_idx_shc_cu = 0) -> raw_data
+      } 
+      if ("fin_insur_lif_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_lif_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_hlt_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_hlt_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_acc_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_acc_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_fun_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_fun_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_hom_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_hom_shc_cu = 0) -> raw_data
+      }   
+      if ("fin_insur_bus_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_bus_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_aut_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_aut_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_oth_shc_cu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_oth_shc_cu = 0) -> raw_data
+      }
+      
+        raw_data %>% 
+          mutate(
+            fin_insur_any_shc_cu = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | 
+                                               fin_insur_fun_shc_cu == 1 | fin_insur_hom_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | 
+                                               fin_insur_aut_shc_cu == 1 | fin_insur_idx_shc_cu == 1 | fin_insur_oth_shc_cu == 1, 1, 0)
+            
+          ) -> raw_data
+      } 
+  
+    if (country %in% c("Ethiopia", "India", "Nigeria")) { 
+      
+      raw_data %>% mutate(
+        # Currently uses any form of insurance
+        fin_insur_lif_shc_cu = ifelse(Q44_1 == 1, 1, ifelse(Q44_1 == 2, 0, NA)), 
+        fin_insur_hlt_shc_cu = ifelse(Q44_2 == 1, 1, ifelse(Q44_2 == 2, 0, NA)), 
+        fin_insur_acc_shc_cu =  ifelse(Q44_3 == 1, 1, ifelse(Q44_3 == 2, 0, NA)), 
+        fin_insur_bus_shc_cu =  ifelse(Q44_4 == 1, 1, ifelse(Q44_4 == 2, 0, NA)),   
+        fin_insur_aut_shc_cu = ifelse(Q44_5 == 1, 1, ifelse(Q44_5 == 2, 0, NA)), 
+        
+        fin_insur_any_shc_cu = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | fin_insur_aut_shc_cu == 1, 1, 0), 
+        
+        # Access insurance digitally
+        fin_insur_lif_da = ifelse(Q45_1 == 1, 1, ifelse(Q45_1 == 2, 0, NA)), 
+        fin_insur_hlt_da = ifelse(Q45_2 == 1, 1, ifelse(Q45_2 == 2, 0, NA)), 
+        fin_insur_acc_da = ifelse(Q45_3 == 1, 1, ifelse(Q45_3 == 2, 0, NA)), 
+        fin_insur_bus_da = ifelse(Q45_4 == 1, 1, ifelse(Q45_4 == 2, 0, NA)), 
+        fin_insur_aut_da = ifelse(Q45_5 == 1, 1, ifelse(Q45_5 == 2, 0, NA))
+        
+      ) -> raw_data
+      
+    }
+      
+    raw_data %>% 
+      
     mutate(
-
+      
+      fin_insur_any_shc_cu_comp = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | fin_insur_aut_shc_cu == 1, 1, 0), 
+      
+      # User of digital financial services
+      fin_dfs_user = ifelse(
+        Q33 == 6 | 
+          Q34 %in% c(2,3) | 
+          Q35_5 == 1  | 
+          Q35_6 == 1 | 
+          Q35_7 == 1 | 
+          Q35_8 == 1 | 
+          Q37_6 == 1 | 
+          Q37_7 == 1 | 
+          Q38_1 == 1 |
+          Q38_2 == 1 |
+          Q38_3 == 1 |
+          Q38_4 == 1 |
+          Q38_5 == 1 |
+          Q45_1 == 1 |
+          Q45_2 == 1 |
+          Q45_3 == 1 |
+          Q45_4 == 1 |
+          Q45_5 == 1 |
+          B2_1 == 1 |
+          B2_2 == 1 |
+          B2_3 == 1 |
+          B2_4 == 1 |
+          B2_5 == 1 |
+          B2_6 == 1 |
+          B2_7 == 1 |
+          B2_8 == 1 |
+          B2_9 == 1 |
+          B2_10 == 1, 1, 0), 
+      
+      fin_access_score = fin_account_formal + fin_merchpay_noncash + fin_activeloan_agg_any + fin_insur_any_shc_cu, 
+      
       # Index of how closely tied up (only defined for respondents that are owners) business is with owner's personal finances
       business_hh_noboundaries = ifelse(business_premise_shc_1 == 1 & resp_pcthhincfrmbus_high == 1 & business_account_separate_v2 == 0, 1, 0),
       business_hh_noboundaries = ifelse(resp_type_owner == 1, business_hh_noboundaries, NA),

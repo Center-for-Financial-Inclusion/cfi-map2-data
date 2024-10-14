@@ -147,7 +147,7 @@ params:
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Relationship between digital technology adoption and firm-level labor productivity](Nigeria_analysis_files/figure-html/fig-reg_digtech_drivers-1.png){#fig-reg_digtech_drivers width=1152}
+![Predictors of digital technology adoption](Nigeria_analysis_files/figure-html/fig-reg_digtech_drivers-1.png){#fig-reg_digtech_drivers width=1152}
 :::
 :::
 
@@ -207,10 +207,24 @@ params:
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Relationship between depth of digital technology adoption and firm-level labor productivity](Nigeria_analysis_files/figure-html/fig-reg_revprhr_digtechdepth-1.png){#fig-reg_revprhr_digtechdepth width=1152}
+![Relationship between breadth of digital technology adoption and firm-level labor productivity](Nigeria_analysis_files/figure-html/fig-reg_revprhr_digtechdepth-1.png){#fig-reg_revprhr_digtechdepth width=1152}
 :::
 :::
 
+
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between digital technology and financial resilience](Nigeria_analysis_files/figure-html/fig-reg_resilience_digitaladoption-1.png){#fig-reg_resilience_digitaladoption width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between digital technology adoption and financial resilience](Nigeria_analysis_files/figure-html/fig-reg_resilience_digtechusecase-1.png){#fig-reg_resilience_digtechusecase width=1152}
+:::
+:::
 
 
 ## Financial services 
@@ -258,6 +272,27 @@ params:
 :::
 
 
+---
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Insurance usage](Nigeria_analysis_files/figure-html/fig-ins-1.png){#fig-ins width=1152}
+:::
+:::
+
+--- 
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and firm-level labor productivity](Nigeria_analysis_files/figure-html/fig-reg_revprhr_finserv-1.png){#fig-reg_revprhr_finserv width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between financial services and financial resilience](Nigeria_analysis_files/figure-html/fig-reg_resi_finserv-1.png){#fig-reg_resi_finserv width=1152}
+:::
+:::
 
 ## Consumer protection
 

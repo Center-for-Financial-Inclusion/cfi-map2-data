@@ -37,6 +37,7 @@ compile_enumdata <- function(country, weight_params) {
   enum_data %>% 
     left_join(weight_clusters, by = c("Initial_block_ID")) %>%
     mutate(fullsample = "All businesses")
+  
 }
 
 maindata_package <- function(country, enum_data, weight_msme) { 

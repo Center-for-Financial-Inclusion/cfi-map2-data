@@ -74,7 +74,7 @@ prep_reg_factors <- function(ests, factor_params, include_valuelabel = TRUE) {
   
 }
 
-prep_reg_data <- function(data, depvarlog = FALSE) {
+prep_reg_data <- function(data, depvarlog = FALSE, b_round = 1) {
   
   data %>%
     group_by(country, depvar, model_type) %>%
@@ -82,7 +82,7 @@ prep_reg_data <- function(data, depvarlog = FALSE) {
       
       b = max(ifelse(term == "(Intercept)", fig_data, NA), na.rm = TRUE),
       baseline_label_pos = ifelse(row_number() == 1, b, NA), 
-      baseline_label = ifelse(row_number() == 1, round(b, 1), NA), 
+      baseline_label = ifelse(row_number() == 1, round(b, b_round), NA), 
       baseline = ifelse(row_number() == 1, NA, b), 
       
       sig = ifelse(p.value < 0.1, ".", NA),
@@ -316,6 +316,50 @@ fig_bar <- function(base_plot, data, params) {
   
 }
 
+fig_point <- function(base_plot, data, params) {
+  
+  color = params[["points"]][["color"]]
+  
+  if (params[["points"]][["position"]] == "dodge") {
+    pos <- position_dodge(width = params[["points"]][["position_width"]])
+  } else { 
+    pos <- NULL
+    }
+  
+  if (!is.null(color)) {
+    p <- base_plot + geom_point(size =  params[["points"]][["size"]], position = pos, color = color)
+  } else { 
+    p <- base_plot + geom_point(size =  params[["points"]][["size"]], position = pos)
+  }
+  
+  # Value labels
+  if (params[["valuelabels"]][["show"]]) {
+    # Reguires variable "valuelabel" to be defined in the dataset
+    p <- p +
+      geom_text(aes(label = valuelabel), size = params[["valuelabels"]][["lab_size"]], hjust = params[["valuelabels"]][["lab_hjust"]], fontface = params[["valuelabels"]][["lab_face"]])
+  }
+  
+  # Error bars
+  if (params[["errorbars"]][["show"]]) {
+    
+    ymin <- sym(names(data)[str_detect(names(data), "_upp")])
+    ymax <- sym(names(data)[str_detect(names(data), "_low")])
+    if (!is.null(params[["errorbars"]][["color"]])) {
+    p <- p + geom_linerange(aes(ymin = !!ymin, ymax = !!ymax), pos = pos, color = params[["errorbars"]][["color"]])
+    } else { 
+      p <- p + geom_linerange(aes(ymin = !!ymin, ymax = !!ymax), pos = pos)
+      }
+  }
+  
+  if (params[["catlabels"]][["show"]]) {
+    # Reguires variable "catlabel" to be defined in the dataset
+    p <- p + geom_text(aes(y = 0, label = catlabel), position = pos, hjust = 0, size = 2.5, fontface = "bold")
+  }
+  
+  return(p)
+  
+}
+
 fig_tile <- function(base_plot, params) { 
   
   # Geoms
@@ -347,13 +391,20 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     fvar = NULL
   }
   
+  if (!is.null(vars[["colorvar"]])) {
+    cvar <- sym(vars[["colorvar"]])
+  } else { 
+    cvar = NULL
+  }
+  
   # Defining base_plot  -------
   base_plot <- ggplot(
     data = data,
     aes(
       x = !!xvar,
       y = !!yvar,
-      fill = !!fvar
+      fill = !!fvar, 
+      color = !!cvar
     )
   )
   
@@ -362,7 +413,9 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     p <- fig_bar(base_plot, data, params)
   } else if (params[["geom_type"]] == "tile") { 
     p <- fig_tile(base_plot, params)
-  }
+  } else if (params[["geom_type"]] == "point") { 
+    p <- fig_point(base_plot, data, params)
+    }
   
   # Adding facets ------
   if (!is.null(facets)) {
@@ -403,9 +456,12 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
   # Scales ------------
   
   # Fill color
-  if (params[["geom_type"]] == "bar") {
+  if (params[["geom_type"]] %in%  c("bar", "point")) {
     if (!is.null(scales[["fillcolor"]][["palette"]])) {
       p <- p + scale_fill_manual(values = scales[["fillcolor"]][["palette"]])
+    } 
+    if (!is.null(scales[["color"]][["palette"]])) {
+      p <- p + scale_color_manual(values = scales[["color"]][["palette"]])
     }
   } 
   
