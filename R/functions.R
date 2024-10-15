@@ -342,6 +342,8 @@ prep_main_data <- function(raw_data, weights, country) {
         business_sector_agg3 == "Don't know" ~ "dk"
       ),
 
+      business_sector_food = ifelse(Q2 %in% c(2, 9, 10), 1, 0), 
+      
       business_registered_yes = ifelse(Q74 == 1, 1, 0),
       business_registered_yes = ifelse(Q74 %in% c(97, 99), NA, business_registered_yes),
       business_registered_no = ifelse(Q74 == 2, 1, 0),
@@ -722,6 +724,10 @@ prep_main_data <- function(raw_data, weights, country) {
       perf_growth_subj_any = ifelse(perf_sales_up == 1 | perf_emp_up == 1, 1, 0), 
   
       perf_growthdyn_subj_score = perf_sales_up + perf_emp_up + perf_investment + perf_newservices, 
+      
+      perf_subj_growing = ifelse((perf_sales_up == 1 | perf_emp_up == 1) & (perf_investment == 1 | perf_newservices == 1), 1, 0), 
+      perf_subj_static = ifelse(perf_sales_same == 1 & perf_emp_same == 1 & perf_investment == 0 & perf_newservices == 0, 1, 0), 
+      perf_subj_other = ifelse(perf_subj_growing == 0 & perf_subj_static == 0, 1, 0), 
       
       # Financial services ----------------
       

@@ -99,6 +99,8 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "business_sector_agg3_shc_srv_resale" = "Sector: Services, trade (re-sale)",
                 "business_sector_agg3_shc_srv_oth" = "Sector: Services, other (eg. transport, construction)",
                 
+                "business_sector_food" = "Sector: Food distribution or production", 
+                
                 "business_premise_shc_1" = "Premises: Household",
                 "business_premise_shc_2" = "Premises: Permanent" ,
                 "business_premise_shc_3" = "Premises: Semi-permanent",
@@ -212,6 +214,9 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "perf_newservices" = "Dynamism: In past 1 year, business introduced new products or services", 
                 "perf_growth_subj_any" = "Firm performance: Employees or revenues increased in past year", 
                 "perf_growthdyn_subj_score" = "Firm performance: Growth/dynamism score [0-4]", 
+                "perf_subj_growing" = "Firm dynamics: Growing", 
+                "perf_subj_static" = "Firm dynamics: Static", 
+                "perf_subj_other" = "Firm dynamics: Other",
                 
                  "fin_account_formal" = "Account ownership: Business use a formal account with a financial institution to manage its finances and payment",   
                  "fin_account_formal_v2" = "Account ownership: Composite indicator based on account + savings",   
