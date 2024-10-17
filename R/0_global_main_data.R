@@ -17,7 +17,7 @@ weights_package <- function(country, enum_data, weight_params, return_this = "ms
   # Calculating weights
   weights_percluster <- prep_weights(businesses_percluster, blocks_percluster, country, weight_params)
   
-  weight_msme <- weights_percluster %>% select(Initial_block_ID, weight_msme)
+  weight_msme <- weights_percluster %>% select(Initial_block_ID, p1, p2, weight_msme)
   
   if (return_this == "msme") {
     return(weight_msme)

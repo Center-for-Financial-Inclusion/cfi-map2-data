@@ -26,7 +26,7 @@ weights_percluster <- prep_weights(businesses_percluster, blocks_percluster, COU
 
 # DF with the cluster-level weights
 weights_cluster <- weights_percluster %>% select(Initial_block_ID, weight_cluster)
-weight_msme <- weights_percluster %>% select(Initial_block_ID, weight_msme)
+weight_msme <- weights_percluster %>% select(Initial_block_ID, p1, p2, weight_msme)
 
 # DF with msme-level weights assigned to BlockID
 #weights_msme <- businesses_perblock %>% select(BlockID, Initial_block_ID) %>% right_join(weights_percluster %>% select(Initial_block_ID, weight_msme), by = join_by(Initial_block_ID))

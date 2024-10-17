@@ -108,6 +108,14 @@ reorder_factor <- function(x, order_var = NULL) {
 
   }
 
+# 
+
+get_adj_factors <- function(x, country, sector) { 
+  
+  unlist(unlist(x[[country]])[[sector]])
+  
+  }
+
 style_factors <- function(x, size, reverse_order, order_var) { 
   
      x <- wrap_factor(x, size)

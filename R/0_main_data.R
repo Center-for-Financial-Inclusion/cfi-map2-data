@@ -21,3 +21,4 @@ main_data <- add_pca_todata(main_data)
 write_csv(main_data %>% group_by(Initial_block_ID, Cluster_number) %>% filter(row_number() == 1) %>% select(Initial_block_ID, Cluster_number, w), glue("outputs/weights_percluster_{COUNTRY}_Igor.csv"))
 
 
+

@@ -22,6 +22,35 @@ WEIGHT_PARAMS <- list(
   "India" = list("N" = 30880, "n" = 98,  "restricted_blocks" = NULL, "grid_area" = 893)
   )
 
+# Adjustment factors for weights: 
+WEIGHT_ADJ <- list(
+  "Indonesia" = c("Food production and distribution" = 1.66, 
+                  "Non-food retail trade" = 0.33, 
+                  "Other services" = 0.55, 
+                  "Non-food manufacturing" = 0.76, 
+                  "Don't know" = 1), 
+  "Ethiopia" = c("Food production and distribution" = 0.97, 
+                  "Non-food retail trade" = 1.21, 
+                  "Other services" = 0.95, 
+                  "Non-food manufacturing" = 1.03, 
+                  "Don't know" = 1), 
+  "India" = c("Food production and distribution" = 1.56, 
+                 "Non-food retail trade" = 0.96, 
+                 "Other services" = 0.72, 
+                 "Non-food manufacturing" = 0.87, 
+                 "Don't know" = 0.40), 
+  "Nigeria" = c("Food production and distribution" = 1.03, 
+              "Non-food retail trade" = 0.88, 
+              "Other services" = 1.12, 
+              "Non-food manufacturing" = 0.93, 
+              "Don't know" = 1), 
+  "Brazil" = c("Food production and distribution" = 1.23, 
+                "Non-food retail trade" = 1.11, 
+                "Other services" = 0.90, 
+                "Non-food manufacturing" = 1.03, 
+                "Don't know" = 1)
+)
+
 # Exchange rates per USD at 01 June 2024 (LCU per USD) from UN Treasures
 # https://treasury.un.org/operationalrates/OperationalRates.php
 
@@ -59,6 +88,13 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resp_education_agg4_shc_pri" = "Educational attainment: Completed primary or some secondary",
                 "resp_education_agg4_shc_sec" = "Educational attainment: Completed secondary or some university/technical school",
                 "resp_education_agg4_shc_trt" = "Educational attainment: Completed university/technical school",
+                
+                "resp_education_agg5_shc_non" = "Educational attainment: None completed", 
+                "resp_education_agg5_shc_pri" = "Educational attainment: Primary",  
+                "resp_education_agg5_shc_sec" = "Educational attainment: Secondary",  
+                "resp_education_agg5_shc_trt_uni" = "Educational attainment: University",  
+                "resp_education_agg5_shc_trt_voc" = "Educational attainment: Vocational/technical training", 
+                
                 "resp_experience_c" = "Experience running business: Continuous (single years)", 
                 "resp_experience_agg5_shc_1" = "Experience running business: 1 yr or less",
                 "resp_experience_agg5_shc_2_5" = "Experience running business: 2-5 yrs",
@@ -215,13 +251,15 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "perf_growth_subj_any" = "Firm performance: Employees or revenues increased in past year", 
                 "perf_growthdyn_subj_score" = "Firm performance: Growth/dynamism score [0-4]", 
                 "perf_subj_growing" = "Firm dynamics: Growing", 
-                "perf_subj_static" = "Firm dynamics: Static", 
+                "perf_subj_stable" = "Firm dynamics: Stable", 
+                "perf_subj_struggle" = "Firm dynamics: Struggling",
                 "perf_subj_other" = "Firm dynamics: Other",
                 
-                 "fin_account_formal" = "Account ownership: Business use a formal account with a financial institution to manage its finances and payment",   
-                 "fin_account_formal_v2" = "Account ownership: Composite indicator based on account + savings",   
-                 "fin_account_formal_v3" = "Account ownership: Composite indicator based on account + savings + payments",  
-                 "fin_account_formal_v4" = "Account ownership: Composite indicator based on account + savings + payments + loans",  
+                 "fin_account_formal" = "Account usage: Uses a formal account with a financial institution to manage its finances and payment (direct)",  
+                 "fin_account_formal_usgdef" = "Account usage: Uses a formal account with a financial institution for savings, customer payments or loans (indirect)",
+                 "fin_account_formal_v2" = "Account usage: Composite indicator based on account + savings",   
+                 "fin_account_formal_v3" = "Account usage: Composite indicator based on account + savings + payments",  
+                 "fin_account_formal_v4" = "Account usage: Composite indicator based on account + savings + payments + loans",  
                  "fin_owner_save" = "Business savings: Business owner able to save money regularly out of business income",             
                  "fin_bus_savings_cbnk"= "Business savings account: Commercial bank",         
                  "fin_bus_savings_mfi" = "Business savings account: Microfinance institution",
@@ -487,6 +525,8 @@ GROUPS <- c("fullsample" = "All businesses",
             "business_premise" = "Premises type",
             "business_size_agg2" = "Business size",
             "business_sector_str" = "Industrial sector",
+            "business_sector_agg_food_str" = "Sector", 
+            "business_sector_agg4" = "Sector", 
             "business_sector_agg2" = "Industrial sector",
             "business_sector_agg3" = "Industrial sector",
             "resp_experience_agg5" = "Experience running business (years)",

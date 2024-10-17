@@ -104,8 +104,15 @@ prep_enumeration_data <- function(country) {
         Q2 %in% seq(8,13,1) ~ "Services: retail/wholesale trade (re-sale)",
         Q2 %in% seq(14,22,1) ~ "Services: transportation, construction, repair, other"
       ),
-      business_sector_agg3 = ifelse(is.na(business_sector_agg3), "Don't know", business_sector_agg3)
-    )
+      business_sector_agg3 = ifelse(is.na(business_sector_agg3), "Don't know", business_sector_agg3), 
+      business_sector_agg4 = case_when(
+        Q2 %in% c(2, 8, 9, 10) ~ "Food production and distribution", 
+        Q2 %in% c(11, 12, 13) ~ "Non-food retail trade", 
+        Q2 %in% c(1, 3, 4, 5, 6, 7) ~ "Non-food manufacturing",
+        Q2 %in% c(14, 15, 16, 17, 18, 19, 20, 21, 22) ~ "Other services", 
+        Q2 %in% c(97) ~ "Don't know"
+      )
+    ) 
 
     if(country %in% c("India", "Brazil")) {
       data %>% rename(BlockID = Block_ID) -> data
@@ -193,7 +200,6 @@ prep_weights <- function(business_data, blocks_data, country, weight_params) {
     n = weight_params[[country]][["n"]]
   }
   
-
   business_data %>%
     left_join(blocks_data, by = "Initial_block_ID") %>%
     # Mapping parameters for computing weights (per document) to variables
@@ -279,16 +285,16 @@ replace_negatives <- function(x) {
   ifelse(x == -1, NA, x)
 }
 
-prep_main_data <- function(raw_data, weights, country) {
+prep_main_data <- function(raw_data, weights, selected_country) {
   
-  if (country == "Nigeria") { 
+  if (selected_country == "Nigeria") { 
     add_worker <- 1
   } else { 
     add_worker <- 0
     }
   
   # Correcting education labels for Indonesia
-  raw_data <- raw_data %>% correct_education(selected_country = country)
+  raw_data <- raw_data %>% correct_education(selected_country = selected_country)
   
   # Creating select variables that are affected by subsequent modification for brazil
   
@@ -303,7 +309,7 @@ prep_main_data <- function(raw_data, weights, country) {
       risk_largestimpact_str = ifelse(Q56 == 99, NA, risk_largestimpact_str), 
     )
   
-  if (country == "Brazil") { 
+  if (selected_country == "Brazil") { 
     raw_data <- raw_data %>% mutate_if(is.numeric, replace_negatives)
   }
   
@@ -312,6 +318,7 @@ prep_main_data <- function(raw_data, weights, country) {
     left_join(weights, by = join_by(Initial_block_ID)) %>%
 
     mutate(
+      
       fullsample = "All businesses",
       business_total = 1,
 
@@ -342,8 +349,22 @@ prep_main_data <- function(raw_data, weights, country) {
         business_sector_agg3 == "Don't know" ~ "dk"
       ),
 
-      business_sector_food = ifelse(Q2 %in% c(2, 9, 10), 1, 0), 
+      business_sector_food = ifelse(Q2 %in% c(2, 8, 9, 10), 1, 0), 
       
+      business_sector_agg_food_str = ifelse(Q2 %in% c(2, 8, 9, 10), "Food production and distribution", "Other"), 
+      
+      business_sector_agg4 = case_when(
+        Q2 %in% c(2, 8, 9, 10) ~ "Food production and distribution", 
+        Q2 %in% c(11, 12, 13) ~ "Non-food retail trade", 
+        Q2 %in% c(1, 3, 4, 5, 6, 7) ~ "Non-food manufacturing",
+        Q2 %in% c(14, 15, 16, 17, 18, 19, 20, 21, 22) ~ "Other services", 
+        Q2 %in% c(97) ~ "Don't know"
+        ), 
+      
+      # Adjusting weights -------
+      adj_factor = map2_dbl(country, business_sector_agg4, get_adj_factors, x = WEIGHT_ADJ),
+      weight_msme_adj = 1/(p1*(p2*adj_factor)),
+  
       business_registered_yes = ifelse(Q74 == 1, 1, 0),
       business_registered_yes = ifelse(Q74 %in% c(97, 99), NA, business_registered_yes),
       business_registered_no = ifelse(Q74 == 2, 1, 0),
@@ -423,6 +444,13 @@ prep_main_data <- function(raw_data, weights, country) {
         resp_education <= 4 ~ "pri",
         resp_education %in% c(5, 6, 8, 10) ~ "sec",
         resp_education %in% c(7, 9, 11) ~ "trt"
+      ),
+      resp_education_agg5_shc = case_when(
+        resp_education <= 2 ~ "non",
+        resp_education <= 4 ~ "pri",
+        resp_education %in% c(5, 6, 8, 10) ~ "sec",
+        resp_education %in% c(9) ~ "trt_voc",
+        resp_education %in% c(7, 11) ~ "trt_uni"
       ),
       resp_education_agg2_shc = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "priorless", "secormore"), 
       
@@ -726,12 +754,14 @@ prep_main_data <- function(raw_data, weights, country) {
       perf_growthdyn_subj_score = perf_sales_up + perf_emp_up + perf_investment + perf_newservices, 
       
       perf_subj_growing = ifelse((perf_sales_up == 1 | perf_emp_up == 1) & (perf_investment == 1 | perf_newservices == 1), 1, 0), 
-      perf_subj_static = ifelse(perf_sales_same == 1 & perf_emp_same == 1 & perf_investment == 0 & perf_newservices == 0, 1, 0), 
-      perf_subj_other = ifelse(perf_subj_growing == 0 & perf_subj_static == 0, 1, 0), 
+      perf_subj_stable = ifelse(perf_sales_same == 1 & perf_emp_same == 1 & perf_investment == 0 & perf_newservices == 0, 1, 0), 
+      perf_subj_struggle = ifelse((perf_sales_down == 1 | perf_emp_down == 1) & perf_investment == 0 & perf_newservices == 0, 1, 0), 
+      perf_subj_other = ifelse(perf_subj_growing == 0 & perf_subj_stable == 0 & perf_subj_struggle, 1, 0), 
       
       # Financial services ----------------
       
       # Business has formal account
+      #D oes this business currently use a formal account with a financial institution to manage its finances and payments in the business name or a person's name?
       fin_account_formal = ifelse(Q30 == 1, 1, 0),
       fin_account_formal = ifelse(Q30 %in% c(97,99), NA, fin_account_formal),
       
@@ -751,6 +781,13 @@ prep_main_data <- function(raw_data, weights, country) {
                                       Q37_3 == 1 | 
                                       Q37_4 == 1 | 
                                       Q37_6 == 1, 1, 0),
+      
+      # Definition of usage of formal account to include savings, payments and formal loans
+      fin_account_formal_usgdef = ifelse(
+        Q33 %in% c(1, 2, 3, 4, 6) | # Business with a formal financial institution or mobile money wallet
+        (Q35_4 == 1 | Q35_6 == 1) | # Accepts payment via bank transfers or mobile money
+        (Q37_1 == 1 | Q37_2 == 1 | Q37_4 == 1 | Q37_6 == 1),  # Has an active loan from a commercial bank, mfi, sacco or mobile money
+        1, 0),
       
       # Can owner save regularly out of business income
       fin_owner_save = ifelse(Q32 == 1, 1, 0),
@@ -837,7 +874,7 @@ prep_main_data <- function(raw_data, weights, country) {
       fin_activeloan_other = ifelse(Q37_11 == 1, 1, 0), 
       fin_activeloan_other = ifelse(Q37_11 %in% c(97,99), NA, fin_activeloan_other), 
       
-      fin_activeloan_agg_fi = ifelse(fin_activeloan_cbnk == 1 | fin_activeloan_mfi == 1, 1, 0), 
+      fin_activeloan_agg_fi = ifelse(fin_activeloan_cbnk == 1 | fin_activeloan_mfi == 1 | fin_owner_creditcard == 1, 1, 0), 
       fin_activeloan_agg_nbfi = ifelse(fin_activeloan_fintech == 1 | fin_activeloan_sacco == 1 | fin_activeloan_mm == 1 | fin_activeloan_platform == 1, 1, 0), 
       fin_activeloan_agg_inf = ifelse(fin_activeloan_ff == 1 | fin_activeloan_group == 1 | fin_activeloan_supplier == 1 | fin_activeloan_moneylndr == 1, 1, 0), 
       fin_activeloan_agg_any = ifelse(Q37_1 == 1 | Q37_2 == 1 | Q37_3 == 1 | Q37_4 == 1 | Q37_5 == 1 | Q37_6 == 1 | Q37_7 == 1 | Q37_8 == 1 | Q37_9 == 1 | Q37_10 == 1 | Q37_11 == 1, 1, 0), 
@@ -1119,13 +1156,13 @@ prep_main_data <- function(raw_data, weights, country) {
       
     ) %>% 
     dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
-                                  "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
+                                  "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_education_agg5_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
                                   "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc",
                                   "risk_largestimpact_shc")) -> raw_data 
   
     # Insurance ----
     
-    if (country %in% c("Brazil", "Indonesia")) {
+    if (selected_country %in% c("Brazil", "Indonesia")) {
       
       raw_data %>% mutate(
   
@@ -1254,7 +1291,7 @@ prep_main_data <- function(raw_data, weights, country) {
         ) -> raw_data
     } 
     
-      if (country %in% c("Indonesia")) {
+      if (selected_country %in% c("Indonesia")) {
         
         raw_data %>% mutate(
           fin_insur_isl_shc = case_when(
@@ -1268,7 +1305,7 @@ prep_main_data <- function(raw_data, weights, country) {
         
       }
   
-    if (country %in% c("Indonesia", "Brazil")) { 
+    if (selected_country %in% c("Indonesia", "Brazil")) { 
       
       if ("fin_insur_idx_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_idx_shc_cu = 0) -> raw_data
@@ -1307,7 +1344,7 @@ prep_main_data <- function(raw_data, weights, country) {
           ) -> raw_data
       } 
   
-    if (country %in% c("Ethiopia", "India", "Nigeria")) { 
+    if (selected_country %in% c("Ethiopia", "India", "Nigeria")) { 
       
       raw_data %>% mutate(
         # Currently uses any form of insurance
@@ -1380,7 +1417,7 @@ prep_main_data <- function(raw_data, weights, country) {
 
     ) %>%
 
-    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "w", "business_", "resp_", "tech_", "fin_", "cp_", "perf_", "risk_", "resi_", "fx")))
+    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "adj", "p", "w", "business_", "resp_", "tech_", "fin_", "cp_", "perf_", "risk_", "resi_", "fx")))
 
 }
 

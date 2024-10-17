@@ -9,31 +9,37 @@ lightbox: true
 
 ## Key findings
 
+-   This study found between 400 (Addis) and 1,400 (Delhi) visible businesses establishments per square kilometer in 5 major urban centers (@fig-nbus_size_and_sector).
 
-*	This study found between 400 (Addis) and 1,400 (Delhi) visible businesses establishments per square kilometer in 5 major urban centers (@fig-nbus_size_and_sector). 
+-   A dominant majority of these visible business establishments are businesses with fewer than 10 workers (Figure 1), though Delhi has a relatively high concentration of larger businesses (40%).
 
-*	A dominant majority of these visible business establishments are businesses with fewer than 10 workers (Figure 1), though Delhi has a relatively high concentration of larger businesses (40%). 
-
-*	These small businesses are concentrated in retail trade and play a key role in urban food production and distribution. In Jakarta, 76 percent of small firms are involved in food distribution or manufacture, whereas in Addis, Delhi and Lagos, the share ranges from 34 to 47 percent, in Sao Paolo production is more diversified and the share of firms in food distribution or manufcature is lower, making up 25 percent. Among the 5 cities, Lagos has the highest share of small businesses in manufacturing (19%). 
-
-*	At the median, the productivity per worker among these small firms is lower than the productivity suggested by national averages, but the gap is smallest in Sao Paulo (0.95x) and largest in Jakarta (0.13x) (@fig-mses_productivity)
-
-* Based on owner’s or manager’s evaluations, the share of small firms can be described as ‘growing’ is as low as 4 percent in Jakarta and as high as 25 percent in Lagos. Firms that can be described as ‘static’, that is, revenues and number of employees that have stayed the same over the past year and that have not made investments in capital or products make up as high as 45% of firms in Jakarta and as low as 13% of firms in Lagos. 
-
-*	On average, small business owners are in their 30’s (Addis, Delhi) or in their early 40’s (Sao Paolo, Lagos). The least experienced small firm owners are those in Addis (2.8 years’ experience running the business) and the most experienced are those in Sao Paolo (10 years’ of experience). 
-
-*	Nearly 1 in 2 small businesses in Jakarta and Lagos are owner-operated single person businesses, while the share in Addis, Delhi and Sao Paulo is nearer to 1 in 3. The prevalence of single-person businesses correlates strongly with the share of businesses run out of the household and with the share of businesses run by women. Jakarta and Lagos also have the highest share of businesses run out of the household (60 and 53%, respectively) as well as the highest share of businesses run by women (74 and 53%, respectively). 
-
-*	Around 3 in 4 business owners in Addis, Delhi and Lagos said they wanted to become and entrepreneur to start a business. In Sao Paolo and Jakarta, the number is around 1 in 2, and more business owners became entrepreneurs due to lack of opportunities or other reasons. Across all study sites, dominant shares of business owners say their main goal is to grow the business over the next 12 months, however in Brazil a relatively larger share of owners (nearly 1 in 3) say their main goal is to either cover business costs or leave the business. Overall, between 1 in 4 and 1 in 3 business owners can be characterized as having a strong ‘entrepreneurial’ mindset with a desire to grow the business and take risks. 
-
-*	Controlling for education and years of experience, women are less likely to have an ‘entrepreneurial’ or ‘growth and risk’ oriented mindset than men in Addis and Jakarta. In Addis, this finding is driven by a more cautious attitude to risk among women, while in Jakarta in addition to lower risk tolerance, women are substantially less likely than men to identify as an entrepreneur.  
-
-*	This study tracked use of 10 distinct non-financial and financial digital technologies among small businesses. There is wide variation among the study sites in the adoption of these technologies. In Addis, small businesses use 1.6 technologies, whereas in Brazil they use 5, reflecting more widespread adoption of advanced digital solutions such as e-commerce platforms or operations-supporting software  and digital loans. 
-
-*	Educational attainment of the owner (or manager) is the single strongest predictor of firm-level technology and this finding is consistent across all 5 cities. 
+-   These small businesses are concentrated in retail trade and play an important role in urban food production and distribution. In Addis and Jakarta, nearly 1 in 2 small firms are involved in food distribution or manufacture, whereas in Addis, Delhi and Lagos, the share ranges from 20 to 34 percent, in Sao Paolo production is more diversified and the share of firms in food distribution or manufcature is lower, making up 25 percent. Among the 5 cities, Lagos has the highest share of small businesses in manufacturing (19%).
 
 
-## The business landscape 
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![MSEs by sector of production](cfi_map2_global_files/figure-html/fig-mse_sector_key-1.png){#fig-mse_sector_key width=1152}
+:::
+:::
+
+
+-   At the median, the productivity per worker among these small firms is lower than the level of productivity suggested by national accounts data: the gap is smallest in Sao Paulo (0.95x) and largest in Jakarta (0.13x) (@fig-mses_productivity)
+
+-   Based on owner's or manager's evaluations, the share of small firms that are 'growing' is as low as 4 percent in Jakarta and as high as 25 percent in Lagos. Firms that can be described as 'static', that is, revenues and number of employees that have stayed the same over the past year and that have not made investments in capital or products make up as high as 45% of firms in Jakarta and as low as 13% of firms in Lagos.
+
+-   On average, small business owners are in their 30's (Addis, Delhi) or in their early 40's (Sao Paolo, Lagos). The least experienced small firm owners are those in Addis (2.8 years' experience running the business) and the most experienced are those in Sao Paolo (10 years' of experience).
+
+-   Nearly 1 in 2 small businesses in Jakarta and Lagos are owner-operated single person businesses, while the share in Addis, Delhi and Sao Paulo is nearer to 1 in 3. The prevalence of single-person businesses correlates strongly with the share of businesses run out of the household and with the share of businesses run by women. Jakarta and Lagos also have the highest share of businesses run out of the household (60 and 53%, respectively) as well as the highest share of businesses run by women (74 and 53%, respectively).
+
+-   Around 3 in 4 business owners in Addis, Delhi and Lagos said they wanted to become an entrepreneur in order to start a business. In Sao Paolo and Jakarta, the number is around 1 in 2, and more business owners became entrepreneurs due to lack of opportunities or other reasons. Across all study sites, dominant shares of business owners say their main goal is to grow the business over the next 12 months, however in Brazil a relatively larger share of owners (nearly 1 in 3) say their main goal is to either cover business costs or leave the business. Overall, between 1 in 4 and 1 in 3 business owners can be characterized as having a strong 'entrepreneurial' mindset with a desire to grow the business and take risks.
+
+-   Controlling for education and years of experience, women are less likely to have an 'entrepreneurial' or 'growth and risk' oriented mindset than men in Addis and Jakarta. In Addis, this finding is driven by a more cautious attitude to risk among women, while in Jakarta in addition to lower risk tolerance, women are substantially less likely than men to identify as an entrepreneur.
+
+-   This study tracked use of 10 distinct non-financial and financial digital technologies among small businesses. There is wide variation among the study sites in the adoption of these technologies. In Addis, small businesses use 1.6 technologies, whereas in Brazil they use 5, reflecting more widespread adoption of advanced digital solutions such as e-commerce platforms or operations-supporting software and digital loans.
+
+-   Educational attainment of the owner (or manager) is the single strongest predictor of firm-level technology and this finding is consistent across all 5 cities.
+
+## The business landscape
 
 
 ::: {.cell .caption-margin}
@@ -43,7 +49,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -53,7 +59,17 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Businesses enumerated by sector](cfi_map2_global_files/figure-html/fig-nbus_sector_custom-1.png){#fig-nbus_sector_custom width=1152}
+:::
+:::
+
+
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -63,7 +79,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -93,8 +109,7 @@ lightbox: true
 :::
 
 
-## The small business owner 
-
+## The small business owner
 
 
 ::: {.cell .caption-margin}
@@ -104,7 +119,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -114,7 +129,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -124,7 +139,7 @@ lightbox: true
 :::
 
 
-## Digital technology 
+## Digital technology
 
 
 ::: {.cell .caption-margin}
@@ -134,7 +149,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -144,7 +159,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -154,7 +169,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -164,7 +179,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -174,7 +189,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -184,7 +199,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -194,7 +209,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -204,7 +219,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -214,8 +229,7 @@ lightbox: true
 :::
 
 
---- 
-
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -225,7 +239,7 @@ lightbox: true
 :::
 
 
-## Financial services 
+## Financial services
 
 
 ::: {.cell .caption-margin}
@@ -235,7 +249,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -245,7 +259,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -255,7 +269,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -265,7 +279,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -275,7 +289,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -285,7 +299,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -295,7 +309,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -327,7 +341,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -347,7 +361,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -357,7 +371,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -367,7 +381,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -377,7 +391,7 @@ lightbox: true
 :::
 
 
---- 
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -387,7 +401,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}
@@ -397,7 +411,7 @@ lightbox: true
 :::
 
 
----
+------------------------------------------------------------------------
 
 
 ::: {.cell .caption-margin}

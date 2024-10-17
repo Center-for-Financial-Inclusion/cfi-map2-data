@@ -12,8 +12,8 @@ source("R/specific_functions.R") # Preparing specialized (non-generic) functions
 source("R/viz_functions.R")
 
 # Select country:
-COUNTRY <- params$country
-#COUNTRY <- "Ethiopia"
+#COUNTRY <- params$country
+COUNTRY <- "Indonesia"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
@@ -181,7 +181,7 @@ fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord
 indicators <- c("business_total")
 groups <- GROUPS[c("business_size_agg2", "business_sector_agg3", "business_premise", "business_registration_status", "resp_owner_str", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "total")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "total")
 fig_data <- sample_chars(ests, groups)
 
 labels <- list(
@@ -239,9 +239,9 @@ fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord
 indicators <- c("business_total")
 groups <- GROUPS[c("business_sector_str")]
 
-ests_all <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "total") %>% mutate(subgroup = "All businesses")
-ests_men <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_men == 1), weights = "weight_msme", psu = NULL, keep = "total") %>% mutate(subgroup = "Men owned\nor managed")
-ests_women <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_women == 1), weights = "weight_msme", psu = NULL, keep = "total")  %>% mutate(subgroup = "Women owned\nor managed")
+ests_all <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "total") %>% mutate(subgroup = "All businesses")
+ests_men <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_men == 1), weights = "weight_msme_adj", psu = NULL, keep = "total") %>% mutate(subgroup = "Men owned\nor managed")
+ests_women <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_sex_women == 1), weights = "weight_msme_adj", psu = NULL, keep = "total")  %>% mutate(subgroup = "Women owned\nor managed")
   
 fig_data <- sample_sector(bind_rows(ests_all, ests_men, ests_women), sector_agg0_to_agg3(main_data))
 
@@ -315,7 +315,7 @@ fig_notes <- "Notes: MSEs reported monthly revenue in local currency, these valu
 indicators <- c("perf_rev_reports", "perf_rev_usd", "perf_revpdypemp_usd")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = NULL)
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = NULL)
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 30, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
@@ -398,7 +398,7 @@ indicators <- c("perf_sales_up", "perf_sales_same", "perf_sales_down", "perf_emp
 
 groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
@@ -472,7 +472,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 indicators <- c("resp_sex_men", "resp_sex_women")
 groups <- GROUPS[c("fullsample", "business_premise", "business_size_agg2", "business_sector_agg3")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 60), 
@@ -550,7 +550,7 @@ indicators <- c("resp_education_agg4_shc_non", "resp_education_agg4_shc_pri", "r
 
 groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 80, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
@@ -631,7 +631,7 @@ indicators <- c("resp_motivation_entrep", "resp_motivation_lackopp", "resp_motiv
 
 groups <- GROUPS[c("fullsample")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 80, indicator_group = 30, group_name = 25, group_cat_val = NULL), 
@@ -821,7 +821,7 @@ indicators <- c("business_premise_shc_1", "resp_pcthhincfrmbus_high", "business_
 
 groups <- GROUPS[c("resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_type_owner == 1), weights = "weight_msme", psu = NULL, keep = "mean") %>% mutate(indicator_name = ifelse(indicator_name == "Household", "Business operates from household premises", indicator_name))
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data %>% filter(resp_type_owner == 1), weights = "weight_msme_adj", psu = NULL, keep = "mean") %>% mutate(indicator_name = ifelse(indicator_name == "Household", "Business operates from household premises", indicator_name))
 
 
 factor_params <- list(
@@ -895,7 +895,7 @@ fig_notes <- "Notes: The digital technology adoption score is a score that count
 indicators <- c("tech_has_device", "tech_has_internet", "tech_uses_website", names(main_data)[str_detect(names(main_data), "^(tech.+).(shc.+)$")], "tech_uses_ai", "tech_uses_digpayments", "tech_uses_digloans", "tech_uses_adoption_score")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg3", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 80, indicator_group = 50, group_name = 25, group_cat_val = 20), 
@@ -1037,7 +1037,7 @@ indicators <- c("tech_function_comms", "tech_function_mkts", "tech_function_ops"
 
 groups <- GROUPS[c("fullsample", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
@@ -1114,7 +1114,7 @@ fig_notes <- "Notes: Four use-cases of digital technology are considered here: '
 indicators <- c("tech_cat_none", "tech_cat_any1", "tech_cat_any2", "tech_cat_any3all4")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
@@ -1194,7 +1194,7 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "adopfactors")],
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str", "resp_psych_segment_agg2")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 40, group_name = 25, group_cat_val = NULL), 
@@ -1696,7 +1696,7 @@ if (COUNTRY == "Indonesia") {
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -1774,7 +1774,7 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "merchpay")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 50, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -1853,7 +1853,7 @@ indicators <- c("fin_demandloan", "fin_activeloan_da_any", indicators)
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 35, group_name = 20, group_cat_val = NULL), 
@@ -1933,7 +1933,7 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "denied")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 20, group_cat_val = NULL), 
@@ -2012,7 +2012,7 @@ indicators <- c("fin_dfs_user", names(main_data)[str_detect(names(main_data), "d
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 20, group_cat_val = NULL), 
@@ -2090,7 +2090,7 @@ fig_notes <- c("")
 indicators <- c("fin_insur_lif_shc_cu" , "fin_insur_hlt_shc_cu", "fin_insur_acc_shc_cu", "fin_insur_bus_shc_cu", "fin_insur_aut_shc_cu", "fin_insur_any_shc_cu_comp")
 groups <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2306,7 +2306,7 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "loanrepaydiff")])
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")  %>% 
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")  %>% 
   mutate(indicator_group = ifelse(str_detect(indicator, "cope"), "Coping strategy", indicator_group))
 
 factor_params <- list(
@@ -2391,7 +2391,7 @@ if (COUNTRY == "India") {
   main_data <- main_data %>% mutate(cp_complaint_resolved_yes = ifelse(resp_sex_str == "Women", 0, cp_complaint_resolved_yes))
 }
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean") %>% 
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean") %>% 
   mutate(indicator_group = ifelse(str_detect(indicator, "cope"), "Coping strategy", indicator_group))
 
 factor_params <- list(
@@ -2470,7 +2470,7 @@ indicators <- c("risk_largestimpact_shc_corr", "risk_largestimpact_shc_cost", "r
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2547,7 +2547,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 indicators <- c("risk_weather_type_heat", "risk_weather_type_droughts", "risk_weather_type_floodstyphoon", "risk_weather_type_other", "risk_weather_type_any")
 groups <- GROUPS[c("fullsample", "business_size_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 40, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2626,7 +2626,7 @@ indicators <- c(names(main_data)[str_detect(names(main_data), "weather_impact")]
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2702,7 +2702,7 @@ indicators <- c("resi_efunds_firm_diff_1",   "resi_efunds_firm_diff_2", "resi_ef
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2808,7 +2808,7 @@ indicators <- indicators[!str_detect(indicators, "score")]
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
@@ -2923,7 +2923,7 @@ indicators <- c(indicators, "resi_capital_score_v3_norm")
 
 groups <- GROUPS[c("fullsample", "business_size_agg2", "business_sector_agg2", "resp_sex_str")]
 
-ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme", psu = NULL, keep = "mean")
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
   wrap_sizes = list(indicator_name = 60, indicator_group = 25, group_name = 25, group_cat_val = NULL), 
