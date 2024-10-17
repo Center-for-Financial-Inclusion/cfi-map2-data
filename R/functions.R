@@ -809,6 +809,10 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_bus_savings_other =  ifelse(Q33 == 7, 1, 0), 
       fin_bus_savings_other = ifelse(Q33 %in% c(97,99), NA, fin_bus_savings_other),
       
+      fin_bus_savings_agg_fi = ifelse(fin_bus_savings_cbnk == 1 | fin_bus_savings_mfi == 1 | fin_bus_savings_sacco == 1, 1, 0), 
+      fin_bus_savings_agg_nbfi = ifelse(fin_bus_savings_fintech == 1 | fin_bus_savings_mm == 1, 1, 0), 
+      fin_bus_savings_agg_inf = ifelse(fin_bus_savings_group == 1 | fin_bus_savings_other == 1, 1, 0), 
+      
       # Transaction channels available for savings account
       fin_bus_savings_channel_inprsn = ifelse(Q34 == 1, 1, 0), 
       fin_bus_savings_channel_inprsn = ifelse(Q34 %in% c(97,99), NA, fin_bus_savings_channel_inprsn), 
@@ -874,8 +878,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_activeloan_other = ifelse(Q37_11 == 1, 1, 0), 
       fin_activeloan_other = ifelse(Q37_11 %in% c(97,99), NA, fin_activeloan_other), 
       
-      fin_activeloan_agg_fi = ifelse(fin_activeloan_cbnk == 1 | fin_activeloan_mfi == 1 | fin_owner_creditcard == 1, 1, 0), 
-      fin_activeloan_agg_nbfi = ifelse(fin_activeloan_fintech == 1 | fin_activeloan_sacco == 1 | fin_activeloan_mm == 1 | fin_activeloan_platform == 1, 1, 0), 
+      fin_activeloan_agg_fi = ifelse(fin_activeloan_cbnk == 1 | fin_activeloan_mfi == 1 | fin_activeloan_sacco == 1 | fin_owner_creditcard == 1, 1, 0), 
+      fin_activeloan_agg_nbfi = ifelse(fin_activeloan_fintech == 1 | fin_activeloan_mm == 1 | fin_activeloan_platform == 1, 1, 0), 
       fin_activeloan_agg_inf = ifelse(fin_activeloan_ff == 1 | fin_activeloan_group == 1 | fin_activeloan_supplier == 1 | fin_activeloan_moneylndr == 1, 1, 0), 
       fin_activeloan_agg_any = ifelse(Q37_1 == 1 | Q37_2 == 1 | Q37_3 == 1 | Q37_4 == 1 | Q37_5 == 1 | Q37_6 == 1 | Q37_7 == 1 | Q37_8 == 1 | Q37_9 == 1 | Q37_10 == 1 | Q37_11 == 1, 1, 0), 
       

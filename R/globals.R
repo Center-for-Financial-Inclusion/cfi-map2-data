@@ -260,14 +260,21 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                  "fin_account_formal_v2" = "Account usage: Composite indicator based on account + savings",   
                  "fin_account_formal_v3" = "Account usage: Composite indicator based on account + savings + payments",  
                  "fin_account_formal_v4" = "Account usage: Composite indicator based on account + savings + payments + loans",  
-                 "fin_owner_save" = "Business savings: Business owner able to save money regularly out of business income",             
+                
+                 "fin_owner_save" = "Business savings: Business owner able to save money regularly out of business income",      
+                
                  "fin_bus_savings_cbnk"= "Business savings account: Commercial bank",         
                  "fin_bus_savings_mfi" = "Business savings account: Microfinance institution",
                  "fin_bus_savings_fintech" = "Business savings account: Fintech",         
                  "fin_bus_savings_sacco" = "Business savings account: Saving and Credit Cooperative",            
                  "fin_bus_savings_group" = "Business savings account: VSLA, ROSCA or Savings group",
                  "fin_bus_savings_mm" = "Business savings account: Mobile money wallet, or e-money",  
-                 "fin_bus_savings_other" = "Business savings account: Other",             
+                 "fin_bus_savings_other" = "Business savings account: Other",   
+                
+                "fin_bus_savings_agg_fi" = "Business savings account: Financial insitution", 
+                "fin_bus_savings_agg_nbfi" = "Business savings account: Fintech or mobile money", 
+                "fin_bus_savings_agg_inf" = "Business savings account: Informal", 
+                
                  "fin_bus_savings_channel_inprsn" = "Business savings account, transaction channels: OTC at branch",    
                  "fin_bus_savings_channel_digonly" = "Business savings account, transaction channels: Digital",    
                  "fin_bus_savings_channel_both" = "Business savings account, transaction channels: Both OTC and digital",       
@@ -295,7 +302,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_activeloan_other" = "Active loans in past year: Other",     
                 
                 "fin_activeloan_agg_fi" = "Active loans in past year: Financial institution", 
-                "fin_activeloan_agg_nbfi" = "Active loans in past year: Non-bank financial institution", 
+                "fin_activeloan_agg_nbfi" = "Active loans in past year: Fintech, e-commerce or mobile money", 
                 "fin_activeloan_agg_inf" = "Active loans in past year: Informal", 
                 "fin_activeloan_agg_any" = "Demand for credit: Used a loan from any source in past 12 months",       
                 

@@ -1746,9 +1746,9 @@ scales <- list(
 #| fig-cap: "Financical accounts and savings"
 #| cap-location: margin
 
-fig_notes <- c("Notes: Business savings account types are based on responses to the following question: Where are the business savings primarily kept? Common responses under other include: 'At home', 'Don't have savings' or saving with relatives, friends or neighbors. The percentages associated with the instiution where savings are kept and the types of transaction channels associated with the savings account, correspond only to firms that are able to save money regularly. Savings account transaction channels are based on the following question: What are the options for transacting with this savings account? OTC represents 'Over the counter' and corresponds to the response option 'In-person through a physical branch location'.")
+fig_notes <- c("Notes: Business savings account types are based on responses to the following question: Where are the business savings primarily kept? Common responses under other include: 'At home', 'Don't have savings' or saving with relatives, friends or neighbors. Savings account transaction channels are based on the following question: What are the options for transacting with this savings account? OTC represents 'Over the counter' and corresponds to the response option 'In-person through a physical branch location'.")
 
-indicators <- c("fin_account_formal", "fin_account_formal_usgdef", "fin_owner_save", names(main_data_all)[str_detect(names(main_data_all), "bus_savings")])
+indicators <- c("fin_account_formal", "fin_account_formal_usgdef", "fin_owner_save", names(main_data_all)[str_detect(names(main_data_all), "bus_savings_agg|bus_savings_channel")])
 groups_l1 <- "city"
 groups_l2 <- GROUPS[c("resp_sex_str")]
 
