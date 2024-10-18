@@ -89,7 +89,7 @@ prep_enumeration_data <- function(country) {
       business_eligible = ifelse(Eligibility == 1, 1, 0),
       business_selected = ifelse(Selected == 1, 1, 0),
       business_interviewed = ifelse(Completed == 1, 1, 0),
-      Q1 = ifelse(Q1 == -1, 4, Q1),
+      #Q1 = ifelse(Q1 == -1, 4, Q1),
       business_premise = names(attributes(Q1)$labels[Q1]),
       business_size_agg2 = names(attributes(Q3_1)$labels[Q3_1]),
       business_size_agg2 = ifelse(is.na(business_size_agg2), "Don't know", business_size_agg2),
@@ -362,9 +362,11 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         ), 
       
       # Adjusting weights -------
-      adj_factor = map2_dbl(country, business_sector_agg4, get_adj_factors, x = WEIGHT_ADJ),
-      weight_msme_adj = 1/(p1*(p2*adj_factor)),
-  
+      adj_factor_sector = map2_dbl(country, business_sector_agg4, get_adj_factors, x = WEIGHT_ADJ_SECTOR),
+      adj_factor_prem = map2_dbl(country, business_premise, get_adj_factors, x = WEIGHT_ADJ_PREM),
+      weight_msme_adj_v0 = 1/(p1*(p2*adj_factor_sector)),
+      weight_msme_adj = 1/(p1*(p2*adj_factor_sector*adj_factor_prem)),
+      
       business_registered_yes = ifelse(Q74 == 1, 1, 0),
       business_registered_yes = ifelse(Q74 %in% c(97, 99), NA, business_registered_yes),
       business_registered_no = ifelse(Q74 == 2, 1, 0),

@@ -39,71 +39,6 @@ main_data_all <- bind_rows(
 
 -   These small businesses are concentrated in retail trade and play an important role in urban food production and distribution. In Addis and Jakarta, nearly 1 in 2 small firms are involved in food distribution or manufacture, whereas in Addis, Delhi and Lagos, the share ranges from 20 to 34 percent, in Sao Paolo production is more diversified and the share of firms in food distribution or manufcature is lower, making up 25 percent. Among the 5 cities, Lagos has the highest share of small businesses in manufacturing (19%).
 
-```{r, fig.width = 12, fig.asp = 0.35}
-#| label: fig-mse_sector_key
-#| echo: false
-#| warning: false
-#| fig-cap: "MSEs by sector of production"
-#| cap-location: margin
-
-indicators <- c("business_total")
-groups_l1 <- "city"
-groups_l2 <- GROUPS[c("business_sector_agg4")]
-
-ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "total") %>% 
-  group_by(city) %>% 
-  mutate(
-    share = total/sum(total)
-  )
-
-factor_params <- list(
-  wrap_sizes = list(indicator_name = 80, indicator_group = 60, group_name = 25, group_cat_val = 80), 
-  reverse_order = list(indicator_name = TRUE, indicator_group = TRUE, group_name = FALSE, group_cat_val = TRUE), 
-  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
-)
-
-fig_data <- prep_fig_data(ests, factor_params, valuelabel_target = "share", valuelabel_thresh = 0.05)
-
-labels <- list(
-  title = "MSEs by sector of production",
-  subtitle =  "MSEs (%)",
-  yax_ti = NULL,
-  xax_ti = NULL,
-  caption = paste(SOURCE, "Notes: MSEs correspond to businesses with 1-10 employees including the owner")
-)
-
-figparams <- list(
-  geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.9, position = "stack", color = "white", labeltotal = FALSE), 
-  valuelabels = list(show = TRUE, lab_hjust = 0, lab_vjust = 0.5, lab_face = "plain", lab_size = 2.75),
-  catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE)
-)
-
-palette <- c("#A2C3A4", "#CEE5F2", "#41BBD9", "#FF9F1C")
-names(palette) <- c("Food production and distribution", "Non-food retail trade", "Other services", "Non-food manufacturing")
-
-scales <- list(
-  fillcolor = list(palette = palette), 
-  yaxis = list(limits = c(0, 1), nbreaks = 2, type = "percent", expand = c(0,0), droplines = FALSE)
-)
-
-legend <- list(
-  show = TRUE, 
-  title = "", 
-  nrows = 1, 
-  ncols = 3, 
-  reverse = TRUE
-)
-
-vars <- list(
-  xvar = "city", yvar = "share", fillvar = "group_cat_val"
-)
-
-fig_flex(fig_data, vars, facets = NULL, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
-
-```
-
 -   At the median, the productivity per worker among these small firms is lower than the level of productivity suggested by national accounts data: the gap is smallest in Sao Paulo (0.95x) and largest in Jakarta (0.13x) (@fig-mses_productivity)
 
 -   Based on owner's or manager's evaluations, the share of small firms that are 'growing' is as low as 4 percent in Jakarta and as high as 25 percent in Lagos. Firms that can be described as 'static', that is, revenues and number of employees that have stayed the same over the past year and that have not made investments in capital or products make up as high as 45% of firms in Jakarta and as low as 13% of firms in Lagos.
@@ -292,6 +227,93 @@ legend <- list(
 
 labels <- list(
   title = "Share of businesses by industrial sector within size category",
+  subtitle =  "Businesses (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = SOURCE
+)
+
+vars <- list(
+  xvar = "city", yvar = "share", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "indicator_group", 
+  cols = "size", 
+  scales = "fixed", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-nbus_premise
+#| echo: false
+#| warning: false
+#| fig-cap: "Businesses enumerated by sector"
+#| cap-location: margin
+
+# Number of firms by size and sector
+
+indicators <- c("business_total")
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("business_premise")]
+
+ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "1-10 people"  ), keep = "total") %>% 
+  mutate(size = "1-10 people") %>% 
+  bind_rows(
+    compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "More than 10 people"), keep = "total") %>%  mutate(size = "More than 10 people")
+    )
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 40), 
+  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "total", valuelabel_type = "num") %>% group_by(city, indicator_name, size) %>% 
+  mutate(
+      size_total = sum(total),
+      share = total/size_total,
+      valuelabel = paste0(pctclean(share, 0), "%")
+    ) 
+
+# Parameters to create figure
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "blue")
+)
+
+palette <- c("#FF9F1C", "#CEE5F2", "#41BBD9", "grey90")
+names(palette) <- str_wrap(c("Household premises", "Non-household premises with permanent structure", "Non-household premises with semi-permanent structure, including stalls or stands", "Business premise does not match any of the responses above"), 40)
+ 
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = c(0,0), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "Business premises:", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+labels <- list(
+  title = "Share of businesses by type of premise within size category",
   subtitle =  "Businesses (%)",
   yax_ti = NULL,
   xax_ti = NULL,
@@ -3283,5 +3305,203 @@ scales <- list(
 facets <- list(type = "grid", cols ="country", rows = "depvar_label", scales = "free", space = "fixed", drop_row_label = TRUE) 
     
 fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "Effect (in percentage points) of general digital technology on probability firm can access emergency funds", coord_flip = TRUE)
+
+```
+
+
+## Annex
+
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-sampling_adjustments_premise
+#| echo: false
+#| warning: false
+#| fig-cap: "MSEs by premises type"
+#| cap-location: margin
+
+# Number of MSEs by size and premise type
+
+indicators <- c("business_total")
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("business_premise")]
+
+ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "1-10 people"), keep = "total") %>% 
+  mutate(reference = "1. Population (enumerated firms, size 1-10)") %>% 
+  bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme", psu = NULL, keep = "total") %>% 
+      mutate(reference = "2. Base weights (surveyed firms)")
+    ) %>% 
+   bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj_v0", psu = NULL, keep = "total") %>% 
+      mutate(reference = "3. Sector adjusted weights (surveyed firms)")
+    ) %>% 
+    bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "total") %>% 
+      mutate(reference = "4. Sector & premise adjusted weights (surveyed firms)")
+    ) %>% filter(group_cat_val != "Business premise does not match any of the responses above")
+  
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 40), 
+  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "total", valuelabel_type = "num") %>% group_by(city, indicator_name, reference) %>% 
+  mutate(
+      size_total = sum(total),
+      share = total/size_total,
+      valuelabel = paste0(pctclean(share, 0), "%"), 
+      reference = str_wrap(reference, 30)
+    ) 
+
+# Parameters to create figure
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "blue")
+)
+
+palette <- c("#FF9F1C", "#CEE5F2", "#41BBD9", "grey90")
+names(palette) <- str_wrap(c("Household premises", "Non-household premises with permanent structure", "Non-household premises with semi-permanent structure, including stalls or stands", "Business premise does not match any of the responses above"), 40)
+ 
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = c(0,0), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "Business premises:", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+labels <- list(
+  title = "Sampling weight adjustments",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = SOURCE
+)
+
+vars <- list(
+  xvar = "city", yvar = "share", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "reference", 
+  cols = "reference", 
+  scales = "fixed", 
+  space = "free",
+  wrap_nrows = 1, 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+---
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-sampling_adjustments_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "MSES by sector"
+#| cap-location: margin
+
+# Number of firms by size and sector
+
+indicators <- c("business_total")
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("business_sector_agg4")]
+
+ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "1-10 people"), keep = "total") %>% 
+  mutate(reference = "1. Population (enumerated firms, size 1-10)") %>% 
+  bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme", psu = NULL, keep = "total") %>% 
+      mutate(reference = "2. Base weights (surveyed firms)")
+    ) %>% 
+   bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj_v0", psu = NULL, keep = "total") %>% 
+      mutate(reference = "3. Sector adjusted weights (surveyed firms)")
+    ) %>% 
+    bind_rows(
+    compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "total") %>% 
+      mutate(reference = "4. Sector & premise adjusted weights (surveyed firms)")
+    ) 
+  
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 40), 
+  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "total", valuelabel_type = "num") %>% group_by(city, indicator_name, reference) %>% 
+  mutate(
+      size_total = sum(total),
+      share = total/size_total,
+      valuelabel = paste0(pctclean(share, 0), "%"), 
+      reference = str_wrap(reference, 30)
+    ) 
+
+# Parameters to create figure
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "blue")
+)
+
+palette <- c("#A2C3A4", "#CEE5F2", "#41BBD9", "#FF9F1C")
+names(palette) <- c("Food production and distribution", "Non-food retail trade", "Other services", "Non-food manufacturing")
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = c(0,0), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "Business premises:", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+labels <- list(
+  title = "Sampling weight adjustments",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = SOURCE
+)
+
+vars <- list(
+  xvar = "city", yvar = "share", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "reference", 
+  cols = "reference", 
+  scales = "fixed", 
+  space = "free",
+  wrap_nrows = 1, 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
 
 ```

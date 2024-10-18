@@ -23,7 +23,7 @@ WEIGHT_PARAMS <- list(
   )
 
 # Adjustment factors for weights: 
-WEIGHT_ADJ <- list(
+WEIGHT_ADJ_SECTOR <- list(
   "Indonesia" = c("Food production and distribution" = 1.66, 
                   "Non-food retail trade" = 0.33, 
                   "Other services" = 0.55, 
@@ -49,6 +49,24 @@ WEIGHT_ADJ <- list(
                 "Other services" = 0.90, 
                 "Non-food manufacturing" = 1.03, 
                 "Don't know" = 1)
+)
+
+WEIGHT_ADJ_PREM <- list(
+  "Indonesia" = c("Household premises" = 1.19, 
+                  "Non-household premises with permanent structure"= 0.71, 
+                  "Non-household premises with semi-permanent structure, including stalls or stands" = 1.13), 
+  "Ethiopia" = c("Household premises" = 1.42, 
+                 "Non-household premises with permanent structure"= 0.98, 
+                 "Non-household premises with semi-permanent structure, including stalls or stands" = 1.34), 
+  "India" = c("Household premises" = 1.07, 
+              "Non-household premises with permanent structure"= 0.96, 
+              "Non-household premises with semi-permanent structure, including stalls or stands" = 1.01), 
+  "Nigeria" = c("Household premises" = 1, 
+                "Non-household premises with permanent structure"= 0.96, 
+                "Non-household premises with semi-permanent structure, including stalls or stands" = 1.13), 
+  "Brazil" = c("Household premises" = 0.68, 
+               "Non-household premises with permanent structure"= 1.15, 
+               "Non-household premises with semi-permanent structure, including stalls or stands" = 0.76)
 )
 
 # Exchange rates per USD at 01 June 2024 (LCU per USD) from UN Treasures

@@ -15,14 +15,6 @@ lightbox: true
 
 -   These small businesses are concentrated in retail trade and play an important role in urban food production and distribution. In Addis and Jakarta, nearly 1 in 2 small firms are involved in food distribution or manufacture, whereas in Addis, Delhi and Lagos, the share ranges from 20 to 34 percent, in Sao Paolo production is more diversified and the share of firms in food distribution or manufcature is lower, making up 25 percent. Among the 5 cities, Lagos has the highest share of small businesses in manufacturing (19%).
 
-
-::: {.cell .caption-margin}
-::: {.cell-output-display}
-![MSEs by sector of production](cfi_map2_global_files/figure-html/fig-mse_sector_key-1.png){#fig-mse_sector_key width=1152}
-:::
-:::
-
-
 -   At the median, the productivity per worker among these small firms is lower than the level of productivity suggested by national accounts data: the gap is smallest in Sao Paulo (0.95x) and largest in Jakarta (0.13x) (@fig-mses_productivity)
 
 -   Based on owner's or manager's evaluations, the share of small firms that are 'growing' is as low as 4 percent in Jakarta and as high as 25 percent in Lagos. Firms that can be described as 'static', that is, revenues and number of employees that have stayed the same over the past year and that have not made investments in capital or products make up as high as 45% of firms in Jakarta and as low as 13% of firms in Lagos.
@@ -55,6 +47,16 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Businesses enumerated by sector](cfi_map2_global_files/figure-html/fig-nbus_sector-1.png){#fig-nbus_sector width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Businesses enumerated by sector](cfi_map2_global_files/figure-html/fig-nbus_premise-1.png){#fig-nbus_premise width=1152}
 :::
 :::
 
@@ -423,5 +425,27 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Relationship between overall technology adoption & resilience](cfi_map2_global_files/figure-html/fig-reg_digtech_resilience-1.png){#fig-reg_digtech_resilience width=1152}
+:::
+:::
+
+
+
+## Annex
+
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![MSEs by premises type](cfi_map2_global_files/figure-html/fig-sampling_adjustments_premise-1.png){#fig-sampling_adjustments_premise width=1152}
+:::
+:::
+
+
+---
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![MSES by sector](cfi_map2_global_files/figure-html/fig-sampling_adjustments_sector-1.png){#fig-sampling_adjustments_sector width=1152}
 :::
 :::
