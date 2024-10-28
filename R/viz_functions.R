@@ -34,7 +34,7 @@ prep_fig_data <- function(ests, factor_params, include_valuelabel = TRUE, valuel
         fig_data %>% mutate(valuelabel = ifelse(!!value < valuelabel_thresh, NA, valuelabel)) -> fig_data
         }
     } else { 
-      fig_data %>% mutate(valuelabel = paste0(numclean(!!value))) -> fig_data
+      fig_data %>% mutate(valuelabel = paste0(numclean(!!value, 1))) -> fig_data
       if (!is.null(valuelabel_thresh)) { 
         fig_data %>% mutate(valuelabel = ifelse(!!value < valuelabel_thresh, NA, valuelabel)) -> fig_data
       }
@@ -323,7 +323,7 @@ fig_point <- function(base_plot, data, params) {
   if (params[["points"]][["position"]] == "dodge") {
     pos <- position_dodge(width = params[["points"]][["position_width"]])
   } else { 
-    pos <- NULL
+    pos <- position_identity()
     }
   
   if (!is.null(color)) {
@@ -333,10 +333,17 @@ fig_point <- function(base_plot, data, params) {
   }
   
   # Value labels
+  if (params[["points"]][["connect"]]) {
+    # Reguires variable "valuelabel" to be defined in the dataset
+    p <- p +
+      geom_line()
+  }
+
+  # Value labels
   if (params[["valuelabels"]][["show"]]) {
     # Reguires variable "valuelabel" to be defined in the dataset
     p <- p +
-      geom_text(aes(label = valuelabel), size = params[["valuelabels"]][["lab_size"]], hjust = params[["valuelabels"]][["lab_hjust"]], fontface = params[["valuelabels"]][["lab_face"]])
+      geom_text(aes(label = valuelabel), size = params[["valuelabels"]][["lab_size"]], hjust = params[["valuelabels"]][["lab_hjust"]], vjust = params[["valuelabels"]][["lab_vjust"]], fontface = params[["valuelabels"]][["lab_face"]], color = "black")
   }
   
   # Error bars
@@ -404,7 +411,8 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
       x = !!xvar,
       y = !!yvar,
       fill = !!fvar, 
-      color = !!cvar
+      color = !!cvar, 
+      group = !!cvar
     )
   )
   
@@ -478,18 +486,24 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
   
   # Y-Axis
   
-  if (params[["geom_type"]] == "bar") {
+  if (is.null(scales[["yaxis"]][["position"]])) { 
+    scale_y_pos <- "right"
+  } else { 
+    scale_y_pos <- scales[["yaxis"]][["position"]]
+  }
+  
+  if (params[["geom_type"]] %in% c("bar", "point")) {
     
     if (scales[["yaxis"]][["type"]] == "number") {
       if (params[["bars"]][["labeltotal"]]) {
         if (params[["bars"]][["labeltotal_extendmax"]]) {
         maxy <- max(data[["barlabelpos"]], na.rm = TRUE)
-          p <- p +  scale_y_continuous(position = "right", limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+          p <- p +  scale_y_continuous(position = scale_y_pos, limits = c(0, maxy + 0.15*maxy), labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
         } else { 
-          p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+          p <- p +  scale_y_continuous(position = scale_y_pos, labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
           }
       } else { 
-        p <- p +  scale_y_continuous(position = "right", labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
+        p <- p +  scale_y_continuous(position = scale_y_pos, labels = scales::label_comma(), expand = scales[["yaxis"]][["expand"]] )
       }
     }
   
@@ -497,7 +511,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
       limits <- scales[["yaxis"]][["limits"]]
       nbreaks <- scales[["yaxis"]][["nbreaks"]]
       breaks <- seq(limits[1], limits[2], by = (limits[2] - limits[1])/nbreaks)
-      p <- p +  scale_y_continuous(position = "right", limits = limits, breaks = breaks, labels = scales::label_percent(suffix = "")) 
+      p <- p +  scale_y_continuous(position = scale_y_pos, limits = limits, breaks = breaks, labels = scales::label_percent(suffix = "")) 
       if (scales[["yaxis"]][["droplines"]]) { 
         p <- p + geom_hline(yintercept = breaks, color ="white")
       } 
@@ -505,7 +519,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
   
   } else { 
     
-    p <- p + scale_y_discrete(position = "right")
+    p <- p + scale_y_discrete(position = scale_y_pos)
     
   }
   
@@ -523,7 +537,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
   # Flip coordinates?
   if (coord_flip) {
     p <- p + coord_flip()
-  }
+  } 
   
   if (!is.null(facets)) {
     # Final touches

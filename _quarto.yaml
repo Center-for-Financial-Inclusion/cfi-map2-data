@@ -10,6 +10,7 @@ project:
     - Ethiopia_analysis.qmd
     - Nigeria_analysis.qmd
     - India_analysis.qmd
+    - cfi_map2_insurance.qmd
 
 website:
   title: "MAP2 Five country study exploring digital adoption & resilience among MSEs"
@@ -27,6 +28,8 @@ website:
         text: Nigeria
       - href: India_analysis.qmd
         text: India
+      - href: cfi_map2_insurance.qmd
+        text: Insurance
 
 format:
   html:

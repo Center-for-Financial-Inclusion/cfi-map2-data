@@ -437,9 +437,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       resp_education = ifelse(Q73 %in% c(97, 99), NA, Q73),
       resp_education_agg4 = case_when(
         resp_education <= 2 ~ "Some primary or none",
-        resp_education <= 4 ~ "Completed primary or some secondary",
-        resp_education %in% c(5, 6, 8, 10) ~ "Completed secondary or some university/technical school",
-        resp_education %in% c(7, 9, 11) ~ "Completed university/technical school"
+        resp_education <= 4 ~ "Primary",
+        resp_education %in% c(5, 6, 8, 10) ~ "Secondary",
+        resp_education %in% c(7, 9, 11) ~ "University/technical school"
       ),
       resp_education_agg4_shc = case_when(
         resp_education <= 2 ~ "non",
@@ -455,6 +455,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         resp_education %in% c(7, 11) ~ "trt_uni"
       ),
       resp_education_agg2_shc = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "priorless", "secormore"), 
+      resp_education_agg2 = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "Educational attainment: Primary or less", "Educational attainment: Secondary or more"), 
+      
+      resp_education_agg2_alt = ifelse(resp_education_agg4_shc %in% c("non", "pri", "sec"), "Educational attainment: Secondary or less", "Educational attainment: Post-secondary"), 
       
       resp_sex_str = ifelse(Q5 == 1, "Women", "Men"),
       resp_sex_men = ifelse(Q5 == 2, 1, 0),
@@ -840,6 +843,10 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_merchpay_qr = ifelse(Q35_8 == 1, 1, 0),  
       fin_merchpay_qr = ifelse(Q35_8 == 3, NA, fin_merchpay_qr), 
       
+      fin_merchpay_agg_fi = ifelse(Q35_2 == 1 | fin_merchpay_bnktrnsf == 1 | fin_merchpay_poscard ==1, 1, 0), 
+      fin_merchpay_agg_nbfi = ifelse(fin_merchpay_online == 1 | fin_merchpay_mobmoney == 1 | fin_merchpay_instant == 1 | fin_merchpay_qr ==1, 1, 0), 
+      fin_merchpay_agg_cash = ifelse(Q35_1 == 1, 1, 0), 
+      
       fin_merchpay_noncash = ifelse(fin_merchpay_poscard == 1 | 
                                       fin_merchpay_bnktrnsf == 1 | 
                                       fin_merchpay_online == 1 | 
@@ -965,7 +972,36 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_openbanking_use = ifelse(Q48 == 1, 1, 0), 
       fin_openbanking_use = ifelse(Q48 %in% c(97,98), NA, fin_openbanking_use), 
       
-      # Consumer proection risks---------
+      # Access strands
+      
+      fin_access_strand_sav_str = ifelse(fin_bus_savings_agg_fi == 1, "Institutional", NA), 
+      fin_access_strand_sav_str = ifelse(fin_bus_savings_agg_fi == 0 & fin_bus_savings_agg_nbfi == 1, "Digital", fin_access_strand_sav_str), 
+      fin_access_strand_sav_str = ifelse(fin_bus_savings_agg_fi == 0 & fin_bus_savings_agg_inf == 0 & fin_bus_savings_agg_inf == 1, "Informal", fin_access_strand_sav_str), 
+      fin_access_strand_sav_str = ifelse(fin_bus_savings_agg_fi == 0 & fin_bus_savings_agg_inf == 0 & fin_bus_savings_agg_inf == 0, "Excluded", fin_access_strand_sav_str), 
+      fin_access_strand_sav_str = ifelse(is.na(fin_access_strand_sav_str), "Excluded", fin_access_strand_sav_str), 
+      
+      fin_access_strand_sav_shc = case_when(
+        fin_access_strand_sav_str == "Institutional" ~ "inst", 
+        fin_access_strand_sav_str == "Digital" ~ "dig", 
+        fin_access_strand_sav_str == "Informal" ~"inf", 
+        fin_access_strand_sav_str == "Excluded" ~ "exc", 
+      ), 
+      
+      fin_access_strand_loan_str = ifelse(fin_activeloan_agg_fi == 1, "Institutional", NA), 
+      fin_access_strand_loan_str = ifelse(fin_activeloan_agg_fi == 0 & fin_activeloan_agg_nbfi == 1, "Digital", fin_access_strand_loan_str), 
+      fin_access_strand_loan_str = ifelse(fin_activeloan_agg_fi == 0 & fin_activeloan_agg_nbfi == 0 & fin_activeloan_agg_inf == 1, "Informal", fin_access_strand_loan_str), 
+      fin_access_strand_loan_str = ifelse(fin_activeloan_agg_fi == 0 & fin_activeloan_agg_nbfi == 0 & fin_activeloan_agg_inf == 0, "Excluded", fin_access_strand_loan_str), 
+      fin_access_strand_loan_str = ifelse(is.na(fin_access_strand_loan_str), "Excluded", fin_access_strand_loan_str), 
+      
+      fin_access_strand_loan_shc = case_when(
+        fin_access_strand_loan_str == "Institutional" ~ "inst", 
+        fin_access_strand_loan_str == "Digital" ~ "dig", 
+        fin_access_strand_loan_str == "Informal" ~"inf", 
+        fin_access_strand_loan_str == "Excluded" ~ "exc", 
+      ), 
+
+      
+       # Consumer proection risks---------
       
       # Loan repayment difficulty
       cp_loanrepaydiff = ifelse(Q49 == 1, 1, 0), 
@@ -1163,7 +1199,7 @@ prep_main_data <- function(raw_data, weights, selected_country) {
     ) %>% 
     dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
                                   "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_education_agg5_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
-                                  "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc",
+                                  "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc", "fin_access_strand_sav_shc", "fin_access_strand_loan_shc", 
                                   "risk_largestimpact_shc")) -> raw_data 
   
     # Insurance ----
@@ -1262,9 +1298,406 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       
       # Business with employees offers health insurance benefit to employees? 
       
-      fin_insur_hlth_empbft = ifelse(A2 == 1, 1, 0), 
-      fin_insur_hlth_empbft = ifelse(A2 %in% c(3, 4), NA, fin_insur_hlth_empbft), 
+      fin_insur_lifhlt_empbft = ifelse(A2 == 1, 1, 0), 
+      fin_insur_lifhlt_empbft = ifelse(A2 %in% c(3, 4), NA, fin_insur_lifhlt_empbft), 
       
+      fin_insur_lifhlt_empbft_yes = ifelse(A2 == 1, 1, 0), 
+      fin_insur_lifhlt_empbft_yes = ifelse(A2 %in% c(4), NA, fin_insur_lifhlt_empbft_yes), 
+      fin_insur_lifhlt_empbft_no = ifelse(A2 == 2, 1, 0), 
+      fin_insur_lifhlt_empbft_no = ifelse(A2 %in% c(4), NA, fin_insur_lifhlt_empbft_no), 
+      fin_insur_lifhlt_empbft_noemp = ifelse(A2 == 3, 1, 0), 
+      fin_insur_lifhlt_empbft_noemp = ifelse(A2 %in% c(4), NA, fin_insur_lifhlt_empbft_noemp), 
+      
+      # Climate risks 
+      
+      # In Indonesia only 1 respondent said they used insurance payouts in response to a climate shock, in Brazil 3 respondents
+      
+      # C7. In light of the climate risk, how easy or difficult was it to access your insurance claim payout?
+      # If respondents responded yes to Q59 option 6 (Used insurance payouts)
+      
+      # C8. How quickly could you access your insurance claim payout?
+      # For respondents who selected options 1,2, 3 or 4 in C7. If not skip to C12
+      
+      # C9. What was the primary use of the insurance claim payout? 
+      # For respondents who selected options 1,2, 3 or 4 in C7. If not skip to C12
+      
+      # C10. To what extent did the insurance payout cover the losses or damages experienced?
+      # For respondents who selected options 1,2, 3 or 4 in C7. If not skip to C12
+      
+      # C11. Based on your experience, how likely are you to recommend  insurance to other entrepreneurs to help them to deal with climate-related risks?
+      # For respondents who selected options 1,2, 3 or 4 in C7. If not skip to C12
+      
+      # C12. In the next 12 months how likely are you to purchase insurance, or expand your insurance coverage to protect against climate risks?
+      # Ask all 
+      
+      risk_cli_inspur_num = ifelse(C12 %in% c(6, 7), NA, C12), 
+      
+      risk_cli_inspur_shc = case_when(
+        C12 %in% c(1,2) ~ "lik", 
+        C12 %in% c(3) ~ "neu", 
+        C12 %in% c(4,5) ~ "unlik", 
+        C12 %in% c(6, 7) ~ NA
+      ), 
+      
+      # Health risks 
+      
+      # H1. In the last 36 months (3 years), did the owner, manager, or any employee have health issue that impacted your business operations? 
+      # Ask all
+      risk_hlt_exp = ifelse(H1 == 1, 1, 0), 
+      risk_hlt_exp = ifelse(H1 %in% c(97, 99), NA, risk_hlt_exp), 
+      
+      risk_hlt_exp_str = ifelse(risk_hlt_exp == 1, "Experienced health shock (in past 36 mos)", "Did not experience health shock (in past 36 mos)"), 
+      
+      # H2 Please describe how the most significant health issue(s) in the last 36 months impacted your business operations?
+      # IF H! == Yes, 
+      
+      risk_hlt_imp_fin = ifelse(H2_1 == 1, 1, 0), # Decreased sales, income or profits
+      risk_hlt_imp_ops = ifelse(H2_2 == 1, 1, 0), #Unable to operate the business as usual
+      risk_hlt_imp_prod = ifelse(H2_3 == 1, 1, 0), # Reduced productivity
+      risk_hlt_imp_opcosts = ifelse(H2_4 == 1, 1, 0), # Increased operational costs
+      risk_hlt_imp_oth = ifelse(H2_5 == 1, 1, 0), 
+      
+     # H3. What actions did the business take to cope with the impacts of this health issue? 
+     
+     risk_hlt_cope_borrfin = ifelse(H3_1 == 1, 1, 0), 
+     risk_hlt_cope_borrinf = ifelse(H3_2 == 1, 1, 0), 
+     risk_hlt_cope_savbus = ifelse(H3_3 == 1, 1, 0), 
+     risk_hlt_cope_ins = ifelse(H3_6 == 1, 1, 0), 
+     risk_hlt_cope_hh = ifelse(H3_4 == 1, 1, 0), 
+     risk_hlt_cope_ff = ifelse(H3_7 == 1, 1, 0), 
+     risk_hlt_cope_oth = ifelse(H3_5 == 1 | H3_8 == 1 | H3_9 == 1 | H3_10 == 1, 1, 0), 
+     risk_hlt_cope_noth = ifelse(H3_11 == 1, 1, 0), 
+     
+     # H4. What is the condition of the business now, compared to before the health risk occurred? 
+     
+     risk_hlt_cond_notrec = ifelse(H4 == 1, 1, 0), 
+     risk_hlt_cond_rec = ifelse(H4 == 2, 1, 0), 
+     risk_hlt_cond_fullrec = ifelse(H4 == 3, 1, 0), 
+     
+     # H5. Approximately, how many months did it take the business to recover to its pre-event condition?
+     
+     risk_hlt_rec_lt6mos = ifelse(H5 %in% c(1, 2), 1, 0), 
+     risk_hlt_rec_mt6mos = ifelse(H5 %in% c(3, 4), 1, 0),
+     risk_hlt_rec_dk = ifelse(H5 %in% c(97), 1, 0),
+     
+     risk_hlt_rec_lt6mos = ifelse(risk_hlt_cond_rec == 1 | risk_hlt_cond_fullrec == 1, risk_hlt_rec_lt6mos, NA), 
+     risk_hlt_rec_mt6mos = ifelse(risk_hlt_cond_rec == 1 | risk_hlt_cond_fullrec == 1, risk_hlt_rec_mt6mos, NA), 
+     risk_hlt_rec_dk = ifelse(risk_hlt_cond_rec == 1 | risk_hlt_cond_fullrec == 1, risk_hlt_rec_dk, NA), 
+     
+    # H6.  How easy or difficult was it to access your insurance claim payout?
+    # For respondents who said yes to option 6 question H3 (i.e., they accessed money from insurance). If not, ask H11
+    
+    risk_hlt_claimdiff_shc = case_when(
+      H6 %in% c(1,2) ~ "notdiff", 
+      H6 %in% c(3) ~ "some", 
+      H6 %in% c(4) ~ "very", 
+      H6 %in% c(5) ~ "not", 
+      H6 %in% c(6, 7) ~ NA
+    ), 
+    
+    # H7. How quickly could you access your insurance claim funds? 
+    # For respondents who said yes to option 6 question H3 (i.e., they accessed money from insurance). If not, ask H11
+    
+    risk_hlt_claimquick_shc = case_when(
+      H6 %in% c(1,2) ~ "qck", 
+      H6 %in% c(3, 4, 5) ~ "slw", 
+      H6 %in% c(6) ~ "not", 
+      H6 %in% c(7, 8) ~ NA
+    ), 
+    
+    # H8. What was the primary use of the insurance claim payout?  
+    # For respondents who said yes to option 6 question H3 (i.e., they accessed money from insurance). If not, ask H11
+    
+    risk_hlt_claimuse_shc = case_when(
+      H8 %in% c(1) ~ "pmb", 
+      H8 %in% c(2) ~ "cov", 
+      H8 %in% c(3) ~ "dbt", 
+      H8 %in% c(4) ~ "oth"
+    ), 
+    
+    # To what extent did the insurance payout cover the health expenses experienced?
+    
+    risk_hlt_payout_full = ifelse(H9 %in% c(1,2), 1, 0), 
+    risk_hlt_payout_partial = ifelse(H9 == 3, 1, 0), 
+    risk_hlt_payout_none = ifelse(H9 == 4, 1, 0), 
+    risk_hlt_payout_dk = ifelse(H9 %in% c(5,6), 1, 0), 
+    
+    # H10: Based on your experience, how likely are you to recommend  insurance to other entrepreneurs to help them to deal with health-related risks?
+    
+    risk_hlt_insrec0_num = ifelse(H10 %in% c(6, 7), NA, H11), 
+    
+    risk_hlt_insreco_shc = case_when(
+      H10 %in% c(1,2) ~ "lik", 
+      H10 %in% c(3) ~ "neu", 
+      H10 %in% c(4,5) ~ "unlik", 
+      H10 %in% c(6, 7) ~ NA
+    ), 
+    
+    # H11. In the next 12 months, how likely are you to purchase insurance, or expand your insurance coverage to protect against health risks ?
+    
+    risk_hlt_inspur_num = ifelse(H11 %in% c(6, 7), NA, H11), 
+    
+    risk_hlt_inspur_shc = case_when(
+      H11 %in% c(1,2) ~ "lik", 
+      H11 %in% c(3) ~ "neu", 
+      H11 %in% c(4,5) ~ "unlik", 
+      H11 %in% c(6, 7) ~ NA
+    ), 
+    
+    # Please select the channels(s) through which you purchased your insurance policy. 
+    # For respondents who said currently have or had it in the past to options 1 to 9 of question B1, or if yes option 6 question H3, or if yes to option 6 question 59
+    
+    fin_insur_chnnl_direct = ifelse(I1_1 == 1, 1, 0), 
+    fin_insur_chnnl_agent = ifelse(I1_2 == 1, 1, 0), 
+    fin_insur_chnnl_online = ifelse(I1_3 == 1, 1, 0),   
+    fin_insur_chnnl_fi = ifelse(I1_4 == 1, 1, 0), 
+    fin_insur_chnnl_grp = ifelse(I1_5 == 1, 1, 0), 
+    fin_insur_chnnl_ecom = ifelse(I1_6 == 1, 1, 0), 
+    fin_insur_chnnl_bun = ifelse(I1_7 == 1, 1, 0), 
+    fin_insur_chnnl_gov = ifelse(I1_8 == 1, 1, 0), 
+    fin_insur_chnnl_oth = ifelse(I1_9 == 1, 1, 0), 
+    
+    # Did you purchase your insurance policy online? 
+    
+    fin_insur_onlinetype_mkt = ifelse(I2 == 1, 1, 0), 
+    fin_insur_onlinetype_web = ifelse(I2 == 2, 1, 0),
+    fin_insur_onlinetype_app = ifelse(I2 == 3, 1, 0),
+    fin_insur_onlinetype_oth = ifelse(I2 == 4, 1, 0),
+    
+    # In general, do you feel your overall insurance coverage meets all your needs? 
+    #For respondents who said currently have or had it in the past to options 1 to 9 of question B1, or if yes option 6 question H3, or if yes to option 6 question 59
+    
+    fin_insur_needs_yes = ifelse(I3 == 1, 1, 0), 
+    fin_insur_needs_som = ifelse(I3 == 2, 1, 0), 
+    fin_insur_needs_no = ifelse(I3 == 3, 1, 0), 
+    
+    # Factors for purchasing insurance
+    # For respondents who selected 'currently have insurance' for any option in B1
+    
+    fin_insur_factors_top_prm = ifelse(I4_O1 == 1 | I4_O2 == 1 | I4_O3 == 1, 1, 0), 
+    fin_insur_factors_top_cov = ifelse(I4_O1 == 2 | I4_O2 == 2 | I4_O3 == 2, 1, 0), 
+    fin_insur_factors_top_dig = ifelse(I4_O1 %in% c(3,4) | I4_O2 %in% c(3,4) | I4_O3 %in% c(3,4), 1, 0), 
+    fin_insur_factors_top_srv = ifelse(I4_O1 %in% c(5,6,7)  | I4_O2 %in% c(5,6,7)  | I4_O3 %in% c(5,6,7), 1, 0), 
+    fin_insur_factors_top_mnd = ifelse(I4_O1 %in% c(8,9) | I4_O2 %in% c(8,9) | I4_O3 %in% c(8,9), 1, 0), 
+    
+    # Considerations considered for expanding coverage 
+    #For respondents who selected 'currently have insurance' for any option in B1
+    
+    fin_insur_exp_cov = ifelse(I5 == 1, 1, 0), 
+    fin_insur_exp_rsk = ifelse(I5 == 2, 1, 0), 
+    fin_insur_exp_ded = ifelse(I5 == 3, 1, 0), 
+    fin_insur_exp_mem = ifelse(I5 == 4, 1, 0), 
+    fin_insur_exp_oth = ifelse(I5 == 5, 1, 0), 
+    
+    #  Have you ever filed any insurance claims?
+    # For respondents who selected 'currently have insurance' or 'had insurance in the past, but not in the last 12 months' for any option in B1
+    
+    fin_insur_claim_yes = ifelse(I6 == 1, 1, 0), 
+    
+    # IF yes, what was the outcome
+    # For respondents who selected options 1 in question I6
+    fin_insur_claim_out_rei = ifelse(I7 == 1, 1, 0),
+    fin_insur_claim_out_par = ifelse(I7 == 2, 1, 0),
+    fin_insur_claim_out_rej = ifelse(I7 == 3, 1, 0),
+    fin_insur_claim_out_wai = ifelse(I7 == 4, 1, 0),
+    
+    # How would you rate your satisfaction with the insurance claims process?
+    # For respondents who selected options 1 or 2 in question  I7
+    claim_refpop = ifelse(I7 %in% c(1, 2), 1, 0), 
+    
+    fin_insur_claim_sat_hi = ifelse(I8 %in% c(1,2), 1, 0), 
+    fin_insur_claim_sat_hi = ifelse(claim_refpop == 1, fin_insur_claim_sat_hi, NA), 
+    fin_insur_claim_sat_neu = ifelse(I8 %in% c(3), 1, 0), 
+    fin_insur_claim_sat_neu = ifelse(claim_refpop == 1, fin_insur_claim_sat_neu, NA), 
+    fin_insur_claim_sat_lo = ifelse(I8 %in% c(4,5), 1, 0),
+    fin_insur_claim_sat_lo = ifelse(claim_refpop == 1, fin_insur_claim_sat_lo, NA), 
+    
+    # What benefits have you experienced from having insurance?
+    # For respondents who selected 'currently have insurance' or 'had insurance in the past, but not in the last 12 months' for any option in B1
+    
+    fin_insur_benef_sec = ifelse(I9_1 == 1 | I9_4 == 1, 1, 0), 
+    fin_insur_benef_rsk = ifelse(I9_2 == 1, 1, 0), 
+    fin_insur_benef_crd = ifelse(I9_3 == 1, 1, 0), 
+    fin_insur_benef_oth = ifelse(I9_5 ==1 | I9_7 == 1, 1, 0), 
+    fin_insur_benef_non = ifelse(I9_6 == 1, 1, 0), 
+    
+    # Would you recommend insurance to others?
+    # For respondents who selected 'currently have insurance' or 'had insurance in the past, but not in the last 12 months' for any option in B1
+    
+    fin_insur_rec_lif = ifelse(I10_1 == 1, 1, 0), 
+    fin_insur_rec_hlt = ifelse(I10_2 == 1, 1, 0), 
+    fin_insur_rec_acc = ifelse(I10_3 == 1, 1, 0), 
+    fin_insur_rec_fun = ifelse(I10_4 == 1, 1, 0), 
+    fin_insur_rec_hom = ifelse(I10_5 == 1, 1, 0), 
+    fin_insur_rec_bus = ifelse(I10_6 == 1, 1, 0), 
+    fin_insur_rec_aut = ifelse(I10_7 == 1, 1, 0), 
+    fin_insur_rec_idx = ifelse(I10_8 == 1, 1, 0), 
+    fin_insur_rec_oth = ifelse(I10_9 == 1, 1, 0), 
+    
+    #If you currently do not have insurance or have discontinued your insurance, what is the primary reason for this decision? 
+    # For respondents who selected either Had insurance in the past, but not in the last 12 months or Never had to all B1 options
+    
+    fin_insur_nonewhy_hiprm = ifelse(I11 == 1, 1, 0), 
+    fin_insur_nonewhy_rigprm = ifelse(I11 == 2, 1, 0), 
+    fin_insur_nonewhy_app = ifelse(I11 == 5, 1, 0), 
+    fin_insur_nonewhy_noval = ifelse(I11 %in% c(3, 6, 7), 1, 0), 
+    fin_insur_nonewhy_negex = ifelse(I11 == 4, 1, 0), 
+    fin_insur_nonewhy_oth = ifelse(I11 == 8, 1, 0), 
+    
+    # Please rate your agreement with each statement on a scale from 1 to 5
+    # All respondents
+    
+    fin_insur_statm_1_num = ifelse(I12_1 %in% c(97,99), NA, I12_1), 
+    fin_insur_statm_2_num = ifelse(I12_2 %in% c(97,99), NA, I12_2), 
+    fin_insur_statm_3_num = ifelse(I12_3 %in% c(97,99), NA, I12_3), 
+    fin_insur_statm_4_num = ifelse(I12_4 %in% c(97,99), NA, I12_4), 
+    fin_insur_statm_5_num = ifelse(I12_5 %in% c(97,99), NA, I12_5), 
+    fin_insur_statm_6_num = ifelse(I12_6 %in% c(97,99), NA, I12_6), 
+    fin_insur_statm_7_num = ifelse(I12_7 %in% c(97,99), NA, I12_7), 
+    fin_insur_statm_8_num = ifelse(I12_8 %in% c(97,99), NA, I12_8), 
+    fin_insur_statm_9_num = ifelse(I12_9 %in% c(97,99), NA, I12_9), 
+    
+    fin_insur_statm_1_sd = ifelse(I12_1 == 1, 1, 0), 
+    fin_insur_statm_1_d = ifelse(I12_1 == 2, 1, 0), 
+    fin_insur_statm_1_n = ifelse(I12_1 == 3, 1, 0), 
+    fin_insur_statm_1_a = ifelse(I12_1 == 4, 1, 0), 
+    fin_insur_statm_1_sa = ifelse(I12_1 == 5, 1, 0), 
+    fin_insur_statm_1_dk = ifelse(I12_1 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_2_sd = ifelse(I12_2 == 1, 1, 0), 
+    fin_insur_statm_2_d = ifelse(I12_2 == 2, 1, 0), 
+    fin_insur_statm_2_n = ifelse(I12_2 == 3, 1, 0), 
+    fin_insur_statm_2_a = ifelse(I12_2 == 4, 1, 0), 
+    fin_insur_statm_2_sa = ifelse(I12_2 == 5, 1, 0), 
+    fin_insur_statm_2_dk = ifelse(I12_2 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_3_sd = ifelse(I12_3 == 1, 1, 0), 
+    fin_insur_statm_3_d = ifelse(I12_3 == 2, 1, 0), 
+    fin_insur_statm_3_n = ifelse(I12_3 == 3, 1, 0), 
+    fin_insur_statm_3_a = ifelse(I12_3 == 4, 1, 0), 
+    fin_insur_statm_3_sa = ifelse(I12_3 == 5, 1, 0), 
+    fin_insur_statm_3_dk = ifelse(I12_3 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_4_sd = ifelse(I12_4 == 1, 1, 0), 
+    fin_insur_statm_4_d = ifelse(I12_4 == 2, 1, 0), 
+    fin_insur_statm_4_n = ifelse(I12_4 == 3, 1, 0), 
+    fin_insur_statm_4_a = ifelse(I12_4 == 4, 1, 0), 
+    fin_insur_statm_4_sa = ifelse(I12_4 == 5, 1, 0), 
+    fin_insur_statm_4_dk = ifelse(I12_4 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_5_sd = ifelse(I12_5 == 1, 1, 0), 
+    fin_insur_statm_5_d = ifelse(I12_5 == 2, 1, 0), 
+    fin_insur_statm_5_n = ifelse(I12_5 == 3, 1, 0), 
+    fin_insur_statm_5_a = ifelse(I12_5 == 4, 1, 0), 
+    fin_insur_statm_5_sa = ifelse(I12_5 == 5, 1, 0), 
+    fin_insur_statm_5_dk = ifelse(I12_5 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_6_sd = ifelse(I12_6 == 1, 1, 0), 
+    fin_insur_statm_6_d = ifelse(I12_6 == 2, 1, 0), 
+    fin_insur_statm_6_n = ifelse(I12_6 == 3, 1, 0), 
+    fin_insur_statm_6_a = ifelse(I12_6 == 4, 1, 0), 
+    fin_insur_statm_6_sa = ifelse(I12_6 == 5, 1, 0), 
+    fin_insur_statm_6_dk = ifelse(I12_6 %in% c(97,99), 1, 0), 
+    
+    fin_insur_statm_7_sd = ifelse(I12_7 == 1, 1, 0), 
+    fin_insur_statm_7_d = ifelse(I12_7 == 2, 1, 0), 
+    fin_insur_statm_7_n = ifelse(I12_7 == 3, 1, 0), 
+    fin_insur_statm_7_a = ifelse(I12_7 == 4, 1, 0), 
+    fin_insur_statm_7_sa = ifelse(I12_7 == 5, 1, 0), 
+    fin_insur_statm_7_dk = ifelse(I12_7 %in% c(97,99), 1, 0),
+    
+    fin_insur_statm_8_sd = ifelse(I12_8 == 1, 1, 0), 
+    fin_insur_statm_8_d = ifelse(I12_8 == 2, 1, 0), 
+    fin_insur_statm_8_n = ifelse(I12_8 == 3, 1, 0), 
+    fin_insur_statm_8_a = ifelse(I12_8 == 4, 1, 0), 
+    fin_insur_statm_8_sa = ifelse(I12_8 == 5, 1, 0), 
+    fin_insur_statm_8_dk = ifelse(I12_8 %in% c(97,99), 1, 0),
+    
+    fin_insur_statm_9_sd = ifelse(I12_9 == 1, 1, 0), 
+    fin_insur_statm_9_d = ifelse(I12_9 == 2, 1, 0), 
+    fin_insur_statm_9_n = ifelse(I12_9 == 3, 1, 0), 
+    fin_insur_statm_9_a = ifelse(I12_9 == 4, 1, 0), 
+    fin_insur_statm_9_sa = ifelse(I12_9 == 5, 1, 0), 
+    fin_insur_statm_9_dk = ifelse(I12_9 %in% c(97,99), 1, 0),
+    
+    # Over the next 12 months, which insurance are you likely to purchase? 
+    # If the respondent is willing to buy insurance (If I12 Option 5 = 4 or 5)
+    fin_insur_buy_lif = ifelse(I13_1 == 1, 1, 0), 
+    fin_insur_buy_hlt = ifelse(I13_2 == 1, 1, 0), 
+    fin_insur_buy_acc = ifelse(I13_3 == 1, 1, 0), 
+    fin_insur_buy_fun = ifelse(I13_4 == 1, 1, 0), 
+    fin_insur_buy_hom = ifelse(I13_5 == 1, 1, 0),  
+    fin_insur_buy_bus = ifelse(I13_6 == 1, 1, 0),  
+    fin_insur_buy_aut = ifelse(I13_7 == 1, 1, 0),  
+    fin_insur_buy_idx = ifelse(I13_8 == 1, 1, 0),  
+    fin_insur_buy_oth = ifelse(I13_9 == 1, 1, 0),  
+    
+    # How much did you spend on medical expenses for yourself and your family in the last 12 months? 
+    # All respondents 
+    
+    fin_insur_medexp_0 = ifelse(I14 == 1, 1, 0), 
+    fin_insur_medexp_1 = ifelse(I14 == 2, 1, 0),
+    fin_insur_medexp_2 = ifelse(I14 == 3, 1, 0),
+    fin_insur_medexp_3 = ifelse(I14 == 4, 1, 0), 
+    fin_insur_medexp_dk = ifelse(I14 %in% c(5,6), 1, 0), 
+    
+    # What was the primary motivation for purchasing insurance from a digital platform? 
+    # For all respondents who selected Option 6 in I1
+    
+    fin_insur_dig_mot_exp = ifelse(I16 == 1, 1, 0), 
+    fin_insur_dig_mot_cnv = ifelse(I16 == 2, 1, 0), 
+    fin_insur_dig_mot_tru = ifelse(I16 == 3, 1, 0), 
+    fin_insur_dig_mot_pro = ifelse(I16 == 4, 1, 0), 
+    fin_insur_dig_mot_dat = ifelse(I16 == 5, 1, 0), 
+    fin_insur_dig_mot_oth = ifelse(I16 == 6, 1, 0), 
+    
+    # Who would you go to if you faced any challenges with your insurance policy purchased through a digital platform? 
+    # For all respondents who selected Option 6 in I1
+    
+    fin_insur_chlng_plt = ifelse(I17 == 1, 1, 0), 
+    fin_insur_chlng_ins = ifelse(I17 == 2, 1, 0), 
+    fin_insur_chlng_bth = ifelse(I17 == 3, 1, 0), 
+    fin_insur_chlng_dk = ifelse(I17 %in% c(4,5), 1, 0), 
+    
+    # In the past three years (36 months), have you faced any issues in accessing and using your insurance policy?
+    # For respondents who selected 'currently have' or 'had insurance, but not in the last 12 months' for any insurance in B1 in use of financial services section
+    
+    fin_insur_issues_type_any = ifelse(I18 == 1, 1, 0),
+    
+    #  What issues have you faced?
+    # If the respondent selected ‘yes’ in question I18
+    fin_insur_issues_type_lkc = ifelse(I19_1 == 1, 1, 0),
+    fin_insur_issues_type_exp = ifelse(I19_2 == 1 | I19_8 == 1, 1, 0),
+    fin_insur_issues_type_pre = ifelse(I19_3 == 1, 1, 0),
+    fin_insur_issues_type_frd = ifelse(I19_4 == 1, 1, 0),
+    fin_insur_issues_type_clm = ifelse(I19_5 == 1, 1, 0),
+    fin_insur_issues_type_dat = ifelse(I19_6 == 1 | I19_7 == 1, 1, 0),
+    fin_insur_issues_type_oth = ifelse(I19_9== 1, 1, 0),
+    
+    # What actions have you taken to address these issues? 
+    # If the respondent selected ‘yes’ to any 1-9 in question I19
+    fin_insur_issues_act_web = ifelse(I20_1 == 1, 1, 0), 
+    fin_insur_issues_act_call = ifelse(I20_2 == 1 | I20_3 == 1, 1, 0), 
+    fin_insur_issues_act_cht = ifelse(I20_4 == 1, 1, 0), 
+    fin_insur_issues_act_ip = ifelse(I20_5 == 1 | I20_6 == 1, 1, 0), 
+    fin_insur_issues_act_cg = ifelse(I20_7 == 1, 1, 0), 
+    fin_insur_issues_act_dk = ifelse(I20_8 == 1, 1, 0), 
+    fin_insur_issues_act_nr = ifelse(I20_9 == 1, 1, 0), 
+    fin_insur_issues_act_oth = ifelse(I20_10 == 1, 1, 0), 
+    
+    #  To what extent do you trust insurance companies?
+    # Ask all ,
+    fin_insur_trust_yes = ifelse(I21 %in% c(1, 2), 1, 0), 
+    fin_insur_trust_neu  = ifelse(I21 %in% c(3), 1, 0),
+    fin_insur_trust_no  = ifelse(I21 %in% c(4, 5), 1, 0), 
+      
+    # Why do you not trust insurance companies? 
+    fin_insur_trust_no_needs = ifelse(I22 == 1, 1, 0), 
+    fin_insur_trust_no_fraud = ifelse(I22 %in% c(2, 4), 1, 0), # Included misuese of data
+    fin_insur_trust_no_claim = ifelse(I22 == 3, 1, 0),
+    fin_insur_trust_no_ux = ifelse(I22 %in% c(5, 6), 1, 0),
+    fin_insur_trust_no_oth = ifelse(I22 == 7, 1, 0),
+    
       ) %>% dummy_cols(select_columns = c("fin_insur_lif_shc", 
                                           "fin_insur_hlt_shc", 
                                           "fin_insur_acc_shc", 
@@ -1273,7 +1706,13 @@ prep_main_data <- function(raw_data, weights, selected_country) {
                                           "fin_insur_bus_shc", 
                                           "fin_insur_aut_shc", 
                                           "fin_insur_idx_shc", 
-                                          "fin_insur_oth_shc")) -> raw_data
+                                          "fin_insur_oth_shc", 
+                                          "risk_cli_inspur_shc", 
+                                          "risk_hlt_insreco_shc", 
+                                          "risk_hlt_inspur_shc", 
+                                          "risk_hlt_claimdiff_shc", 
+                                          "risk_hlt_claimquick_shc", 
+                                          "risk_hlt_claimuse_shc")) -> raw_data
       
       raw_data %>% 
         mutate(
@@ -1294,6 +1733,7 @@ prep_main_data <- function(raw_data, weights, selected_country) {
           fin_insur_hlt_px = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_px, NA), 
           fin_insur_hlt_tm = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_tm, NA), 
           fin_insur_hlt_ot = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_lif_shc_su == 1, fin_insur_hlt_ot, NA)
+          
         ) -> raw_data
     } 
     
@@ -1328,17 +1768,26 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       if ("fin_insur_fun_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_fun_shc_cu = 0) -> raw_data
       }
+      if ("fin_insur_fun_shc_su" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_fun_shc_su = 0) -> raw_data
+      }
       if ("fin_insur_hom_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_hom_shc_cu = 0) -> raw_data
-      }   
+      } 
       if ("fin_insur_bus_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_bus_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_bus_shc_su" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_bus_shc_su = 0) -> raw_data
       }
       if ("fin_insur_aut_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_aut_shc_cu = 0) -> raw_data
       }
       if ("fin_insur_oth_shc_cu" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_oth_shc_cu = 0) -> raw_data
+      }
+      if ("fin_insur_idx_shc_su" %not_in% names(raw_data)) {
+        raw_data %>% mutate(fin_insur_idx_shc_su = 0) -> raw_data
       }
       
         raw_data %>% 
@@ -1373,10 +1822,16 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       
     }
       
+    if ("fin_insur_hlt_shc_su" %not_in% names(raw_data)) {
+      raw_data %>% mutate(fin_insur_hlt_shc_su = 0) -> raw_data
+    }
+  
     raw_data %>% 
       
     mutate(
       
+      fin_insur_hlt_shc_cusu = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_hlt_shc_su == 1, 1, 0), 
+      fin_insur_hlt_status = ifelse(fin_insur_hlt_shc_cu == 1, "Has health insurance", "Does not have health insurance"), 
       fin_insur_any_shc_cu_comp = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | fin_insur_aut_shc_cu == 1, 1, 0), 
       
       # User of digital financial services
@@ -1421,9 +1876,22 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       business_hh_codep_index = ifelse(resp_type_owner == 1, business_hh_codep_index, NA),
       business_hh_codep_index = business_hh_codep_index/3 # Re-scaling so that index has range of 0-1
 
-    ) %>%
+    ) -> raw_data
+    
+    # Financial access summary measure count of individual services (26 is max score)
+    
+    raw_data %>% 
+      rowwise() %>% 
+      mutate(
+        fin_access_savings_N = sum(c(fin_bus_savings_cbnk, fin_bus_savings_mfi, fin_bus_savings_fintech, fin_bus_savings_sacco, fin_bus_savings_mm), na.rm = TRUE), 
+        fin_access_loans_N = sum(c(fin_activeloan_cbnk, fin_activeloan_mfi, fin_activeloan_fintech, fin_activeloan_sacco, fin_activeloan_mm, fin_activeloan_platform, fin_owner_creditcard), na.rm = TRUE), 
+        fin_access_payments_N = sum(c(fin_merchpay_poscard, fin_merchpay_bnktrnsf, fin_merchpay_online, fin_merchpay_mobmoney, fin_merchpay_instant, fin_merchpay_qr), na.rm = TRUE), 
+        fin_access_insurance_N = sum(c(fin_insur_lif_shc_cu, fin_insur_hlt_shc_cu, fin_insur_acc_shc_cu, fin_insur_bus_shc_cu, fin_insur_aut_shc_cu), na.rm = TRUE), 
+        fin_access_all_N = sum(c(fin_access_savings_N, fin_access_loans_N, fin_access_payments_N, fin_access_insurance_N), na.rm = TRUE)
+      ) %>% ungroup() -> raw_data
 
-    select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "adj", "p", "w", "business_", "resp_", "tech_", "fin_", "cp_", "perf_", "risk_", "resi_", "fx")))
+    raw_data %>% 
+      select(starts_with(c("country", "ID", "Initial_block_ID", "Cluster_number", "fullsample", "weight_msme", "adj", "p", "w", "business_", "resp_", "tech_", "fin_", "cp_", "perf_", "risk_", "resi_", "fx")))
 
 }
 
