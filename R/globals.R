@@ -599,12 +599,12 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_insur_rec_oth_no" = "Other insurance: No",  
                 "fin_insur_rec_oth_dk" = "Other insurance: Don't know/refused", 
                 
-                 "fin_insur_nonewhy_hiprm"  = "Reasons insurance NOT recommended: Premium is too high",            
-                 "fin_insur_nonewhy_rigprm" = "Reasons insurance NOT recommended: Premium payment schedule too rigid",              
-                 "fin_insur_nonewhy_app" = "Reasons insurance NOT recommended: Application or renovation process too complicated",                  
-                 "fin_insur_nonewhy_noval" = "Reasons insurance NOT recommended: Don't see value or need/switched to alternative risk management strategy",               
-                 "fin_insur_nonewhy_negex" = "Reasons insurance NOT recommended: Had a negative experience with insurance provider",           
-                 "fin_insur_nonewhy_oth" = "Reasons insurance NOT recommended: Other",               
+                 "fin_insur_nonewhy_hiprm"  = "Reasons insurance not currently used: Premium is too high",            
+                 "fin_insur_nonewhy_rigprm" = "Reasons insurance not currently used: Premium payment schedule too rigid",              
+                 "fin_insur_nonewhy_app" = "Reasons insurance not currently used: Application or renovation process too complicated",                  
+                 "fin_insur_nonewhy_noval" = "Reasons insurance not currently used: Don't see value or need/switched to alternative risk management strategy",               
+                 "fin_insur_nonewhy_negex" = "Reasons insurance not currently used: Had a negative experience with insurance provider",           
+                 "fin_insur_nonewhy_oth" = "Reasons insurance not currently used: Other",               
                  
                  "fin_insur_statm_1_num" = "Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I understand the benefits of having insurance coverage",                   
                  "fin_insur_statm_2_num"  = "Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I believe insurance policies are affordable" ,                     
@@ -692,7 +692,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                  "fin_insur_medexp_0" = "Medical expenses (past 12 months): None",     
                  "fin_insur_medexp_1" = "Medical expenses (past 12 months): Less than IDR 1700000 (Indonesia) / BRL1100 (Brazil)",                  
                  "fin_insur_medexp_2" = "Medical expenses (past 12 months): Between IDR 1,700,000 and 3,500,000 (Indonesia) / BRL 1100 and BRL 2200 (Brazil)",                   
-                 "fin_insur_medexp_3" = "Medical expenses (past 12 months): Over IDR 3,500,000 / BRL 2200 (Brazil)",      
+                 "fin_insur_medexp_3" = "Medical expenses (past 12 months): Over IDR 3,500,000 (Indonesia) / BRL 2200 (Brazil)",      
                 "fin_insur_medexp_dk" = "Medical expenses (past 12 months): Don't know/can't remember",  
                 
                  "fin_insur_dig_mot_exp" = "Digital platform, primary motivation: Less expensive",              
