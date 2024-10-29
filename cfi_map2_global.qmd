@@ -31,29 +31,6 @@ main_data_all <- bind_rows(
 
 ```
 
-## Key findings
-
--   This study found between 400 (Addis) and 1,400 (Delhi) visible businesses establishments per square kilometer in 5 major urban centers (@fig-nbus_size_and_sector).
-
--   A dominant majority of these visible business establishments are businesses with fewer than 10 workers (Figure 1), though Delhi has a relatively high concentration of larger businesses (40%).
-
--   These small businesses are concentrated in retail trade and play an important role in urban food production and distribution. In Addis and Jakarta, nearly 1 in 2 small firms are involved in food distribution or manufacture, whereas in Addis, Delhi and Lagos, the share ranges from 20 to 34 percent, in Sao Paolo production is more diversified and the share of firms in food distribution or manufcature is lower, making up 25 percent. Among the 5 cities, Lagos has the highest share of small businesses in manufacturing (19%).
-
--   At the median, the productivity per worker among these small firms is lower than the level of productivity suggested by national accounts data: the gap is smallest in Sao Paulo (0.95x) and largest in Jakarta (0.13x) (@fig-mses_productivity)
-
--   Based on owner's or manager's evaluations, the share of small firms that are 'growing' is as low as 4 percent in Jakarta and as high as 25 percent in Lagos. Firms that can be described as 'static', that is, revenues and number of employees that have stayed the same over the past year and that have not made investments in capital or products make up as high as 45% of firms in Jakarta and as low as 13% of firms in Lagos.
-
--   On average, small business owners are in their 30's (Addis, Delhi) or in their early 40's (Sao Paolo, Lagos). The least experienced small firm owners are those in Addis (2.8 years' experience running the business) and the most experienced are those in Sao Paolo (10 years' of experience).
-
--   Nearly 1 in 2 small businesses in Jakarta and Lagos are owner-operated single person businesses, while the share in Addis, Delhi and Sao Paulo is nearer to 1 in 3. The prevalence of single-person businesses correlates strongly with the share of businesses run out of the household and with the share of businesses run by women. Jakarta and Lagos also have the highest share of businesses run out of the household (60 and 53%, respectively) as well as the highest share of businesses run by women (74 and 53%, respectively).
-
--   Around 3 in 4 business owners in Addis, Delhi and Lagos said they wanted to become an entrepreneur in order to start a business. In Sao Paolo and Jakarta, the number is around 1 in 2, and more business owners became entrepreneurs due to lack of opportunities or other reasons. Across all study sites, dominant shares of business owners say their main goal is to grow the business over the next 12 months, however in Brazil a relatively larger share of owners (nearly 1 in 3) say their main goal is to either cover business costs or leave the business. Overall, between 1 in 4 and 1 in 3 business owners can be characterized as having a strong 'entrepreneurial' mindset with a desire to grow the business and take risks.
-
--   Controlling for education and years of experience, women are less likely to have an 'entrepreneurial' or 'growth and risk' oriented mindset than men in Addis and Jakarta. In Addis, this finding is driven by a more cautious attitude to risk among women, while in Jakarta in addition to lower risk tolerance, women are substantially less likely than men to identify as an entrepreneur.
-
--   This study tracked use of 10 distinct non-financial and financial digital technologies among small businesses. There is wide variation among the study sites in the adoption of these technologies. In Addis, small businesses use 1.6 technologies, whereas in Brazil they use 5, reflecting more widespread adoption of advanced digital solutions such as e-commerce platforms or operations-supporting software and digital loans.
-
--   Educational attainment of the owner (or manager) is the single strongest predictor of firm-level technology and this finding is consistent across all 5 cities.
 
 ## The business landscape
 
@@ -252,92 +229,6 @@ fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coo
 
 ```
 
----
-
-```{r, fig.width = 12, fig.asp = 0.35}
-#| label: fig-nbus_premise
-#| echo: false
-#| warning: false
-#| fig-cap: "Businesses enumerated by sector"
-#| cap-location: margin
-
-# Number of firms by size and sector
-
-indicators <- c("business_total")
-groups_l1 <- "city"
-groups_l2 <- GROUPS[c("business_premise")]
-
-ests <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "1-10 people"  ), keep = "total") %>% 
-  mutate(size = "1-10 people") %>% 
-  bind_rows(
-    compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all %>% filter(business_size_agg2 == "More than 10 people"), keep = "total") %>%  mutate(size = "More than 10 people")
-    )
-
-factor_params <- list(
-  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 40), 
-  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
-  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
-)
-
-fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "total", valuelabel_type = "num") %>% group_by(city, indicator_name, size) %>% 
-  mutate(
-      size_total = sum(total),
-      share = total/size_total,
-      valuelabel = paste0(pctclean(share, 0), "%")
-    ) 
-
-# Parameters to create figure
-
-figparams <- list(
-  geom_type = "bar", # One of "bar" or "tile"
-  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
-  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
-  catlabels = list(show = FALSE), 
-  errorbars = list(show = FALSE, color = "blue")
-)
-
-palette <- c("#FF9F1C", "#CEE5F2", "#41BBD9", "grey90")
-names(palette) <- str_wrap(c("Household premises", "Non-household premises with permanent structure", "Non-household premises with semi-permanent structure, including stalls or stands", "Business premise does not match any of the responses above"), 40)
- 
-scales <- list(
-  fillcolor = list(palette = palette), 
-  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = c(0,0), droplines = FALSE)
-)
-
-legend <- list(
-  show = TRUE, 
-  title = "Business premises:", 
-  nrows = 1, 
-  ncols = 1, 
-  reverse = TRUE
-)
-
-labels <- list(
-  title = "Share of businesses by type of premise within size category",
-  subtitle =  "Businesses (%)",
-  yax_ti = NULL,
-  xax_ti = NULL,
-  caption = SOURCE
-)
-
-vars <- list(
-  xvar = "city", yvar = "share", fillvar = "group_cat_val"
-)
-
-facets <- list(
-  type = "wrap", 
-  rows = "indicator_group", 
-  cols = "size", 
-  scales = "fixed", 
-  space = "free",
-  drop_row_label = TRUE, 
-  drop_col_label = FALSE, 
-  add_dividers = FALSE
-)
-
-fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
-
-```
 
 ------------------------------------------------------------------------
 
@@ -440,14 +331,14 @@ fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coo
 
 # Number of firms by size and sector
 
-indicators <- c("business_size_agg2_shc_1", "business_size_agg2_shc_2_10",  "business_sector_agg3_shc_mfc" , "business_sector_agg3_shc_srv_resale", "business_sector_agg3_shc_srv_oth", "business_premise_shc_1", "business_premise_shc_2", "business_premise_shc_3", "resp_type_owner", "resp_type_manager", "resp_sex_men", "resp_sex_women")
+indicators <- c("business_size_agg2_shc_1", "business_size_agg2_shc_2_10",  "business_sector_agg3_shc_mfc" , "business_sector_agg3_shc_srv_resale", "business_sector_agg3_shc_srv_oth", "business_premise_shc_1", "business_premise_shc_2", "business_premise_shc_3", "business_registered_yes", "business_registered_no", "resp_sex_men", "resp_sex_women")
 
 groups <- GROUPS[c("city")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
 
 factor_params <- list(
-  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 60), 
+  wrap_sizes = list(indicator_name = 40, indicator_group = 30, group_name = 40, group_cat_val = 60), 
   reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
   order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
 )
@@ -464,7 +355,7 @@ figparams <- list(
   errorbars = list(show = FALSE)
 )
 
-palette <- c("#A2C3A4", "#C4F1BE", "#FF9F1C", "#41BBD9", "#CEE5F2", "#BFD3C1", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2", "#FF7B9C","#CEE5F2")
+palette <- c("#A2C3A4", "#C4F1BE", "#FF9F1C", "#41BBD9", "#CEE5F2", "#BFD3C1", "#A2C3A4", "#C4F1BE", "#CEE5F2", "#FF7B9C", "#CEE5F2", "#FF7B9C")
 names(palette) <- unique(fig_data$indicator_name)
 
 scales <- list(
@@ -609,7 +500,7 @@ fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coo
 
 fig_notes <- c("Notes: This figure is based on responses to the quesetion 'In [insert last calendar month], what were the total NET sales of this business?'. MSEs reported monthly revenue in local currency, these values are converted to current USD using June 1 2024 exchange rates obtained from UN treasury data and to international $ using purchasing power parity conversaion fators from the World Bank (WB) World Development Indicators database (WDI) [indicator code: PA.NUS.PPP]. Daily sales per employee is computed by standardizing revenues across firms using data on the months per year and the hours per week the business is in operation. GDP per person employed in constant 2021 PPP $ is provided as a benchamrk for comparison and is obtaind from the WB WDI database [indicator code: SL.GDP.PCAP.EM.KD].")
 
-indicators <- c("perf_rev_reports", "perf_rev_usd", "perf_revpdypemp_usd",  "perf_rev_ppp", "perf_revpdypemp_ppp")
+indicators <- c("perf_rev_reports","perf_revpdypemp_usd", "perf_revpdypemp_ppp")
 groups <- GROUPS[c("city")]
 
 ests <- compute_summary_mainlevel_1g(indicators, groups, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = NULL)
@@ -680,7 +571,7 @@ legend <- list(
   title = NULL, 
   nrows = 1, 
   ncols = 1, 
-  reverse = FALSE
+  reverse = TRUE
 )
 
 vars <- list(
@@ -1761,6 +1652,92 @@ scales <- list(
 
 ## Financial services
 
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-account_strands
+#| echo: false
+#| warning: false
+#| fig-cap: "Summary measures of financial access"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The analysis in this figure considers a total of 23 distinct formal financial devices across 4 categories: savings, loans, payments and insurance. Specifically these are: I. MSE primarily keeps savings using an account kept with any of the following: (1) Commercial bank, (2) Microfinance institution, (3) Fintech, (4) Savings and Credit Cooperative or (5) Mobile money wallet; II. MSE has had an active loan in the past 12 months from any of the following: (6) Commercial bank, (7) Microfinance institution, (8) Fintech, (9) Credit cooperative, (10) Mobile money provider, (11) Digital platform or (12) has a Credit card; III. In the past 12 months has used any of the following non-cash customer payments solution: (13) POS for card payments, (14) Direct bank transfres, (15) Online payments through a website, (16) Mobile money, (17) Instant money transfers, (18) QR payments; and IV. currently has any of the following insurance policies: (19) Life insurance, (20) Health insurance, (21) Accident insurance, (22) Business insurance, (23) Automobile insurance.")
+
+indicators <- c("fin_access_savings_N", "fin_access_loans_N", "fin_access_payments_N", "fin_access_insurance_N")
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "resp_education_agg2_alt")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 50, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_type = "number", valuelabel_thresh = 0.3) %>% 
+  group_by(city, group_cat_val) %>% 
+  mutate(
+      total = sum(mean), 
+      barlabel = ifelse(indicator_name == "Savings accounts (N)", numclean(total, 1), NA),
+      barlabelpos = ifelse(indicator_name == "Savings accounts (N)", total, NA), 
+    ) 
+  
+labels <- list(
+  title = "Total number of formal financial devices used by category",
+  subtitle =  "Mean number of devices (Minimum = 0, Maximum = 23)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = TRUE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 2.75),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#CEE5F2", "#41BBD9","#A2C3A4", "#FF9F1C")
+names(palette) <- c("Savings accounts (N)", "Loan accounts (N)", "Payments solutions (N)", "Insurance policies (N)")     
+
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 30), nbreaks = 5, type = "number", expand = c(0,0), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "city", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  wrap_nrows = 1, 
+  scales = "fixed", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), axis.text.y = element_text(face = "bold"))
+
+
+```
+
+---
+
 ```{r, fig.width = 12, fig.asp = 0.65}
 #| label: fig-account_ownership
 #| echo: false
@@ -1835,6 +1812,7 @@ fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip =
 
 
 ```
+
 
 ------------------------------------------------------------------------
 

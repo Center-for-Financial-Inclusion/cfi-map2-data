@@ -1524,15 +1524,50 @@ prep_main_data <- function(raw_data, weights, selected_country) {
     # Would you recommend insurance to others?
     # For respondents who selected 'currently have insurance' or 'had insurance in the past, but not in the last 12 months' for any option in B1
     
-    fin_insur_rec_lif = ifelse(I10_1 == 1, 1, 0), 
-    fin_insur_rec_hlt = ifelse(I10_2 == 1, 1, 0), 
-    fin_insur_rec_acc = ifelse(I10_3 == 1, 1, 0), 
-    fin_insur_rec_fun = ifelse(I10_4 == 1, 1, 0), 
-    fin_insur_rec_hom = ifelse(I10_5 == 1, 1, 0), 
-    fin_insur_rec_bus = ifelse(I10_6 == 1, 1, 0), 
-    fin_insur_rec_aut = ifelse(I10_7 == 1, 1, 0), 
-    fin_insur_rec_idx = ifelse(I10_8 == 1, 1, 0), 
-    fin_insur_rec_oth = ifelse(I10_9 == 1, 1, 0), 
+    fin_insur_rec_lif_yes = ifelse(I10_1 == 1, 1, 0), 
+    fin_insur_rec_lif_myb = ifelse(I10_1 == 2, 1, 0), 
+    fin_insur_rec_lif_no = ifelse(I10_1 == 3, 1, 0),
+    fin_insur_rec_lif_dk = ifelse(I10_1 %in% c(4,5), 1, 0),
+    
+    fin_insur_rec_hlt_yes = ifelse(I10_2 == 1, 1, 0), 
+    fin_insur_rec_hlt_myb = ifelse(I10_2 == 2, 1, 0), 
+    fin_insur_rec_hlt_no = ifelse(I10_2 == 3, 1, 0), 
+    fin_insur_rec_hlt_dk = ifelse(I10_2 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_acc_yes = ifelse(I10_3 == 1, 1, 0), 
+    fin_insur_rec_acc_myb = ifelse(I10_3 == 2, 1, 0), 
+    fin_insur_rec_acc_no = ifelse(I10_3 == 3, 1, 0), 
+    fin_insur_rec_acc_dk = ifelse(I10_3 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_fun_yes = ifelse(I10_4 == 1, 1, 0), 
+    fin_insur_rec_fun_myb = ifelse(I10_4 == 2, 1, 0), 
+    fin_insur_rec_fun_no = ifelse(I10_4 == 3, 1, 0), 
+    fin_insur_rec_fun_dk = ifelse(I10_4 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_hom_yes = ifelse(I10_5 == 1, 1, 0), 
+    fin_insur_rec_hom_myb = ifelse(I10_5 == 2, 1, 0), 
+    fin_insur_rec_hom_no = ifelse(I10_5 == 3, 1, 0), 
+    fin_insur_rec_hom_dk = ifelse(I10_5 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_bus_yes = ifelse(I10_6 == 1, 1, 0), 
+    fin_insur_rec_bus_myb = ifelse(I10_6 == 2, 1, 0), 
+    fin_insur_rec_bus_no = ifelse(I10_6 == 3, 1, 0), 
+    fin_insur_rec_bus_dk = ifelse(I10_6 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_aut_yes = ifelse(I10_7 == 1, 1, 0), 
+    fin_insur_rec_aut_myb = ifelse(I10_7 == 2, 1, 0), 
+    fin_insur_rec_aut_no = ifelse(I10_7 == 3, 1, 0), 
+    fin_insur_rec_aut_dk = ifelse(I10_7 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_idx_yes = ifelse(I10_8 == 1, 1, 0), 
+    fin_insur_rec_idx_myb = ifelse(I10_8 == 2, 1, 0), 
+    fin_insur_rec_idx_no = ifelse(I10_8 == 3, 1, 0), 
+    fin_insur_rec_idx_dk = ifelse(I10_8 %in% c(4,5), 1, 0), 
+    
+    fin_insur_rec_oth_yes = ifelse(I10_9 == 1, 1, 0), 
+    fin_insur_rec_oth_myb = ifelse(I10_9 == 2, 1, 0), 
+    fin_insur_rec_oth_no = ifelse(I10_9 == 3, 1, 0), 
+    fin_insur_rec_oth_dk = ifelse(I10_9 %in% c(4,5), 1, 0), 
     
     #If you currently do not have insurance or have discontinued your insurance, what is the primary reason for this decision? 
     # For respondents who selected either Had insurance in the past, but not in the last 12 months or Never had to all B1 options
@@ -1788,6 +1823,12 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       }
       if ("fin_insur_idx_shc_su" %not_in% names(raw_data)) {
         raw_data %>% mutate(fin_insur_idx_shc_su = 0) -> raw_data
+      }
+      if ("risk_hlt_claimuse_shc_dbt" %not_in% names(raw_data)) {
+        raw_data %>% mutate(risk_hlt_claimuse_shc_dbt = 0) -> raw_data
+      }
+      if ("risk_hlt_insreco_shc_neu" %not_in% names(raw_data)) {
+        raw_data %>% mutate(risk_hlt_insreco_shc_neu = 0) -> raw_data
       }
       
         raw_data %>% 

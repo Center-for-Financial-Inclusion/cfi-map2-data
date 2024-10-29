@@ -478,6 +478,25 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "risk_hlt_rec_mt6mos" = "Health risk recovery time: 6 months or more",                   
                 "risk_hlt_rec_dk" = "Health risk recovery time: Don't know",    
                 
+                "risk_hlt_claimdiff_shc_notdiff"  = "Health insurance claim, difficulty accessing: Not difficult",  
+                "risk_hlt_claimdiff_shc_some"  = "Health insurance claim, difficulty accessing: Somewhat difficult",  
+                "risk_hlt_claimdiff_shc_very"  = "Health insurance claim, difficulty accessing: Very difficult",  
+                "risk_hlt_claimdiff_shc_not"  = "Health insurance claim, difficulty accessing: Could not access funds",  
+                
+                "risk_hlt_claimquick_shc_qck" = "Health insurance claim, speed of access: Very or relatively quickly", 
+                "risk_hlt_claimquick_shc_slw" = "Health insurance claim, speed of access: Slow, relatively slowly or very slowly", 
+                "risk_hlt_claimquick_shc_not" = "Health insurance claim, speed of access: Could not access funds", 
+                
+                "risk_hlt_claimuse_shc_pmb" = "Health insurance claim, use: Pay medical bills", 
+                "risk_hlt_claimuse_shc_pmb" = "Health insurance claim, use: Cover lost income or business interruption", 
+                "risk_hlt_claimuse_shc_pmb" = "Health insurance claim, use: Settling debts incurred due to medical expenses", 
+                "risk_hlt_claimuse_shc_pmb" = "Health insurance claim, use: Other", 
+                
+                "risk_hlt_payout_full" = "Health insurance payout: Fully or mostly covered expenses", 
+                "risk_hlt_payout_partial" = "Health insurance payout: Only covered a small portion of expenses",             
+                "risk_hlt_payout_none" = "Health insurance payout: Did not cover any expenses",                  
+                "risk_hlt_payout_dk" = "Health insurance payout: Don't know/refused", 
+                
                 "risk_hlt_inspur_num" = "Health risk, likelihood of purchasing or expanding health insurance coverage (next 12 months): Score",                
                 "risk_hlt_inspur_shc_lik" = "Health risk, ikelihood of purchasing or expanding health insurance coverage (next 12 months): Very or somewhat likely",             
                 "risk_hlt_inspur_shc_neu" = "Health risk, ikelihood of purchasing or expanding health insurance coverage (next 12 months): Netural",             
@@ -535,16 +554,51 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_insur_benef_oth"  = "Insurance benefits: Other",                
                 "fin_insur_benef_non"  = "Insurance benefits: The insurance did not benefit me",     
                 
-                "fin_insur_rec_lif" = "Recommend insurance: Life",                  
-                "fin_insur_rec_hlt" = "Recommend insurance: Health",                  
-                 "fin_insur_rec_acc" = "Recommend insurance: Accident",                   
-                 "fin_insur_rec_fun" = "Recommend insurance: Funeral",                    
-                 "fin_insur_rec_hom" = "Recommend insurance: Home",                   
-                 "fin_insur_rec_bus" = "Recommend insurance: Business",                   
-                 "fin_insur_rec_aut" = "Recommend insurance: Automobile",                    
-                 "fin_insur_rec_idx" = "Recommend insurance: Weather-indexed",                   
-                 "fin_insur_rec_oth"  = "Recommend insurance: Other",            
-                 
+                "fin_insur_rec_lif_yes" = "Life insurance: Yes",  
+                "fin_insur_rec_lif_myb" = "Life insurance: Maybe",     
+                "fin_insur_rec_lif_no" = "Life insurance: No",     
+                "fin_insur_rec_lif_dk" = "Life insurance: Don't know/refused",     
+                
+                "fin_insur_rec_hlt_yes" = "Health insurance: Yes",  
+                "fin_insur_rec_hlt_myb" = "Health insurance: Maybe",  
+                "fin_insur_rec_hlt_no" = "Health insurance: No",  
+                "fin_insur_rec_hlt_dk" = "Health insurance: Don't know/refused",  
+                
+                "fin_insur_rec_acc_yes" = "Accident insurance: Yes",   
+                "fin_insur_rec_acc_myb" = "Accident insurance: Maybe",  
+                "fin_insur_rec_acc_no" = "Accident insurance: No",  
+                "fin_insur_rec_acc_dk" = "Accident insurance: Don't know/refused",  
+                
+                "fin_insur_rec_fun_yes" = "Funeral insurance: Yes",    
+                "fin_insur_rec_fun_myb" = "Funeral insurance: Maybe",  
+                "fin_insur_rec_fun_no" = "Funeral insurance: No",  
+                "fin_insur_rec_fun_dk" = "Funeral insurance: Don't know/refused",  
+                
+                 "fin_insur_rec_hom_yes" = "Home insurance: Yes",           
+                "fin_insur_rec_hom_myb" = "Home insurance: Maybe",  
+                "fin_insur_rec_hom_no" = "Home insurance: No",  
+                "fin_insur_rec_hom_dk" = "Home insurance: Don't know/refused",  
+                
+                 "fin_insur_rec_bus_yes" = "Business insurance: Yes",
+                 "fin_insur_rec_bus_myb" = "Business insurance: Maybe",  
+                 "fin_insur_rec_bus_no" = "Business insurance: No",  
+                 "fin_insur_rec_bus_dk" = "Business insurance: Don't know/refused", 
+                
+                 "fin_insur_rec_aut_yes" = "Automobile insurance: Yes",  
+                 "fin_insur_rec_aut_myb" = "Automobile insurance: Maybe",  
+                 "fin_insur_rec_aut_no" = "Automobile insurance: No",  
+                 "fin_insur_rec_aut_dk" = "Automobile insurance: Don't know/refused", 
+              
+                 "fin_insur_rec_idx_yes" = "Weather-indexed insurance: Yes",      
+                "fin_insur_rec_idx_myb" = "Weather-indexed insurance: Maybe",  
+                "fin_insur_rec_idx_no" = "Weather-indexed insurance: No",  
+                "fin_insur_rec_idx_dk" = "Weather-indexed insurance: Don't know/refused",  
+                
+                 "fin_insur_rec_oth_yes"  = "Other insurance: Yes",            
+                "fin_insur_rec_oth_myb" = "Other insurance: Maybe",  
+                "fin_insur_rec_oth_no" = "Other insurance: No",  
+                "fin_insur_rec_oth_dk" = "Other insurance: Don't know/refused", 
+                
                  "fin_insur_nonewhy_hiprm"  = "Reasons insurance NOT recommended: Premium is too high",            
                  "fin_insur_nonewhy_rigprm" = "Reasons insurance NOT recommended: Premium payment schedule too rigid",              
                  "fin_insur_nonewhy_app" = "Reasons insurance NOT recommended: Application or renovation process too complicated",                  
