@@ -736,6 +736,22 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_insur_trust_no_ux" = "Reason for not trusting: The pricing and terms are vague and hard to understand or the processes are unclear",             
                 "fin_insur_trust_no_oth"= "Reason for not trusting: Other",  
                 
+                "fin_ins_seg0_cu_hltlif" = "Insurance adoption group: Health or life insurance",            
+                "fin_ins_seg0_cu_oth" = "Insurance adoption group: Other insurance (not health or life)",                    
+                "fin_ins_seg0_cu_none" = "Insurance adoption group: No insurance cover",    
+               
+                "fin_ins_seg1_cu" = "Insurance customer segment: Current", 
+                "fin_ins_seg1_pr" = "Insurance customer segment: Prospective",                       
+                "fin_ins_seg1_hr" = "Insurance customer segment: Hard to reach", 
+
+               "fin_ins_seg2_cu" = "Insurance customer segment: Current", 
+               "fin_ins_seg2_pr" = "Insurance customer segment: Prospective",                       
+               "fin_ins_seg2_hr" = "Insurance customer segment: Hard to reach", 
+               
+               "fin_ins_seg3_cu" = "Insurance customer segment: Current", 
+               "fin_ins_seg3_pr" = "Insurance customer segment: Prospective",                       
+               "fin_ins_seg3_hr" = "Insurance customer segment: Hard to reach", 
+               
                 "fin_access_score" = "Breadth of financial access: Score [0-4]", 
                 
                "fin_access_savings_N" = "Financial access summary score: Savings accounts (N)", 
@@ -811,6 +827,8 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "risk_hlt_imp_opcosts" = "Health risk impact: Increased operational costs",                 
                 "risk_hlt_imp_oth" = "Health risk impact: Other",
                 
+               "risk_hltcli_exp" = "Risk exposure: Business exposed to health or climate shock in past 36 months", 
+               
                 "risk_hlt_cope_borrfin" = "Health risk coping strategies: Borrowed from a financial institution",          
                 "risk_hlt_cope_savbus"  = "Health risk coping strategies: Use business cash or savings",               
                 "risk_hlt_cope_ins" = "Health risk coping strategies: Insurance payout",                 

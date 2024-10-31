@@ -1348,6 +1348,10 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       
       risk_hlt_exp_str = ifelse(risk_hlt_exp == 1, "Experienced health shock (in past 36 mos)", "Did not experience health shock (in past 36 mos)"), 
       
+      # Faced a climate or health shock that impacted business in past 36 months: 
+      
+      risk_hltcli_exp = ifelse(risk_hlt_exp == 1 | risk_weather_type_any == 1, 1, 0), 
+        
       # H2 Please describe how the most significant health issue(s) in the last 36 months impacted your business operations?
       # IF H! == Yes, 
       
@@ -1874,6 +1878,27 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_insur_hlt_shc_cusu = ifelse(fin_insur_hlt_shc_cu == 1 | fin_insur_hlt_shc_su == 1, 1, 0), 
       fin_insur_hlt_status = ifelse(fin_insur_hlt_shc_cu == 1, "Has health insurance", "Does not have health insurance"), 
       fin_insur_any_shc_cu_comp = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | fin_insur_aut_shc_cu == 1, 1, 0), 
+      
+      # Mututally exclusive insurance adoption gorups (focuse on health and life)
+      
+      fin_ins_seg0_cu_hltlif = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1), 1, 0), 
+      fin_ins_seg0_cu_oth = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 0 & fin_insur_hlt_shc_cu == 0), 1, 0), 
+      fin_ins_seg0_cu_none = ifelse(fin_insur_any_shc_cu == 0, 1, 0), 
+      
+      # Insurance segments: 
+      
+      fin_ins_seg1_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user
+      fin_ins_seg1_pr = ifelse(fin_insur_any_shc_cu == 0 & fin_insur_statm_5_num %in% c(4,5), 1, 0), # Prospective user: Likely to purchase (Strongly agree, Agree)
+      fin_ins_seg1_hr = ifelse(fin_ins_seg1_cu == 0 & fin_ins_seg1_pr == 0, 1, 0), # Hard to reach
+      
+      fin_ins_seg2_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user
+      fin_ins_seg2_pr = ifelse(fin_insur_any_shc_cu == 0 & fin_insur_statm_5_num %in% c(3, 4,5), 1, 0), # Prospective user (Strongly agree, Agree, Neutral)
+      fin_ins_seg2_hr = ifelse(fin_ins_seg2_cu == 0 & fin_ins_seg2_pr == 0, 1, 0), # Hard to reach
+      
+      fin_ins_seg3_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user
+      fin_ins_seg3_pr = ifelse(fin_insur_any_shc_cu == 0 & (fin_insur_statm_5_num %in% c(4,5) | fin_insur_statm_6_num %in% c(4,5) | fin_insur_statm_7_num %in% c(4,5)), 1, 0), # Prospective user: Likely to purchase (Strongly agree, Agree)
+      fin_ins_seg3_hr = ifelse(fin_ins_seg3_cu == 0 & fin_ins_seg3_pr == 0, 1, 0), # Hard to reach
+      
       
       # User of digital financial services
       fin_dfs_user = ifelse(
