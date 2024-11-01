@@ -387,6 +387,8 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_insur_aut_da" = "Automobile insurance: Accessed or managed digitally" ,                      
                 "fin_insur_idx_da" = "Weather-indexed insurance: Accessed or managed digitally" ,                       
                 "fin_insur_oth_da" = "Other insurance: Accessed or managed digitally" ,   
+                "fin_insur_hltlif_da" = "Health or life insurance: Accessed or managed digitally", 
+                "fin_insur_any_da" = "Any insurnace: Accessed or managed digitally", 
                 
                 "fin_insur_lif_shc_cu" = "Life insurance: Currently uses", 
                 "fin_insur_lif_shc_na" = "Life insurance: Not aware", 
@@ -738,18 +740,18 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 
                 "fin_ins_seg0_cu_hltlif" = "Insurance adoption group: Health or life insurance",            
                 "fin_ins_seg0_cu_oth" = "Insurance adoption group: Other insurance (not health or life)",                    
-                "fin_ins_seg0_cu_none" = "Insurance adoption group: No insurance cover",    
+                "fin_ins_seg0_cu_none" = "Insurance adoption group: No insurance coverage",    
                
-                "fin_ins_seg1_cu" = "Insurance customer segment: Current", 
-                "fin_ins_seg1_pr" = "Insurance customer segment: Prospective",                       
+                "fin_ins_seg1_cu" = "Insurance customer segment: Current policyholder", 
+                "fin_ins_seg1_pr" = "Insurance customer segment: Prospective policyholder",                       
                 "fin_ins_seg1_hr" = "Insurance customer segment: Hard to reach", 
 
-               "fin_ins_seg2_cu" = "Insurance customer segment: Current", 
-               "fin_ins_seg2_pr" = "Insurance customer segment: Prospective",                       
+               "fin_ins_seg2_cu" = "Insurance customer segment: Current policyholder", 
+               "fin_ins_seg2_pr" = "Insurance customer segment: Prospective policyholder",                       
                "fin_ins_seg2_hr" = "Insurance customer segment: Hard to reach", 
                
-               "fin_ins_seg3_cu" = "Insurance customer segment: Current", 
-               "fin_ins_seg3_pr" = "Insurance customer segment: Prospective",                       
+               "fin_ins_seg3_cu" = "Insurance customer segment: Current policyholder", 
+               "fin_ins_seg3_pr" = "Insurance customer segment: Prospective policyholder",                       
                "fin_ins_seg3_hr" = "Insurance customer segment: Hard to reach", 
                
                 "fin_access_score" = "Breadth of financial access: Score [0-4]", 
@@ -905,7 +907,9 @@ GROUPS <- c("fullsample" = "All businesses",
             "risk_largestimpact_str" = "Shock with largest impact on business in past 36 months", 
             "risk_hlt_exp_str" = "Experienced health shock in past 36 months", 
             "fin_insur_hlt_status" = "Health insurance status", 
-            "risk_weather_type_any_str" = "Experienced climate shock in past 36 months")
+            "risk_weather_type_any_str" = "Experienced climate shock in past 36 months", 
+            "fin_ins_seg0_str" = "Insurance adoption segment", 
+            "fin_ins_seg3_str" = "Insurance market segment")
 
 GROUP_CAT_LEVELS <- c("All businesses",
                       "Household", "Non-household: Permanent structure", "Non-household: Semi-permanent structure",

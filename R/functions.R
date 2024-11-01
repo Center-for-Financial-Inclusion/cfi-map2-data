@@ -1274,6 +1274,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_insur_idx_da = ifelse(B2_8 == 1, 1, ifelse(B2_8 == 2, 0, NA)), 
       fin_insur_oth_da = ifelse(B2_9 == 1, 1, ifelse(B2_9 == 2, 0, NA)), 
       
+      fin_insur_hltlif_da = ifelse(fin_insur_lif_da == 1 | fin_insur_hlt_da == 1, 1, 0), 
+      fin_insur_any_da = ifelse(fin_insur_lif_da == 1 | fin_insur_hlt_da == 1 | fin_insur_acc_da == 1 | fin_insur_fun_da == 1 | fin_insur_hom_da == 1 | fin_insur_bus_da == 1 | fin_insur_aut_da == 1 | fin_insur_idx_da == 1 | fin_insur_oth_da == 1, 1, 0), 
+      
       # Life or health insurance cover for specific family member
       
       fin_insur_lifhlt_slf = ifelse(B3_O1 == 1 | B3_O2 == 1 | B3_O3 == 1 | B3_O4 == 1 | B3_O5 == 1 | B3_O6 == 1 | B3_O7 == 1 | B3_O8 == 1, 1, 0), 
@@ -1885,6 +1888,12 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_ins_seg0_cu_oth = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 0 & fin_insur_hlt_shc_cu == 0), 1, 0), 
       fin_ins_seg0_cu_none = ifelse(fin_insur_any_shc_cu == 0, 1, 0), 
       
+      fin_ins_seg0_str = case_when(
+        fin_ins_seg0_cu_hltlif == 1 ~ "Health or life insurance policyholder", 
+        fin_ins_seg0_cu_oth == 1 ~ "Other insurance policyholder", 
+        fin_ins_seg0_cu_none == 1 ~ "No insurance coverage", 
+      ), 
+      
       # Insurance segments: 
       
       fin_ins_seg1_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user
@@ -1898,6 +1907,12 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_ins_seg3_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user
       fin_ins_seg3_pr = ifelse(fin_insur_any_shc_cu == 0 & (fin_insur_statm_5_num %in% c(4,5) | fin_insur_statm_6_num %in% c(4,5) | fin_insur_statm_7_num %in% c(4,5)), 1, 0), # Prospective user: Likely to purchase (Strongly agree, Agree)
       fin_ins_seg3_hr = ifelse(fin_ins_seg3_cu == 0 & fin_ins_seg3_pr == 0, 1, 0), # Hard to reach
+      
+      fin_ins_seg3_str = case_when(
+        fin_ins_seg3_cu == 1 ~ "Current policyholder", 
+        fin_ins_seg3_pr == 1 ~ "Prospective policyholder", 
+        fin_ins_seg3_hr == 1 ~ "Hard to reach", 
+      ), 
       
       
       # User of digital financial services
