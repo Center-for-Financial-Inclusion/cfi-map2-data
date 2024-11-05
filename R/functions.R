@@ -1894,6 +1894,18 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         fin_ins_seg0_cu_none == 1 ~ "No insurance coverage", 
       ), 
       
+      fin_ins_seg01_cu_hlt = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 0 & fin_insur_hlt_shc_cu == 1), 1, 0), 
+      fin_ins_seg01_cu_lif = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 1 & fin_insur_hlt_shc_cu == 0), 1, 0), 
+      fin_ins_seg01_cu_hltlifboth = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 1 & fin_insur_hlt_shc_cu == 1), 1, 0), 
+      fin_ins_seg01_cu_oth = ifelse(fin_insur_any_shc_cu == 1 & (fin_insur_lif_shc_cu == 0 & fin_insur_hlt_shc_cu == 0), 1, 0), 
+      fin_ins_seg01_cu_none = ifelse(fin_insur_any_shc_cu == 0, 1, 0), 
+      
+      fin_ins_seg0_str = case_when(
+        fin_ins_seg0_cu_hltlif == 1 ~ "Health or life insurance policyholder", 
+        fin_ins_seg0_cu_oth == 1 ~ "Other insurance policyholder", 
+        fin_ins_seg0_cu_none == 1 ~ "No insurance coverage", 
+      ), 
+      
       # Insurance segments: 
       
       fin_ins_seg1_cu = ifelse(fin_insur_any_shc_cu == 1, 1, 0), # Current user

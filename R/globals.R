@@ -742,6 +742,12 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "fin_ins_seg0_cu_oth" = "Insurance adoption group: Other insurance (not health or life)",                    
                 "fin_ins_seg0_cu_none" = "Insurance adoption group: No insurance coverage",    
                
+               "fin_ins_seg01_cu_hlt" = "Insurance adoption group: Health insurance only", 
+               "fin_ins_seg01_cu_lif" = "Insurance adoption group: Life insurance only", 
+               "fin_ins_seg01_cu_hltlifboth" = "Insurance adoption group: Both health and life", 
+               "fin_ins_seg01_cu_oth" = "Insurance adoption group: Other insurance (not health or life)", 
+               "fin_ins_seg01_cu_none" =  "Insurance adoption group: No insurance coverage", 
+               
                 "fin_ins_seg1_cu" = "Insurance customer segment: Current policyholder", 
                 "fin_ins_seg1_pr" = "Insurance customer segment: Prospective policyholder",                       
                 "fin_ins_seg1_hr" = "Insurance customer segment: Hard to reach", 
