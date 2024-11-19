@@ -13,7 +13,7 @@ source("R/viz_functions.R")
 
 # Select country:
 #COUNTRY <- params$country
-COUNTRY <- "Brazil"
+COUNTRY <- "Indonesia"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
@@ -78,11 +78,8 @@ raster_img <- get_raster(COUNTRY)
 polygons <- get_sampling_grid(COUNTRY)
 boundary <- get_boundary(polygons)
 
-# Prepare block-level data
-block_data <- businesses_perblock %>% select(BlockID, N_business_total_percluster) %>% mutate(BlockID = as.character(BlockID))
-
 # Merging in number of enumerated businesses per block 
-if (COUNTRY %in% c("Alaska")) {
+if (COUNTRY %in% c("")) {
 
   block_data <- businesses_perblock %>% select(BlockID, N_business_total_percluster) %>% mutate(BlockID = as.character(BlockID))
   
@@ -102,7 +99,8 @@ if (COUNTRY %in% c("Alaska")) {
     
   }
 
-fig_geo(boundary, polygons, raster_img, COUNTRY, map = map, color_opt = "rocket")
+#maplimits = list(x = c(-46.59, -46.45), y = c(-23.467, -23.57))
+fig_geo(boundary, polygons, raster_img, COUNTRY, map = map, color_opt = "rocket", maplimits = NULL, brightness = 2)
 
 
 ```

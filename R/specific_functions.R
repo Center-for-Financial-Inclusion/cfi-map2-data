@@ -56,10 +56,10 @@ sample_chars <- function(ests, groups) {
     mutate(
       group_name = fct_rev(factor(group_name, levels = groups, ordered = TRUE)),
       group_cat_val = ifelse(group_cat_val == "Household premises" , "Household", group_cat_val),
-      group_cat_val = ifelse(group_cat_val == "Non-household premises with permanent structure", "Non-household: Permanent structure", group_cat_val),
-      group_cat_val = ifelse(group_cat_val == "Non-household premises with semi-permanent structure, including stalls or stands", "Non-household: Semi-permanent structure", group_cat_val),
+      group_cat_val = ifelse(group_cat_val == "Non-household premises with permanent structure", "Non-HH: Permanent structure", group_cat_val),
+      group_cat_val = ifelse(group_cat_val == "Non-household premises with semi-permanent structure, including stalls or stands", "Non-HH: Semi-permanent structure", group_cat_val),
       group_cat_val = ifelse(is.na(group_cat_val), "Don't know", group_cat_val),
-      valuelabel = paste0(str_wrap(group_cat_val, 30)),
+      valuelabel = paste0(str_wrap(group_cat_val, 20)),
       #valuelabel = paste0(str_wrap(group_cat_val, 20), "\n", pctclean(share, 0), "%"),
     ) %>%
     filter(!is.na(group_cat_val) | group_cat_val != "Don't know")
@@ -187,10 +187,10 @@ corr_chart <- function(data) {
 
 tech_adoption_landscape <- function(ests, wrap) {
   
-  cats <- c("Lo", "Mlo", "Mhi", "Hi")
-  blues <- brewer.pal(4, "Blues")
+  cats <- c("Lo", "Mlo1", "Mlo2", "M", "Mhi1", "Mhi2", "Hi")
+  blues <- brewer.pal(7, "Blues")
   names(blues) <- cats
-  reds <- brewer.pal(4, "Reds")
+  reds <- brewer.pal(7, "Reds")
   names(reds) <- cats
 
   ests %>%
@@ -198,17 +198,26 @@ tech_adoption_landscape <- function(ests, wrap) {
     mutate(
       valuelabel = ifelse(indicator_group == "Digital technology adoption score", numclean(mean,1), paste0(round(mean*100, 0), "%")), 
       valuecat = case_when(
-        mean < 0.25 ~ "Lo", 
-        mean >= 0.25 & mean < 0.5 ~ "Mlo", 
-        mean >= 0.5 & mean < 0.75 ~ "Mhi", 
-        mean >= 0.75 ~ "Hi"),
+        mean < 0.2 ~ "Lo", 
+        mean >= 0.2 & mean < 0.3 ~ "Mlo1", 
+        mean >= 0.3 & mean < 0.4 ~ "Mlo2",
+        mean >= 0.4 & mean < 0.5 ~ "M", 
+        mean >= 0.5 & mean < 0.6 ~ "Mhi1", 
+        mean >= 0.6 & mean < 0.8 ~ "Mhi2", 
+        mean >= 0.8 ~ "Hi"),
       valuecat2 = case_when(
-        mean < 2.5 ~ "Lo", 
-        mean >= 2.5 & mean < 5 ~ "Mlo", 
-        mean >= 5 & mean < 7.5 ~ "Mhi", 
-        mean >= 7.5 ~ "Hi"),
+        mean < 2 ~ "Lo", 
+        mean >= 2 & mean < 3 ~ "Mlo1", 
+        mean >= 3 & mean < 4 ~ "Mlo2",
+        mean >= 4 & mean < 5 ~ "M", 
+        mean >= 5 & mean < 6 ~ "Mhi1", 
+        mean >= 6 & mean < 8 ~ "Mhi2", 
+        mean >= 8 ~ "Hi"),
       fillcolor = ifelse(indicator_name %in% str_wrap(c("Never used", "Stopped using"), wrap), reds[valuecat], blues[valuecat]), 
-      fillcolor = ifelse(indicator_group == "Digital technology adoption score", blues[valuecat2], fillcolor)
+      fillcolor = ifelse(indicator_group == "Digital technology adoption score", blues[valuecat2], fillcolor), 
+      txtcolor = ifelse(valuecat %in% c("Mhi2", "Hi"), "white", "black"), 
+      txtcolor2 = ifelse(valuecat2 %in% c("Mhi2", "Hi"), "white", "black"), 
+      txtcolor = ifelse(indicator_group == "Digital technology adoption score", txtcolor2, txtcolor), 
     ) 
   
 }

@@ -91,6 +91,14 @@ PPP_RATES <- list(
   "India" = 20.2
 )
 
+FINDEX <- list(
+  "Jakarta" = 0.5304,
+  "Sao Paulo" = NA,
+  "Addis Ababa" = 0.4953,
+  "Lagos" = 0.5376,
+  "Delhi" = 0.7762
+)
+
 SOURCE <- c("Source: 2024 CFI/MAP2 small firm survey.")
 CAP_WRAP <- 145 
 
@@ -113,6 +121,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resp_education_agg5_shc_trt_uni" = "Educational attainment: University",  
                 "resp_education_agg5_shc_trt_voc" = "Educational attainment: Vocational/technical training", 
                 
+                "resp_experience" = "Experience running business: Years (mean)", 
                 "resp_experience_c" = "Experience running business: Continuous (single years)", 
                 "resp_experience_agg5_shc_1" = "Experience running business: 1 yr or less",
                 "resp_experience_agg5_shc_2_5" = "Experience running business: 2-5 yrs",
@@ -120,6 +129,9 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resp_experience_agg5_shc_11_20" = "Experience running business: 11-20 yrs",
                 "resp_experience_agg5_shc_20" = "Experience running business: > 20 yrs",
                 "resp_experience_c_5yi" = "Experience running business: Continuous (+5yrs)*",
+                
+                "resp_age" = "Age: Years (mean)", 
+                "resp_age_c" = "Age: Years (mean)", 
                 "resp_age_c_5yi" = "Age: Continuous (+5yrs)*",
                 "resp_age_agg3_shc_35" = "Age: [< 35 yrs]",                
                 "resp_age_agg3_shc_55" = "Age:[> 55 yrs]",                 
@@ -139,7 +151,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "resp_riskapproach_aggr" = "Risk tolerance: Aggresively pursue risky opportunities that could generate significant additional income",
                 "resp_riskapproach_calc" = "Risk tolerance: Cautiously pursue risk opportunities that could generate a little income",
                 "resp_riskapproach_avoid" = "Risk tolerance: Avoid risks even if they could generate additional income",
-                "resp_psych_segment_shc_grow" = "Pyschographic orientation: Growth",
+                "resp_psych_segment_shc_grow" = "Pyschographic orientation: Growth and risk-taking",
                 "resp_psych_segment_shc_stab" = "Pyschographic orientation: Stability",
                 "resp_psych_segment_shc_surv" = "Pyschographic orientation: Survival",
                 
@@ -152,6 +164,11 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "business_sector_agg3_shc_mfc" = "Sector: Manufacturing",        
                 "business_sector_agg3_shc_srv_resale" = "Sector: Services, trade (re-sale)",
                 "business_sector_agg3_shc_srv_oth" = "Sector: Services, other (eg. transport, construction)",
+                
+                "business_sector_agg4_shc_fd" = "Sector: Food distribution and production", 
+                "business_sector_agg4_shc_nfdm" = "Sector: Non-food manufacturing", 
+                "business_sector_agg4_shc_nfdrt" = "Sector: Non-food retail trade", 
+                "business_sector_agg4_shc_os" = "Sector: Other services", 
                 
                 "business_sector_food" = "Sector: Food distribution or production", 
                 
@@ -201,26 +218,32 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "tech_uses_messaging_shc_mol" = "Messaging apps: Monthly or less",        
                 "tech_uses_messaging_shc_nam" = "Messaging apps: Stopped using",         
                 "tech_uses_messaging_shc_nvr" = "Messaging apps: Never used",         
+                "tech_uses_messaging_shc_30da" = "Messaging apps: 30-day active", 
                 "tech_uses_socialmedia_shc_dow" = "Social media: Daily or weekly",        
                 "tech_uses_socialmedia_shc_mol" = "Social media: Monthly or less",     
                 "tech_uses_socialmedia_shc_nam" = "Social media: Stopped using",      
                 "tech_uses_socialmedia_shc_nvr" = "Social media: Never used",      
+                "tech_uses_socialmedia_shc_30da" = "Social media: 30-day active",   
                 "tech_uses_ecommerce_shc_dow" = "E-commerce platforms: Daily or weekly",       
                 "tech_uses_ecommerce_shc_mol" = "E-commerce platforms: Monthly or less",         
                 "tech_uses_ecommerce_shc_nam" = "E-commerce platforms: Stopped using",         
-                "tech_uses_ecommerce_shc_nvr" = "E-commerce platforms: Never used",         
+                "tech_uses_ecommerce_shc_nvr" = "E-commerce platforms: Never used",     
+                "tech_uses_ecommerce_shc_30da" = "E-commerce platforms: 30-day active", 
                 "tech_uses_software_shc_dow" = "Software for operations: Daily or weekly",           
                 "tech_uses_software_shc_mol" = "Software for operations: Monthly or less",  
                 "tech_uses_software_shc_nam" = "Software for operations: Stopped using",
                 "tech_uses_software_shc_nvr" = "Software for operations: Never used", 
+                "tech_uses_software_shc_30da" = "Software for operations: 30-day active", 
                 "tech_uses_adoption_score" = "Digital technology adoption score: Mean [0 min -10 max]",
                 "tech_uses_adoption_score_c" = "Uses 1 additional digital technology",
+                
                 "tech_function_comms" = "Communicating with customers: Uses",
                 "tech_function_mkts" = "Accessing markets: Uses",
                 "tech_function_ops" = "Enterprise operations: Uses",
                 "tech_function_epay" = "Digital payment acceptance: Uses",
                 "tech_function_epay_expos" = "Digital payment acceptance (excludes POS card payments): Uses", 
                 "tech_function_efin" = "Enterprise digital finance: Uses",
+                
                 "tech_function_comms_30da" = "Communicating with customers: 30-day active",
                 "tech_function_mkts_30da" = "Accessing markets: 30-day active",
                 "tech_function_ops_30da" = "Enterprise operations: 30-day active",
@@ -229,6 +252,14 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "tech_function_ops_7da" = "Enterprise operations: 7-day active",
                 "tech_function_mkts_ops" = "Accessing markets/ business operations: Uses", 
                 "tech_function_any" = "Technology adoption: Uses any digital application for business operations/payments", 
+                
+                "tech_function_infra_N" = "Digital technology adoption summary score: Connectivity and devices (Max = 2)",
+                "tech_function_comms_N" = "Digital technology adoption summary score: Communicating with customers (Max = 2)", 
+                "tech_function_mkts_N" = "Digital technology adoption summary score: Accessing markets (Max = 2)", 
+                "tech_function_ops_N" = "Digital technology adoption summary score: Business operations (Max = 2)",
+                "tech_function_epayloans_N" = "Digital technology adoption summary score: Customer payments and loans (Max = 2)", 
+                "tech_function_epay_N" = "Digital technology adoption summary score: Customer payments (N)", 
+       
                 "tech_adopfactors_demand" = "Adoption factors: Demand from customers/suppliers",            
                 "tech_adopfactors_support" = "Adoption factors: Obtaining support to use tech",            
                 "tech_adopfactors_comp" = "Adoption factors: Competitive pressure",                
@@ -264,8 +295,8 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 "perf_emp_up" = "Number of employees in past year: Increased", 
                 "perf_emp_same" = "Number of employees in past year: Remained the same", 
                 "perf_emp_down" = "Number of employees in past year: Decreased", 
-                "perf_investment" = "Dynamism: In past 1 year, business added equipment or moved to new premise", 
-                "perf_newservices" = "Dynamism: In past 1 year, business introduced new products or services", 
+                "perf_investment" = "Dynamism: In past year, MSE added equipment or moved to new premise", 
+                "perf_newservices" = "Dynamism: In past year, MSE introduced new products or services", 
                 "perf_growth_subj_any" = "Firm performance: Employees or revenues increased in past year", 
                 "perf_growthdyn_subj_score" = "Firm performance: Growth/dynamism score [0-4]", 
                 "perf_subj_growing" = "Firm dynamics: Growing", 
@@ -289,9 +320,10 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                  "fin_bus_savings_mm" = "Business savings account: Mobile money wallet, or e-money",  
                  "fin_bus_savings_other" = "Business savings account: Other",   
                 
-                "fin_bus_savings_agg_fi" = "Business savings account: Financial insitution", 
-                "fin_bus_savings_agg_nbfi" = "Business savings account: Fintech or mobile money", 
-                "fin_bus_savings_agg_inf" = "Business savings account: Informal", 
+                "fin_bus_savings_agg_fi" = "Business savings account provider: Financial institution", 
+                "fin_bus_savings_agg_nbfi" = "Business savings account provider: Fintech or mobile money wallet", 
+                "fin_bus_savings_agg_inf" = "Business savings account provider: Informal", 
+                "fin_bus_savings_agg_none" = "Business savings account provider: No savings", 
                 
                  "fin_bus_savings_channel_inprsn" = "Business savings account, transaction channels: OTC at branch",    
                  "fin_bus_savings_channel_digonly" = "Business savings account, transaction channels: Digital",    
@@ -433,6 +465,7 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                 
                 "fin_insur_any_shc_cu" = "Any insurance: Currently uses", 
                 "fin_insur_any_shc_cu_comp" = "Any insurance: Currently uses", # This version is comparable across all countries
+                "fin_insur_shc_cu_N" = "Financial access summary score: Insurance policies (N)", 
                 
                 "fin_insur_hlt_shc_cusu" = "Health insurance: Currently using or stopped using in past 12 months", 
                 
@@ -760,6 +793,15 @@ INDICATORS <- c(#"N_business_total_percluster" = "Population estimate: Total bus
                "fin_ins_seg3_pr" = "Insurance customer segment: Prospective policyholder",                       
                "fin_ins_seg3_hr" = "Insurance customer segment: Hard to reach", 
                
+               "fin_ins_lif_seg_cu" = "Insurance customer segment: Current life policyholder", 
+               "fin_ins_lif_seg_pr" = "Insurance customer segment: Prospective life policyholder",                       
+               "fin_ins_lif_seg_hr" = "Insurance customer segment: Hard to reach", 
+               
+               "fin_ins_lif_seg3_cu" = "Insurance customer segment: Current life policyholder", 
+               "fin_ins_lif_seg3_pr" = "Insurance customer segment: Prospective life policyholder",                       
+               "fin_ins_lif_seg3_hr" = "Insurance customer segment: Never used, hard to reach", 
+               "fin_ins_lif_seg3_ou" = "Insurance customer segment: Stopped using, does not recommend", 
+               
                 "fin_access_score" = "Breadth of financial access: Score [0-4]", 
                 
                "fin_access_savings_N" = "Financial access summary score: Savings accounts (N)", 
@@ -902,8 +944,10 @@ GROUPS <- c("fullsample" = "All businesses",
             "business_sector_agg4" = "Sector", 
             "business_sector_agg2" = "Industrial sector",
             "business_sector_agg3" = "Industrial sector",
+            "resp_experience_agg2" = "Experience running business", 
             "resp_experience_agg5" = "Experience running business (years)",
             "resp_sex_str" = "Gender of business owner or manager",
+            "resp_age_agg3" = "Age of business owner or manager", 
             "resp_education_agg2_alt" = "Education of business owner or manager", 
             "resp_education_agg4" = "Education of business owner or manager",
             "resp_owner_str" = "Respondent type", 
@@ -915,7 +959,10 @@ GROUPS <- c("fullsample" = "All businesses",
             "fin_insur_hlt_status" = "Health insurance status", 
             "risk_weather_type_any_str" = "Experienced climate shock in past 36 months", 
             "fin_ins_seg0_str" = "Insurance adoption segment", 
-            "fin_ins_seg3_str" = "Insurance market segment")
+            "fin_ins_seg3_str" = "Insurance market segment", 
+            "fin_ins_life_seg_str" = "Life insurance market segment", 
+            "fin_ins_lif_seg1_str" = "Life insurance adoption segment", 
+            "fin_ins_lif_seg2_str" = "Life insurance adoption segment")
 
 GROUP_CAT_LEVELS <- c("All businesses",
                       "Household", "Non-household: Permanent structure", "Non-household: Semi-permanent structure",

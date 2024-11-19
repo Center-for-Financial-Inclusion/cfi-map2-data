@@ -89,7 +89,16 @@ prep_reg_data <- function(data, depvarlog = FALSE, b_round = 1) {
       sig = ifelse(p.value < 0.05, "*", sig),
       sig = ifelse(p.value < 0.01, "**", sig),
       sig = ifelse(p.value < 0.001, "***", sig),
-      sig = ifelse(is.na(sig), "", sig)
+      sig = ifelse(is.na(sig), "", sig), 
+      
+      sig_alpha = case_when(
+        sig == "***" ~ 1, 
+        sig == "**" ~ 0.8, 
+        sig == "*" ~ 0.6, 
+        sig == "." ~ 0.4, 
+        sig == "" ~ 0.2
+      )
+      
     ) -> data 
   
   if (depvarlog) { 
@@ -109,7 +118,7 @@ prep_reg_data <- function(data, depvarlog = FALSE, b_round = 1) {
     
     mutate(
       effect_dir = ifelse(estimate < threshold, -1, 1),
-  
+      color_dir = ifelse(effect_dir < 0, "-", "+"), 
       valuelabel = numclean(estimate, n = 2),
       
       startarrow = baseline,
@@ -169,7 +178,7 @@ prep_reg_data_allcountries <- function(data, depvarlog = FALSE) {
 }
 
 
-fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt = "turbo", brightness = 2) { 
+fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt = "turbo", brightness = 2, maplimits = NULL) { 
   
   if (country %in% c("Indonesia", "India", "Brazil")) { 
     type = "block"
@@ -221,7 +230,7 @@ fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt
       geom_sf(data = polygons, aes(fill = N_business_total_percluster), color = "white", alpha = 0.5) + 
       scale_fill_viridis(option = color_opt, discrete = FALSE) +
       guides(fill = guide_colourbar(title = legend_title, title.position = "top", title.hjust = 0, nbin = 10)) 
-
+    
   } 
   
   if (map == "size") {
@@ -254,9 +263,14 @@ fig_geo <- function(boundary, polygons, raster, country, map = "size", color_opt
           legend.direction = "horizontal", 
           legend.title = element_text(color = "black"), 
           legend.text = element_text(color = "black"), 
-          legend.key.width = unit(1.75, 'cm')) +
-    
-    coord_sf()
+          legend.key.width = unit(1.75, 'cm'))
+  
+  if(!is.null(maplimits)) { 
+    p <- p + 
+      coord_sf(xlim = maplimits[["x"]], ylim = maplimits[["y"]])
+  } else {
+    p <- p + coord_sf()
+  }
   
   return(p)
   
@@ -309,7 +323,7 @@ fig_bar <- function(base_plot, data, params) {
       ndg_y = 0
     }
     p <- p +
-      geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold") 
+      geom_text(aes(y = barlabelpos, label = barlabel), hjust = 0, nudge_y = ndg_y, fontface = "bold", size = 4.25) 
   }
   
   return(p)
@@ -375,18 +389,27 @@ fig_tile <- function(base_plot, params) {
   
   # Value labels
   if (params[["valuelabels"]][["show"]]) {
-    p <- p +
-      geom_text(aes(label = valuelabel), 
-                size = params[["valuelabels"]][["lab_size"]], 
-                hjust = params[["valuelabels"]][["lab_hjust"]], 
-                fontface = params[["valuelabels"]][["lab_face"]])
-  }
+    if (!is.null(params[["valuelabels"]][["colortext"]])) {
+        p <- p +
+          geom_text(aes(label = valuelabel, color = txtcolor), 
+                    size = params[["valuelabels"]][["lab_size"]], 
+                    hjust = params[["valuelabels"]][["lab_hjust"]], 
+                    fontface = params[["valuelabels"]][["lab_face"]]) + 
+          scale_color_identity()
+    } else {
+      p <- p +
+        geom_text(aes(label = valuelabel), 
+                  size = params[["valuelabels"]][["lab_size"]], 
+                  hjust = params[["valuelabels"]][["lab_hjust"]], 
+                  fontface = params[["valuelabels"]][["lab_face"]])
+      }
+  } 
   
   return(p)
   
 }
 
-fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_flip = FALSE) {
+fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_flip = FALSE, scale_factor = 1.2) {
   
   # Variables to plot -------
   xvar <- sym(vars[["xvar"]])
@@ -402,6 +425,12 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
     cvar <- sym(vars[["colorvar"]])
   } else { 
     cvar = NULL
+  }
+  
+  if (!is.null(vars[["txtcolorvar"]])) {
+    txtvar <- sym(vars[["txtcolorvar"]])
+  } else { 
+    txtvar = NULL
   }
   
   # Defining base_plot  -------
@@ -532,7 +561,7 @@ fig_flex <- function(data, vars, facets, params, scales, legend, labels, coord_f
       x = labels[["xax_ti"]],
       caption = labels[["caption"]]
     ) +
-    theme_custom(scale_f = 1.2)
+    theme_custom(scale_f = scale_factor)
   
   # Flip coordinates?
   if (coord_flip) {
@@ -586,8 +615,8 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
   
     p + geom_col(width =  barparams[["bars"]][["width"]], fill = barparams[["bars"]][["color"]]) + 
     geom_hline(aes(yintercept = baseline), color = "red", size = 0.25, linetype = "dashed") + 
-    geom_segment(aes(y = startarrow, yend = endarrow, color = effect_desc), arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
-    geom_point(aes(y = startarrow), shape = 21, color = "red", fill = "white", size= 3.5) -> p
+    geom_segment(aes(y = startarrow, yend = endarrow, color = color_dir, alpha = sig_alpha), arrow = arrow(length=unit(.2, 'cm'), type = "closed"), size = 1.5) +
+    geom_point(aes(y = startarrow, color = color_dir), shape = 21, fill = "white", size= 3.5, show.legend = FALSE) -> p
     
     # Value labels
     if (barparams[["valuelabels"]][["show"]]) {
@@ -603,7 +632,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
     # Arrow labels
       if (barparams[["arrowlabels"]][["show"]]) {
         p <- p +
-          geom_text(aes(y = valuelabel_pos, label = valuelabel), color = "red", 
+          geom_text(aes(y = valuelabel_pos, label = valuelabel), color = "black", 
                     size = barparams[["arrowlabels"]][["lab_size"]], 
                     nudge_x = barparams[["arrowlabels"]][["lab_ndgx"]], 
                     nudge_y = barparams[["arrowlabels"]][["lab_ndgy"]], 
@@ -625,7 +654,7 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
     
     #geom_text(aes(y = 0.95, label = annotation), hjust = 0, color = "black", nudge_x = 0, size = 3.5) +
     p + 
-    guides(color = guide_legend(title = NULL, position = "bottom")) + 
+    guides(color = guide_legend(title = effect_desc, position = "bottom")) + 
     # Figure Labels
     labs(
       title = labels[["title"]],
@@ -636,8 +665,9 @@ fig_regests <- function(data, labels, facets, barparams, scales, effect_desc = N
     ) +
     scale_y_continuous(limits = scales[["y"]][["limits"]], labels = scales::label_number(), breaks = scales::breaks_pretty(n = scales[["y"]][["nbreaks"]]), position = scales[["y"]][["position"]]) +
     scale_x_discrete(position = scales[["x"]][["position"]]) +
-    scale_color_manual(values = c("red")) + 
-    theme_custom() -> p
+    scale_color_manual(values = c("+" = "#31D522", "-" = "red"), guide = "legend") + 
+    scale_alpha_identity() + 
+    theme_custom(scale_f = 1.2) -> p
   
     if (coord_flip) {
       p <- p + coord_flip()

@@ -98,6 +98,12 @@ lightbox: true
 :::
 :::
 
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Pyschographic characrteristics of SME owners or managers, by gender](cfi_map2_global_files/figure-html/fig-mse_owner_psych_v2-1.png){#fig-mse_owner_psych_v2 width=1152}
+:::
+:::
+
 
 ------------------------------------------------------------------------
 
@@ -105,6 +111,19 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Correlation between owner's motivations, goals and attitudes to risk](cfi_map2_global_files/figure-html/fig-reg_growth_gender-1.png){#fig-reg_growth_gender width=1152}
+:::
+:::
+
+
+
+---
+
+## Digital technology strands
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Summary measures of financial access](cfi_map2_global_files/figure-html/fig-digital_strands-1.png){#fig-digital_strands width=1152}
 :::
 :::
 
@@ -195,6 +214,17 @@ lightbox: true
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
 ![Relationship between digital technology adoption and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_revprhr_digtechusecase-1.png){#fig-reg_revprhr_digtechusecase width=1152}
+:::
+:::
+
+
+
+------------------------------------------------------------------------
+
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between digital technology adoption and firm-level labor productivity](cfi_map2_global_files/figure-html/fig-reg_subjfactors_digtechusecase-1.png){#fig-reg_subjfactors_digtechusecase width=1152}
 :::
 :::
 
@@ -328,7 +358,37 @@ lightbox: true
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Consumer protection issues](cfi_map2_global_files/figure-html/fig-cp_issues-1.png){#fig-cp_issues width=1152}
+![Consumer protection issues](cfi_map2_global_files/figure-html/fig-cp_issues_1-1.png){#fig-cp_issues_1 width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Consumer protection issues](cfi_map2_global_files/figure-html/fig-cp_issues_2-1.png){#fig-cp_issues_2 width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Predictors of consumer protection risks: Demographics](cfi_map2_global_files/figure-html/fig-cp_drivers-1.png){#fig-cp_drivers width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Predictors of exposure to consumer risks: Breadth of digital technologies](cfi_map2_global_files/figure-html/fig-cp_drivers_dig_v1-1.png){#fig-cp_drivers_dig_v1 width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Predictors of exposure to consumer risks: Non-financial digital technologies](cfi_map2_global_files/figure-html/fig-cp_drivers_dig_v2-1.png){#fig-cp_drivers_dig_v2 width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Predictors of exposure to consumer risks: Financial services](cfi_map2_global_files/figure-html/fig-cp_drivers_fin-1.png){#fig-cp_drivers_fin width=1152}
 :::
 :::
 
@@ -398,7 +458,19 @@ lightbox: true
 
 ::: {.cell .caption-margin}
 ::: {.cell-output-display}
-![Relationship between prior exposure to weather shock and investment in adaptation](cfi_map2_global_files/figure-html/fig-reg_resilience_digtechadoption-1.png){#fig-reg_resilience_digtechadoption width=1152}
+![Relationship between prior exposure to weather shock and investment in adaptation](cfi_map2_global_files/figure-html/fig-reg_climrisk_adaptation-1.png){#fig-reg_climrisk_adaptation width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between prior exposure to weather shock and use of financial services](cfi_map2_global_files/figure-html/fig-reg_climrisk_finserv-1.png){#fig-reg_climrisk_finserv width=1152}
+:::
+:::
+
+::: {.cell .caption-margin}
+::: {.cell-output-display}
+![Relationship between prior exposure to weather shock and use of digital tools](cfi_map2_global_files/figure-html/fig-reg_climrisk_digtools-1.png){#fig-reg_climrisk_digtools width=1152}
 :::
 :::
 

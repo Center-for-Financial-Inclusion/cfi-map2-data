@@ -353,6 +353,14 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       
       business_sector_agg_food_str = ifelse(Q2 %in% c(2, 8, 9, 10), "Food production and distribution", "Other"), 
       
+      business_sector_agg4_shc = case_when(
+        Q2 %in% c(2, 8, 9, 10) ~ "fd", 
+        Q2 %in% c(11, 12, 13) ~ "nfdrt", 
+        Q2 %in% c(1, 3, 4, 5, 6, 7) ~ "nfdm",
+        Q2 %in% c(14, 15, 16, 17, 18, 19, 20, 21, 22) ~ "os", 
+        Q2 %in% c(97) ~ "dk"
+      ), 
+      
       business_sector_agg4 = case_when(
         Q2 %in% c(2, 8, 9, 10) ~ "Food production and distribution", 
         Q2 %in% c(11, 12, 13) ~ "Non-food retail trade", 
@@ -392,6 +400,10 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       resp_experience = ifelse(Q8 == 97, NA, Q8),
       resp_experience_c = resp_experience - mean(resp_experience, na.rm = TRUE),
       resp_experience_c_5yi = resp_experience_c/5,
+      resp_experience_agg2 = case_when(
+        Q8 < 5 ~ 'Less than 5 years',
+        Q8 >= 5 ~ 'Greater than 5 years',
+      ), 
       resp_experience_agg5 = case_when(
         Q8 <= 1 ~ '1 yr or less',
         Q8 <= 5 ~ '2-5 yrs',
@@ -412,6 +424,12 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       resp_age = ifelse(Q72 == 99, NA, Q72),
       resp_age_c = resp_age - mean(resp_age, na.rm = TRUE), 
       resp_age_c_5yi = resp_age_c/5, 
+      resp_age_agg3 = case_when(
+        resp_age < 35 ~ "Under 35 years", 
+        resp_age >= 35 & resp_age < 55 ~ "35-55 years", 
+        resp_age >= 55 ~ "55+ years"
+      ), 
+      resp_age_agg3 = factor(resp_age_agg3, levels = c("Under 35 years", "35-55 years", "55+ years"), ordered = TRUE), 
       resp_age_agg3_shc = case_when(
         resp_age < 35 ~ "35", 
         resp_age >= 35 & resp_age < 55 ~ "3555", 
@@ -457,7 +475,7 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       resp_education_agg2_shc = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "priorless", "secormore"), 
       resp_education_agg2 = ifelse(resp_education_agg4_shc %in% c("non", "pri"), "Educational attainment: Primary or less", "Educational attainment: Secondary or more"), 
       
-      resp_education_agg2_alt = ifelse(resp_education_agg4_shc %in% c("non", "pri", "sec"), "Educational attainment: Secondary or less", "Educational attainment: Post-secondary"), 
+      resp_education_agg2_alt = ifelse(resp_education_agg4_shc %in% c("non", "pri", "sec"), "Educational attainment: Secondary or less", "Educational attainment: Post secondary"), 
       
       resp_sex_str = ifelse(Q5 == 1, "Women", "Men"),
       resp_sex_men = ifelse(Q5 == 2, 1, 0),
@@ -565,6 +583,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       tech_has_both = ifelse(tech_has_internet == 1 & tech_has_device == 1, 1, 0),
       tech_has_none = ifelse(tech_has_internet == 0 & tech_has_device == 0, 1, 0),
 
+      tech_function_infra_N = tech_has_internet + tech_has_device, 
+      
       # Messaging apps
       tech_uses_messaging =  case_match(Q15, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_messaging_30da = case_match(Q16, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
@@ -577,6 +597,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         Q16 %in% c(1, 2) ~ "dow"
       ), 
       
+      tech_uses_messaging_shc_30da = tech_uses_messaging_30da, 
+      tech_uses_messaging_shc_30da = ifelse(tech_uses_messaging == 0, 0, tech_uses_messaging_shc_30da), 
+      
       #Social media
       tech_uses_socialmedia =  case_match(Q17, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_socialmedia_30da = case_match(Q18, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
@@ -588,6 +611,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         Q18 %in% c(3, 4) ~ "mol", 
         Q18 %in% c(1, 2) ~ "dow"
       ), 
+      
+      tech_uses_socialmedia_shc_30da = tech_uses_socialmedia_30da,
+      tech_uses_socialmedia_shc_30da = ifelse(tech_uses_socialmedia == 0, 0, tech_uses_socialmedia_30da), 
       
       # Website
       tech_uses_website =  case_match(Q19, 1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
@@ -605,6 +631,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         Q22 %in% c(1, 2) ~ "dow"
       ), 
       
+      tech_uses_ecommerce_shc_30da = tech_uses_ecommerce_30da,
+      tech_uses_ecommerce_shc_30da = ifelse(tech_uses_ecommerce == 0, 0, tech_uses_ecommerce_shc_30da), 
+      
       # Software
       tech_uses_software = case_match(Q23,  1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
       tech_uses_software_30da = case_match(Q24, c(1, 2, 3) ~ 1, c(4,5) ~ 0, c(97,99) ~ NA),
@@ -616,6 +645,9 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         Q24 %in% c(3, 4) ~ "mol", 
         Q24 %in% c(1, 2) ~ "dow"
       ), 
+      
+      tech_uses_software_shc_30da = tech_uses_software_30da,
+      tech_uses_software_shc_30da = ifelse(tech_uses_software == 0, 0, tech_uses_software_shc_30da), 
       
       tech_uses_ai = case_match(Q26,  1 ~ 1, 2 ~ 0, c(97,99) ~ NA),
 
@@ -669,6 +701,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       tech_function_comms_7da= ifelse(tech_uses_messaging_7da == 1 | tech_uses_socialmedia_7da == 1, 1, 0),
       tech_function_comms_7da= ifelse(is.na(tech_function_comms_7da), 0, tech_function_comms_7da),
       
+      tech_function_comms_N = tech_uses_messaging + tech_uses_socialmedia, 
+      
       # Access to markets
       # 30-day active
       tech_function_mkts = ifelse(tech_uses_ecommerce == 1 | tech_uses_website == 1, 1, 0),
@@ -678,6 +712,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       tech_function_mkts_7da =  ifelse(tech_uses_ecommerce_7da == 1 | tech_uses_website_imp == 1, 1, 0),
       tech_function_mkts_7da= ifelse(is.na(tech_function_mkts_7da), 0, tech_function_mkts_7da),
       
+      tech_function_mkts_N =  tech_uses_ecommerce + tech_uses_website, 
+        
       # Operations
       # 30-day active
       tech_function_ops = ifelse(tech_uses_software == 1 | tech_uses_ai == 1, 1, 0),
@@ -687,18 +723,21 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       tech_function_ops_7da =  ifelse(tech_uses_software_7da == 1, 1, 0),
       tech_function_ops_7da= ifelse(is.na(tech_function_ops_7da), 0, tech_function_ops_7da),
       
+      tech_function_ops_N = tech_uses_software + tech_uses_ai, 
+      
       # Combining access to markets or operations 
       tech_function_mkts_ops = ifelse(tech_function_mkts == 1 | tech_function_ops == 1, 1, 0), 
       
       # Enterprise digital finance  
       tech_function_epay = tech_uses_digpayments,
       tech_function_epay_expos = ifelse(Q35_5 == 1 | Q35_6 == 1 | Q35_7 == 1 | Q35_8 == 1, 1, 0),
+      
       tech_function_efin = ifelse(tech_uses_digloans == 1 | tech_uses_diginsurance == 1, 1, 0),
 
-      tech_function_total = tech_function_comms + tech_function_mkts + tech_function_ops + tech_function_efin,
+      tech_function_total = tech_function_comms + tech_function_mkts + tech_function_ops + tech_function_epay,
       tech_function_30da_total = tech_function_comms_30da + tech_function_mkts_30da + tech_function_ops_30da,
 
-      tech_cat_none = ifelse(tech_function_comms == 0 & tech_function_mkts == 0 & tech_function_ops == 0 & tech_function_epay == 0, 1, 0),
+      tech_cat_none = ifelse(tech_function_total == 0, 1, 0),
       tech_cat_any1 = ifelse(tech_function_total == 1, 1, 0),
       tech_cat_any2 = ifelse(tech_function_total == 2, 1, 0),
       tech_cat_any3 = ifelse(tech_function_total == 3, 1, 0),
@@ -817,6 +856,7 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       fin_bus_savings_agg_fi = ifelse(fin_bus_savings_cbnk == 1 | fin_bus_savings_mfi == 1 | fin_bus_savings_sacco == 1, 1, 0), 
       fin_bus_savings_agg_nbfi = ifelse(fin_bus_savings_fintech == 1 | fin_bus_savings_mm == 1, 1, 0), 
       fin_bus_savings_agg_inf = ifelse(fin_bus_savings_group == 1 | fin_bus_savings_other == 1, 1, 0), 
+      fin_bus_savings_agg_none = ifelse(fin_bus_savings_agg_fi == 0 & fin_bus_savings_agg_nbfi == 0 & fin_bus_savings_agg_inf == 0, 1, 0), 
       
       # Transaction channels available for savings account
       fin_bus_savings_channel_inprsn = ifelse(Q34 == 1, 1, 0), 
@@ -859,6 +899,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
                                       fin_merchpay_instant == 1 | 
                                       fin_merchpay_qr == 1, 1, 0), 
       
+      tech_function_epayloans_N = tech_function_epay + tech_uses_digloans, 
+        
       # Owner used a credit card for business purposes
       fin_owner_creditcard = ifelse(Q36 == 1, 1, 0), 
       fin_owner_creditcard = ifelse(Q36 %in% c(97,99), NA, fin_owner_creditcard), 
@@ -1197,7 +1239,7 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       resi_capital_score_v3_norm = resi_capital_score_v3/7
       
     ) %>% 
-    dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc",
+    dummy_cols(select_columns = c("business_premise_shc", "business_size_agg2_shc", "business_sector_agg2_shc", "business_sector_agg3_shc", "business_sector_agg4_shc",
                                   "resp_experience_agg5_shc", "resp_education_agg2_shc", "resp_education_agg4_shc", "resp_education_agg5_shc", "resp_age_agg3_shc", "resp_age_agg6_shc", "resp_psych_segment_shc", 
                                   "tech_uses_messaging_shc", "tech_uses_socialmedia_shc", "tech_uses_ecommerce_shc", "tech_uses_software_shc", "fin_access_strand_sav_shc", "fin_access_strand_loan_shc", 
                                   "risk_largestimpact_shc")) -> raw_data 
@@ -1842,7 +1884,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
           mutate(
             fin_insur_any_shc_cu = ifelse(fin_insur_lif_shc_cu == 1 | fin_insur_hlt_shc_cu == 1 | fin_insur_acc_shc_cu == 1 | 
                                                fin_insur_fun_shc_cu == 1 | fin_insur_hom_shc_cu == 1 | fin_insur_bus_shc_cu == 1 | 
-                                               fin_insur_aut_shc_cu == 1 | fin_insur_idx_shc_cu == 1 | fin_insur_oth_shc_cu == 1, 1, 0)
+                                               fin_insur_aut_shc_cu == 1 | fin_insur_idx_shc_cu == 1 | fin_insur_oth_shc_cu == 1, 1, 0), 
+            fin_insur_shc_cu_N = fin_insur_lif_shc_cu + fin_insur_hlt_shc_cu + fin_insur_acc_shc_cu + fin_insur_fun_shc_cu + fin_insur_hom_shc_cu + fin_insur_bus_shc_cu + fin_insur_aut_shc_cu + fin_insur_idx_shc_cu + fin_insur_oth_shc_cu
             
           ) -> raw_data
       } 
@@ -1873,6 +1916,24 @@ prep_main_data <- function(raw_data, weights, selected_country) {
     if ("fin_insur_hlt_shc_su" %not_in% names(raw_data)) {
       raw_data %>% mutate(fin_insur_hlt_shc_su = 0) -> raw_data
     }
+    if ("fin_insur_statm_5_num" %not_in% names(raw_data)) {
+      raw_data %>% mutate(fin_insur_statm_5_num = NA) -> raw_data
+    }
+  if ("fin_insur_statm_6_num" %not_in% names(raw_data)) {
+    raw_data %>% mutate(fin_insur_statm_6_num = NA) -> raw_data
+  }
+  if ("fin_insur_statm_7_num" %not_in% names(raw_data)) {
+    raw_data %>% mutate(fin_insur_statm_7_num = NA) -> raw_data
+  }
+  if ("fin_insur_buy_lif" %not_in% names(raw_data)) {
+    raw_data %>% mutate(fin_insur_buy_lif = NA) -> raw_data
+  }
+  if ("fin_insur_lif_shc_su" %not_in% names(raw_data)) {
+    raw_data %>% mutate(fin_insur_lif_shc_su = NA) -> raw_data
+  }
+  if ("fin_insur_rec_lif_no" %not_in% names(raw_data)) {
+    raw_data %>% mutate(fin_insur_rec_lif_no = NA) -> raw_data
+  }
   
     raw_data %>% 
       
@@ -1924,6 +1985,54 @@ prep_main_data <- function(raw_data, weights, selected_country) {
         fin_ins_seg3_cu == 1 ~ "Current policyholder", 
         fin_ins_seg3_pr == 1 ~ "Prospective policyholder", 
         fin_ins_seg3_hr == 1 ~ "Hard to reach", 
+      ), 
+      
+      # Life Insurance segments: 
+      
+      fin_ins_lif_seg_cu = ifelse(fin_insur_lif_shc_cu == 1, 1, 0), # Current user
+      fin_ins_lif_seg_pr = ifelse(fin_insur_any_shc_cu == 0 & ( (fin_insur_statm_5_num %in% c(4,5) & fin_insur_buy_lif == 1) | fin_insur_statm_7_num %in% c(4,5)), 1, 0), # Prospective user: Likely to purchase (Strongly agree, Agree)
+      fin_ins_lif_seg_hr = ifelse(fin_ins_lif_seg_cu == 0 & fin_ins_lif_seg_pr == 0, 1, 0), # Hard to reach
+      
+      fin_ins_life_seg_str = case_when(
+        fin_ins_lif_seg_cu == 1 ~ "Current life policyholder", 
+        fin_ins_lif_seg_pr == 1 ~ "Prospective life policyholder", 
+        fin_ins_lif_seg_hr == 1 ~ "Hard to reach", 
+      ), 
+      
+      # Life Insurance segments: 
+      
+      fin_ins_lif_seg1_cu = ifelse(fin_insur_lif_shc_cu == 1, 1, 0), # Current user
+      fin_ins_lif_seg1_nu = ifelse(fin_insur_lif_shc_cu == 0 & fin_insur_any_shc_cu == 1, 1, 0), 
+      fin_ins_lif_seg1_ni = ifelse(fin_ins_lif_seg1_cu == 0 & fin_ins_lif_seg1_nu == 0, 1, 0), # Hard to reach
+      
+      fin_ins_lif_seg1_str = case_when(
+        fin_ins_lif_seg1_cu == 1 ~ "Current life policyholder", 
+        fin_ins_lif_seg1_nu == 1 ~ "Current insurance policyholder but not life", 
+        fin_ins_lif_seg1_ni == 1 ~ "Does not have insurance", 
+      ), 
+      
+      # Life Insurance segments: 
+      
+      fin_ins_lif_seg2_cu = ifelse(fin_insur_lif_shc_cu == 1, 1, 0), # Current user
+      fin_ins_lif_seg2_su = ifelse(fin_insur_lif_shc_cu == 0 & fin_insur_lif_shc_su == 1, 1, 0), 
+      fin_ins_lif_seg2_nv = ifelse(fin_ins_lif_seg1_cu == 0 & fin_ins_lif_seg2_su == 0, 1, 0), # Hard to reach
+      
+      fin_ins_lif_seg2_str = case_when(
+        fin_ins_lif_seg2_cu == 1 ~ "Current life policyholder", 
+        fin_ins_lif_seg2_su == 1 ~ "Stopped using life insurance", 
+        fin_ins_lif_seg2_nv == 1 ~ "Never had life insurance", 
+      ), 
+      
+      fin_ins_lif_seg3_cu = ifelse(fin_insur_lif_shc_cu == 1, 1, 0), # Current user
+      fin_ins_lif_seg3_pr = ifelse(fin_insur_any_shc_cu == 0 & ( (fin_insur_statm_5_num %in% c(4,5) & fin_insur_buy_lif == 1) | fin_insur_statm_7_num %in% c(4,5)), 1, 0), # Prospective user: Likely to purchase (Strongly agree, Agree)
+      fin_ins_lif_seg3_ou = ifelse(fin_insur_lif_shc_su == 1 & fin_insur_rec_lif_no == 1, 1, 0), 
+      fin_ins_lif_seg3_hr = ifelse(fin_ins_lif_seg3_cu == 0 & fin_ins_lif_seg3_pr == 0 & fin_ins_lif_seg3_ou == 0, 1, 0), # Hard to reach
+      
+      fin_ins_life_seg3_str = case_when(
+        fin_ins_lif_seg3_cu == 1 ~ "Current life policyholder", 
+        fin_ins_lif_seg3_pr == 1 ~ "Prospective life policyholder", 
+        fin_ins_lif_seg3_hr == 1 ~ "Hard to reach", 
+        fin_ins_lif_seg3_ou == 1 ~ "Out of the market", 
       ), 
       
       
