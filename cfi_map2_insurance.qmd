@@ -1,0 +1,2461 @@
+---
+title: "Risk & insurance"
+subtitle: "Brazil and Indonesia deep dive"
+lightbox: true
+---
+
+```{r}
+#| include: false
+
+# Importing packaegs, functions declaring globals
+source("R/packages.R")
+source("R/utils.R")
+source("R/globals.R")
+source("R/functions.R")
+source("R/viz_functions.R")
+source("R/0_global_main_data.R")
+source("R/specific_functions.R")
+
+COUNTRIES <- c("Brazil", "Indonesia")
+
+# Preparing and combining the enumeration data for all countries
+enum_data_all <- bind_rows(
+  map(COUNTRIES, compile_enumdata, weight_params = WEIGHT_PARAMS)
+) %>% mutate(
+  city = CITIES[country]
+)
+
+# Preparing and combining all of the main interview data for all countries
+main_data_all <- bind_rows(
+  map(COUNTRIES, compile_maindata, weight_params = WEIGHT_PARAMS)
+) %>% mutate(
+  city = CITIES[country]
+)
+
+```
+
+
+## Characteristics of MSEs
+
+
+## The business landscape
+
+```{r, fig.width = 8, fig.asp = 0.8}
+#| label: fig-nbus_size_and_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "Businesses enumerated by size"
+#| cap-location: margin
+
+# Number of firms by size and sector
+
+indicators <- c("business_total")
+groups_l1 <- "country"
+groups_l2 <- GROUPS[c("business_size_agg2")]
+
+get_grid_area <- function(c) { 
+     WEIGHT_PARAMS[[c]][["grid_area"]]
+}
+
+ests_total <- compute_summary_clusterlevel_2g(indicators, groups_l1, groups_l2, enum_data_all, keep = "total")
+
+ests_density <- ests_total %>% 
+  mutate(
+      indicator_name = "Total businesses per km2", 
+      grid_area = map_dbl(country, get_grid_area),
+      total = total/grid_area, 
+      total_low = total_low/grid_area, 
+      total_upp = total_upp/grid_area
+  )
+
+ests <- bind_rows(ests_total, ests_density) %>% mutate(total = ifelse(indicator_name == "Total businesses (N)", total/1000, total))
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 40, group_name = 40, group_cat_val = 60), 
+  reverse_order = list(indicator_name = FALSE, indicator_group = FALSE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, include_valuelabel = TRUE, valuelabel_target = "total", valuelabel_type = "num") %>%
+  mutate(
+    city = CITIES[country]
+  ) %>% 
+  group_by(city, indicator_name) %>% 
+  mutate(
+      size_total = sum(total),
+      share = total/size_total,
+      valuelabel = paste0(pctclean(share, 0), "%"),
+      valuelabel = ifelse(share < 0.15, NA, valuelabel),
+      valuelabel = ifelse(indicator_name == "Total businesses (N)" & share < 0.3, NA, valuelabel), 
+      barlabel = ifelse(group_cat_val == "More than 10 people", numclean(size_total), NA),
+      barlabel = ifelse(indicator_name == "Total businesses (N)", paste0(barlabel, ",000"), barlabel),
+      barlabelpos = ifelse(group_cat_val == "More than 10 people", size_total, NA), 
+    ) 
+
+# Parameters to create figure
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = TRUE, labeltotal_ndgy = TRUE, labeltotal_extendmax = TRUE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_face = "plain", lab_size = 4),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "blue")
+)
+
+palette <- c("#41BBD9", "#FF9F1C")
+names(palette) <- c("1-10 people", "More than 10 people")
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(nbreaks = 5, type = "number", expand = c(0.1,0.1), droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "Business size:", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+labels <- list(
+  title = "Total estimated business population and population density\nin each study area",
+  subtitle = "",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, "Notes: The percent of businesses by size is labeled within each bar, while the total number of business is labeled above the bar. Population estimates are based on adaptive cluster sampling weights (see methodology for details)"), CAP_WRAP*0.6)
+)
+
+vars <- list(
+  xvar = "city", yvar = "total", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "wrap", 
+  rows = "indicator_group", 
+  cols = "indicator_name", 
+  wrap_nrows = 2, 
+  wrap_ncols = 1, 
+  scales = "free_x", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+```{r, fig.width = 8, fig.asp = 0.8}
+#| label: fig-mse_sector
+#| echo: false
+#| warning: false
+#| fig-cap: "MSEs by sector of production"
+#| cap-location: margin
+
+indicators <- c("business_total")
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("business_sector_agg4")]
+
+ests_men <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(resp_sex_men == 1), weights = "weight_msme_adj", psu = NULL, keep = "total") %>% mutate(subgroup = "Men")
+ests_women <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(resp_sex_women == 1), weights = "weight_msme_adj", psu = NULL, keep = "total") %>% mutate(subgroup = "Women")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 60, group_name = 25, group_cat_val = 80), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = TRUE, group_name = FALSE, group_cat_val = TRUE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- sample_sector_bycity(bind_rows(ests_men, ests_women), sector_agg0_to_agg3(main_data_all), round = 0) %>% 
+  mutate(
+    group_cat_val = as.character(group_cat_val), 
+    group_cat_val = ifelse(group_cat_val == "Selling of food products for immediate consumption (street food seller, restaurants, catering)", "Selling of food products for immediate consumption", group_cat_val), 
+    group_cat_val = ifelse(group_cat_val == "Manufacturing of food (including bakers, exclude restaurants, street food-sellers)", "Manufacturing of food", group_cat_val)
+ ) %>% 
+select(-indicator_group) %>% rename(indicator_group = business_sector_agg3) 
+fig_data <- prep_fig_data(fig_data, factor_params, include_valuelabel = FALSE) 
+
+
+labels <- list(
+  title = "MSEs by sector of production",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, "Notes: MSEs correspond to businesses with 1-10 employees including the owner"), CAP_WRAP*0.6)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, position = "stack", position_width = 0.9, color = "white", labeltotal = FALSE), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 4),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
+)
+
+palette <- c("#A2C3A4", "#CEE5F2", "#41BBD9", "#FF9F1C")
+names(palette) <- c("Food production and distribution", "Non-food retail trade",  "Other services", "Non-food manufacturing")
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1.02), nbreaks = 2, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "", 
+  nrows = 2, 
+  ncols = 2, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "subgroup", yvar = "share", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "city", 
+  cols = "indicator_group",
+  nrows = 4, 
+  ncols = 1,
+  scales = "fixed", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = TRUE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+## Characteristics of MSE owners 
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-mse_owner_chars
+#| echo: false
+#| warning: false
+#| fig-cap: "MSE owner characteristics"
+#| cap-location: margin
+
+indicators <- c("resp_education_agg4_shc_non", "resp_education_agg4_shc_pri", "resp_education_agg4_shc_sec", "resp_education_agg4_shc_trt", 
+                 "resp_experience_agg5_shc_1", "resp_experience_agg5_shc_2_5", "resp_experience_agg5_shc_6_10", "resp_experience_agg5_shc_11_20", "resp_experience_agg5_shc_20", 
+                "resp_age_agg6_shc_25", "resp_age_agg6_shc_2535", "resp_age_agg6_shc_3545", "resp_age_agg6_shc_4555", "resp_age_agg6_shc_5565", "resp_age_agg6_shc_65")
+
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("resp_sex_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 40, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Age, education and experience of MSE owners or managers",
+  subtitle =  "Owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = SOURCE
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.9, color = "white", position = "dodge", position_width = 0.9, labeltotal = FALSE), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("grey90", "#A2C3A4", "#C4F1BE", "#FF7B9C", "#CEE5F2")
+names(palette) <- c("All businesses", "1 person", "2-10 people", "Women", "Men")  
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 0.75), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+write_csv(ests, "outputs/ins_mse_owner_chars_figdata.csv")
+
+```
+
+## Insurance adoption segments
+
+```{r, fig.width = 12, fig.asp = 0.425}
+#| label: fig-ins_segments_1
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance adoption segments (v1)"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The insurance adoption group is based on whether survey respondents report that they currently have one of several types of insurance, including: Life, Health, Accident, Home, Funeral, Business, Automobile, Weather-indexed and others.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_ins_seg0_")]
+indicators <- indicators[!str_detect(indicators, "_str")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 25), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thres = 0.05) %>% filter(!is.na(indicator_group)) %>% mutate(group_cat_val = factor(group_cat_val, levels = str_wrap(c("All businesses", "Men", "Women", "Some primary or none", "Primary", "Secondary", "University/technical school"), 25), ordered = TRUE))
+
+labels <- list(
+  title = "Insurance adoption segments",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.65, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#FF9F1C", "grey90")
+names(palette) <- c("Health or life insurance", "Other insurance (not health or life)",  "No insurance coverage")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1.001), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.425}
+#| label: fig-ins_segments_1_v2
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance adoption segments (v2)"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The insurance adoption group is based on whether survey respondents report that they currently have one of several types of insurance, including: Life, Health, Accident, Home, Funeral, Business, Automobile, Weather-indexed and others.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_ins_seg01_")]
+indicators <- indicators[!str_detect(indicators, "_str")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 25), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thres = 0.05) %>% filter(!is.na(indicator_group)) %>% mutate(group_cat_val = factor(group_cat_val, levels = str_wrap(c("All businesses", "Men", "Women", "Some primary or none", "Primary", "Secondary", "University/technical school"), 25), ordered = TRUE))
+
+labels <- list(
+  title = "Insurance adoption segments",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.65, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#C4F1BE", "#41BBD9", "#FF9F1C", "grey90")
+names(palette) <- c("Health insurance only", "Life insurance only", "Both health and life", "Other insurance (not health or life)",  "No insurance coverage")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1.001), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+## Insurance market segments
+
+```{r, fig.width = 12, fig.asp = 0.425}
+#| label: fig-ins_segments_2
+#| echo: false
+#| warning: false
+#| fig-cap: "Likelihood of purchasing health insurance in next 12 months"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The insurance market segment labeled 'Current' is based on whether survey respondent reports that they currently have at least on of several types of insurance, including: Life, Health, Accident, Home, Funeral, Business, Automobile, Weather-indexed and others. The 'Prospective' segment is composed of respondents who do not currently have insurance but who say they agree or strongly agree to any of the three following statements: (1) 'I am likely to purchase insurance coverage in the near future', (2) 'Health insurance is necessary for ensuring access to healthcare services', (3) 'Life insurance is a critical component of long-term financial planning'")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_ins_seg3")]
+indicators <- indicators[!str_detect(indicators, "_str")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 25), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thres = 0.05) %>% filter(!is.na(indicator_group)) %>% mutate(group_cat_val = factor(group_cat_val, levels = str_wrap(c("All businesses", "Men", "Women", "Some primary or none", "Primary", "Secondary", "University/technical school"), 25), ordered = TRUE))
+
+labels <- list(
+  title = "Insurance market segments",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.65, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#FF9F1C", "grey90")
+names(palette) <- c("Current policyholder", "Prospective policyholder", "Hard to reach")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1.001), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+## Predictors of insurance adoption segments
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.55}
+#| label: fig-ins_segment_predictors_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Predictors of insurance adoption: Sao Paulo"
+#| cap-location: margin
+
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the relationship of several owner and firm-level characteristics with membership in one of three mutually exclusive customer segments. The regression parameters are used to compute predicted probabilities to show the marginal effect of each characteristic on membership in each segments. Age and experience are mean centered and the effect shown corresponds to an increase in 5 years. The height of 'Baseline' corresponds to the predicted probability of membership in the segment for firms run by an owner with mean age, mean experience, with primary-level or less educaitonal attainment and in the retail trade (services) sector."
+
+data_sub <- main_data_all %>% filter(country == "Brazil")
+
+# Defining regressions
+  depvars <- c("fin_ins_seg3_cu", "fin_ins_seg3_pr", "fin_ins_seg3_hr")
+  depvar_labels <- INDICATORS[depvars]
+  maineffects <- c("resp_sex_women", "resp_age_c_5yi", "resp_experience_c_5yi", "resp_education_agg2_shc_secormore", "resp_motivation_entrep", "resp_maingoal_grow", "resp_riskapproach_aggr", "business_sector_agg3_shc_srv_oth", "business_sector_agg3_shc_mfc", "risk_hltcli_exp")
+  effect_labels <- c("(Intercept)" = "Baseline", INDICATORS[maineffects])
+  
+combinations <- expand.grid(depvars, "Brazil", stringsAsFactors = FALSE)
+depvars <- combinations[[1]]
+countries <- combinations[[2]]
+
+# Running regressions
+ests <- bind_rows(
+    #map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data_all, depvar_labels, effect_labels),
+    map2(depvars, countries, model_and_prepfig, maineffect = maineffects, confounds = NULL, data = data_sub, depvar_labels = depvar_labels, effect_labels = effect_labels)
+  )
+
+# Preparing figure data
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 55, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = TRUE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
+
+ labels <- list(
+      title = "Predictors of adoption or inclination towards insurance",
+      subtitle = "",
+      y = "Predicted probability [%]",
+      x = NULL,
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP*1.2)
+    )
+ 
+ barparams <- list(
+  bars = list(width = 0.6, color = "grey90"), 
+  valuelabels = list(show = FALSE, lab_vjust = 0, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0.25, lab_face = "plain", lab_size = 3), 
+  arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.3,  lab_face = "plain", lab_size = 3), 
+  baselinelabel = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0,  lab_face = "bold", lab_size = 3.5)
+) 
+
+scales <- list(
+  y = list(position = "right", nbreaks = 2), 
+  x = list(txtwrap = 50, position = "bottom")
+)
+
+facets <- list(type = "grid", cols ="depvar_label", rows = "city", scales = "free", space = "fixed", drop_row_label = TRUE) 
+    
+fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The effect of each predictor on the probability of membership in customer segment", coord_flip = TRUE) 
+
+
+```
+
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.55}
+#| label: fig-ins_segments_3_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Predictors of insurance adoption: Jakarta"
+#| cap-location: margin
+
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the relationship of several owner and firm-level characteristics with membership in one of three mutually exclusive customer segments. The regression parameters are used to compute predicted probabilities to show the marginal effect of each characteristic on membership in each segments. Age and experience are mean centered and the effect shown corresponds to an increase in 5 years. The height of 'Baseline' corresponds to the predicted probability of membership in the segment for firms run by an owner with mean age, mean experience, with primary-level or less educaitonal attainment and in the retail trade (services) sector."
+  
+data_sub <- main_data_all %>% filter(country == "Indonesia")
+
+# Defining regressions
+  depvars <- c("fin_ins_seg3_cu", "fin_ins_seg3_pr", "fin_ins_seg3_hr")
+  depvar_labels <- INDICATORS[depvars]
+  maineffects <- c("resp_sex_women", "resp_age_c_5yi", "resp_experience_c_5yi", "resp_education_agg2_shc_secormore", "resp_motivation_entrep", "resp_maingoal_grow", "resp_riskapproach_aggr", "business_sector_agg3_shc_srv_oth", "business_sector_agg3_shc_mfc", "risk_hltcli_exp")
+  effect_labels <- c("(Intercept)" = "Baseline", INDICATORS[maineffects])
+  
+combinations <- expand.grid(depvars, "Indonesia", stringsAsFactors = FALSE)
+depvars <- combinations[[1]]
+countries <- combinations[[2]]
+
+# Running regressions
+ests <- bind_rows(
+    #map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data_all, depvar_labels, effect_labels),
+    map2(depvars, countries, model_and_prepfig, maineffect = maineffects, confounds = NULL, data = data_sub, depvar_labels = depvar_labels, effect_labels = effect_labels)
+  )
+
+# Preparing figure data
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 20, effect_label = 55, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = TRUE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE))
+
+ labels <- list(
+      title = "Predictors of adoption or inclination towards insurance",
+      subtitle = "",
+      y = "Predicted probability [%]",
+      x = NULL,
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP*1.2)
+    )
+ 
+ barparams <- list(
+  bars = list(width = 0.6, color = "grey90"), 
+  valuelabels = list(show = FALSE, lab_vjust = 0, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0.25, lab_face = "plain", lab_size = 3), 
+  arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.25,  lab_face = "plain", lab_size = 3), 
+  baselinelabel = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0,  lab_face = "bold", lab_size = 3.5)
+) 
+
+scales <- list(
+  y = list(position = "right", nbreaks = 2), 
+  x = list(txtwrap = 50, position = "bottom")
+)
+
+facets <- list(type = "grid", cols ="depvar_label", rows = "city", scales = "free", space = "fixed", drop_row_label = TRUE) 
+    
+fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The effect of each predictor on the probability of membership in customer segment", coord_flip = TRUE) 
+
+
+```
+
+:::
+
+## Predictors of interest in future health insurance purchasing
+
+
+```{r, fig.width = 12, fig.asp = 0.7}
+#| label: fig-healthins_predictors_combined
+#| echo: false
+#| warning: false
+#| fig-cap: "Predictors of insurance adoption: Sao Paulo"
+#| cap-location: margin
+
+fig_notes <- "Notes: The results shown are based on a linear regression model that measures the relationship of several owner and firm-level characteristics with the MSE owner's inclination towards purchasing or expanding the coverage of their health insurance in the near future. The regression parameters are used to compute predicted probabilities to show the marginal effect of each characteristic on the probability of future health insurance purchasing. Age and experience are mean centered and the effect shown corresponds to an increase in 5 years. The height of 'Baseline' corresponds to the predicted probability of membership in the segment for firms run by an owner with mean age, mean experience, with primary-level or less educaitonal attainment and in the 'other services' sector."
+
+# Defining regressions
+  depvars <- c("risk_hlt_inspur_shc_lik")
+  depvar_labels <- INDICATORS[depvars]
+  maineffects <- c("resp_sex_women", "resp_age_c_5yi", "resp_experience_c_5yi", "resp_education_agg2_shc_secormore", "resp_motivation_entrep", "resp_maingoal_grow", "resp_riskapproach_aggr", "business_sector_agg4_shc_fd", "business_sector_agg4_shc_nfdm", "business_sector_agg4_shc_nfdrt", "fin_insur_hlt_shc_cu", "risk_hlt_exp", "fin_insur_medexp_1", "fin_insur_medexp_2",  "fin_insur_medexp_3")
+  effect_labels <- c("(Intercept)" = "Baseline", INDICATORS[maineffects])
+
+ # "fin_insur_medexp_1", "fin_insur_medexp_2",  "fin_insur_medexp_3"
+  
+combinations <- expand.grid(depvars, c("Brazil", "Indonesia"), stringsAsFactors = FALSE)
+depvars <- combinations[[1]]
+countries <- combinations[[2]]
+
+# Running regressions
+ests <- bind_rows(
+    map2(depvars, countries, model_and_prepfig, maineffect = maineffects, confounds = NULL, data = main_data_all, depvar_labels = depvar_labels, effect_labels = effect_labels)
+  )
+
+# Preparing figure data
+factor_params <- list(
+  wrap_sizes = list(depvar_label = 50, effect_label = 55, model_type = 25), 
+  reverse_order = list(depvar_label = TRUE, effect_label = TRUE, model_type = FALSE), 
+  order_vars = list(depvar_label = NULL, effect_label = NULL, model_type = NULL)
+)
+
+fig_data <- prep_reg_data(prep_reg_factors(ests, factor_params, include_valuelabel = FALSE)) %>% 
+  mutate(drop = ifelse(sig == "", 1, 0), 
+         drop = ifelse(term == "(Intercept)", 0, drop)) %>% 
+  filter(drop == 0)
+
+ labels <- list(
+      title = "Predictors of strong inclination to purchase or expand coverage of health insurance in next 12 mos",
+      subtitle = "",
+      y = "Predicted probability [%]",
+      x = NULL,
+      caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP*1.2)
+    )
+ 
+ barparams <- list(
+  bars = list(width = 0.6, color = "grey90"), 
+  valuelabels = list(show = FALSE, lab_vjust = 0, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0.25, lab_face = "plain", lab_size = 3), 
+  arrowlabels = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0.5, lab_ndgy = 0, lab_ndgx = -0.3,  lab_face = "plain", lab_size = 3), 
+  baselinelabel = list(show = TRUE, lab_vjust = 0.5, lab_hjust = 0, lab_ndgy = 0, lab_ndgx = 0,  lab_face = "bold", lab_size = 3.75)
+) 
+
+scales <- list(
+  y = list(position = "left", nbreaks = 2), 
+  x = list(txtwrap = 50, position = "bottom")
+)
+
+facets <- list(type = "grid", cols ="city", rows = "depvar_label", scales = "free", space = "fixed", drop_row_label = TRUE) 
+    
+fig_regests(fig_data, labels, facets = facets, barparams, scales, effect_desc = "The effect of each predictor on the probability of purchasing health insurance", coord_flip = TRUE) 
+
+
+```
+
+
+
+
+
+## General perceptions of insurance
+
+```{r}
+#| label: fig-insur_opinions_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: All respondents (both users and non-users of insurance) were asked to rate their agreeement with each statement")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_statm")]
+indicators <- indicators[!str_detect(indicators, "_num")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 90, indicator_group = 45, group_name = 25, group_cat_val = 35), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = TRUE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "General perceptions of insurance",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.6, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#C4F1BE", "#EFFFC8", "#FF9F1C", "#DB504A", "grey90")
+names(palette) <- c("Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree", "Don't know/refused")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "indicator_group", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "city", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+```
+
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-insur_opinions_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "General perceptions of insurance: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thresh = 0.05) %>% filter(!is.na(indicator_group)) %>%
+  mutate(indicator_name = fct_rev(factor(indicator_name, levels = c("Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree", "Don't know/refused"), ordered = TRUE))) %>% filter(city == "Sao Paulo") %>% 
+  filter(group_cat_val != "Other insurance policyholder") %>% 
+  filter(indicator_group %in% str_wrap(c("I understand the benefits of having insurance coverage", "I am likely to purchase insurance coverage in the near future", "Health insurance is necessary for ensuring access to healthcare services", "Life insurance is a critical component of long-term financial planning"), 45))
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-insur_opinions_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "General perceptions of insurance: Indonesia"
+#| cap-location: margin
+
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thresh = 0.05) %>% filter(!is.na(indicator_group)) %>% 
+  mutate(indicator_name = fct_rev(factor(indicator_name, levels = c("Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree", "Don't know/refused"), ordered = TRUE))) %>% filter(city == "Jakarta") %>% 
+  filter(group_cat_val != "Other insurance policyholder") %>% 
+  filter(indicator_group %in% str_wrap(c("I understand the benefits of having insurance coverage", "I am likely to purchase insurance coverage in the near future", "Health insurance is necessary for ensuring access to healthcare services", "Life insurance is a critical component of long-term financial planning"), 45))
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+:::
+
+
+## Likelihood of purchasing insurance in next 12 months
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-insur_topurchase_data_combined
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The reference population for the estimates presented in this figure are respondents who said they 'agree' or 'strongly' agree to the following statement 'I am likely to purchase insurance coverage in the near future'.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_buy_")]
+
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("resp_sex_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 30), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Over the next 12 months which insurance are you likely to purchase?",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#FF9F1C", "#41BBD9")
+names(palette) <- c("Sao Paulo", "Jakarta")     
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 0.5), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "city"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(!is.na(indicator_group)) %>% filter(nobs > 25)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+```{r}
+#| label: fig-insur_topurchase_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The reference population for the estimates presented in this figure are respondents who said they 'agree' or 'strongly' agree to the following statement 'I am likely to purchase insurance coverage in the near future'.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_buy_")]
+
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 30), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Over the next 12 months which insurance are you likely to purchase?",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 0.5), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "city", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+```
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_topurchase_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance likely to be purcahsed in next 12 months: Sao Paulo"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(!is.na(indicator_group)) %>% filter(city == "Sao Paulo") %>% filter(nobs > 25)
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_topurchase_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance likely to be purcahsed in next 12 months: Jakarta"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(!is.na(indicator_group)) %>% filter(city == "Jakarta") %>% filter(nobs > 25)
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+:::
+
+## Perceptions of insurance value and benefits
+
+```{r}
+#| label: fig-insur_valueprop_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following questions: (1) In general, do you feel your overall insurance coverage meets all your needs? [Reference population: All respondent that currently have or had insurance in the past 12 mnonths], (2) What factors do you consider most important when selecting insurance coverage? [Reference population: All respondent that currently have insurance], (3) What is the most important area would you prioritize if you could expand your current insurance coverage? [Reference population: All respondent that currently have insurance], (4) What benefits have you experienced from having insurance?")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_needs_|fin_insur_factors_top_|fin_insur_exp_|fin_insur_benef_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(fin_ins_seg0_str != "No insurance coverage"), weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 30), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Perceptions of insurance value and benefits",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+```
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-insur_valueprop_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance value proposition: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(nobs > 25)
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-insur_valueprop_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance value proposition: Jakarta"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta") %>% filter(nobs > 25)
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+:::
+
+## Perceptions of insurance value and benefits: version 2
+
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-insur_valueprop_data_v2
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following questions: (1) In general, do you feel your overall insurance coverage meets all your needs? [Reference population: All respondent that currently have or had insurance in the past 12 mnonths], (2) What factors do you consider most important when selecting insurance coverage? [Reference population: All respondent that currently have insurance]")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_needs_|fin_insur_factors_top_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample")]
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 30), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(fin_insur_hlt_shc_cu == 1), weights = "weight_msme_adj", psu = NULL, keep = "mean") 
+fig_data_1 <- prep_fig_data(ests, factor_params) %>% mutate(subgroup = "Health insurance users")
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(fin_insur_lif_shc_cu == 1), weights = "weight_msme_adj", psu = NULL, keep = "mean") 
+fig_data_2 <- prep_fig_data(ests, factor_params) %>% mutate(subgroup = "Life insurance users")
+
+fig_data <- bind_rows(fig_data_1, fig_data_2)
+
+
+labels <- list(
+  title = "Perceptions of insurance value and benefits",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#FF9F1C", "#41BBD9")
+names(palette) <- c("Sao Paulo", "Jakarta")     
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "city"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "subgroup", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+
+```
+
+
+## Reasons insurance not currently used
+
+```{r}
+#| label: fig-insur_notused_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following question: (1) If you currently do not have insurance or have discontinued your insurance, what is the primary reason for this decision?")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_nonewhy_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg3_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(fin_ins_seg3_str != "Current policyholder"), weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 90, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Reasons insurance not used or discontinued",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 0.5), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+```
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-insur_notused_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Reasons insurance not used"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(nobs > 25)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-insur_notused_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Reasons insurance not used"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta") %>% filter(nobs > 25)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+
+```
+
+::: 
+
+## Ways insurance products are accessed
+
+```{r}
+#| label: fig-insur_channels_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following two questions: (1) Please select the channels(s) through which you purchased your insurance policy? [Asked to all respondents who said they currently have or had any type of insurance in the past 12 months, including respondents who reporting using insurance payouts to cope with climate or health shocks], (2) Did you purchase your insurance policy online? [Asked to repsondents saying they used an online channel to purchase insurance per (1) above.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_chnnl_|fin_insur_onlinetype")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 25), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Insurance purchase channels",
+  subtitle =  "MSEs owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 0.75), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+```
+
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.45}
+#| label: fig-insur_channels_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(nobs > 25)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-insur_channels_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Indonesia"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta") %>% filter(nobs > 25)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+
+```
+
+::: 
+
+## Experience with claims
+
+```{r}
+#| label: fig-insur_claims_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following questions: (1)  Have you ever filed any insurance claims? [Reference population: All respondents that currently have or had any type of insurance in the past 12 mnonths], (2) If yes, what was the outcome? [Reference population: All respondents that currently have or had insurance that filed a claim], (3)  How would you rate your satisfaction with the insurance claims process? [Reference population: All respondent that currently have or had insurance that filed a claim]")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_claim_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = 30), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Experience with claims process",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+```
+
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_claims_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(group_cat_val != "No insurance coverage")
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_claims_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Indonesia"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta")  %>% filter(group_cat_val != "No insurance coverage")
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)  + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+
+```
+
+::: 
+
+## Consumer protection issues
+
+```{r}
+#| label: fig-insur_cp_data
+#| echo: false
+#| warning: false
+
+fig_notes <- c("Notes: The data in this figure are based on responses to three questions: (1) In the past three years (36 months), have you faced any issues in accessing and using your insurance policy?, (2)  What issues have you faced? and (3) What actions have you taken to address these issues?")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_issues_type_|fin_insur_issues_act_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg0_str")]
+
+ests_indo <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(city == "Jakarta" & (fin_ins_seg0_str %not_in% c( "Other insurance policyholder"))), weights = "weight_msme_adj", psu = NULL, keep = "mean")
+ests_brazil <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(city == "Sao Paulo"), weights = "weight_msme_adj", psu = NULL, keep = "mean")
+ests <- bind_rows(ests_indo, ests_brazil)
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 55, indicator_group = 45, group_name = 25, group_cat_val = 20), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Insurance: Consumer protection issues",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 1.005), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+```
+
+
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.525}
+#| label: fig-insur_cp_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(nobs > 5)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.55}
+#| label: fig-insur_cp_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Indonesia"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta") 
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)  + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+
+```
+
+::: 
+
+
+## Trust of insurance companies 
+
+```{r}
+#| label: fig-insur_trust_data
+#| echo: false
+#| warning: false
+#| fig-cap: "Financical accounts and savings"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The data in this figure is based on the following two questions: (1) To what extent do you trust insurance companies? [Reference population: All respondents] and (2) Why do you not trust insurance companies? [Reference population: Respondents who are inclined to not trust insurance companies including those with neutral views]")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_trust_")]
+
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fin_ins_seg3_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 60, indicator_group = 20, group_name = 25, group_cat_val = 20), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+labels <- list(
+  title = "Trust in insurance companies",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_cat_val", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+```
+
+::: {.panel-tabset}
+
+### Sao Paulo
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_trust_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Brazil"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Sao Paulo") %>% filter(nobs > 5)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+### Jakarta
+
+```{r, fig.width = 12, fig.asp = 0.4}
+#| label: fig-insur_trust_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance purchase channels: Indonesia"
+#| cap-location: margin
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(city == "Jakarta") 
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)  + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
+```
+
+::: 
+
+## Annex
+
+### Prevalence of insurance adoption
+
+```{r, fig.width = 12, fig.asp = 0.425}
+#| label: fig-insur_adoption
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance adoption"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The total number of insurance policyholders is obtained by adding up all individuals who report currently having any of the folloiwng types of insurance: Life, Health, Accident, Funeral, Home, Business, Automobile, Weather-indexed, Takaful (Islamic) insurance (Jakarta only) or any other type of insurance.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_any_shc_cu")]
+indicators <- indicators[!str_detect(indicators, "comp")]
+
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("resp_education_agg4")]
+
+men <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(resp_sex_str == "Men"), weights = "weight_msme_adj", psu = NULL, keep = "mean") %>% mutate(Gender = "Men")
+
+women <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all %>% filter(resp_sex_str == "Women"), weights = "weight_msme_adj", psu = NULL, keep = "mean") %>% mutate(Gender = "Women")
+
+ests <- bind_rows(men, women)
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 50, indicator_group = 20, group_name = 25, group_cat_val = 15), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params) %>% mutate(group_cat_val = factor(group_cat_val, levels = str_wrap(c("Some primary or none", "Primary", "Secondary", "University/technical school"), 15), ordered = TRUE))
+
+labels <- list(
+  title = "Insurance policyholders",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = "Educational attainment",
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+
+figparams <- list(
+  geom_type = "point", # One of "bar" or "tile"
+  points = list(size = 3, position = "none",  position_width = 0.7, labeltotal = FALSE, connect = TRUE), 
+  valuelabels = list(show = TRUE, lab_vjust = -0.6, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#FF7B9C", "#41BBD9")
+names(palette) <- c("Women", "Men")     
+
+scales <- list(
+  fillcolor = NULL, 
+  color = list(palette = palette), 
+  yaxis = list(limits = c(0, 0.75), nbreaks = 5, type = "percent", expand = NULL, droplines = FALSE, position = "left")
+)
+
+legend <- list(
+  show = TRUE, 
+  title = "", 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", colorvar = "Gender"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "city", 
+  scales = "fixed", 
+  space = "free",
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets,  figparams, scales, legend, labels, coord_flip = FALSE) + theme(axis.line.x = element_line(linewidth = 0.5, color = "black"), axis.line.y = element_line(linewidth = 0.5, color = "black"))
+
+
+```
+
+### Insurance adoption, by product type
+
+::: {.panel-tabset}
+
+#### Brazil
+
+```{r, fig.width = 12, fig.asp = 0.75}
+#| label: fig-insur_adoption_brazil
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance usage: Brazil"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates presented in this figure are derived from the following question: 'For each type of insurance listed, please let us know if you currently have it, had it in the past but not within the last year, never had it, or are not aware of it'.")
+
+data_sub <- main_data_all %>% filter(country == "Brazil")
+
+indicators <- names(data_sub)[str_detect(names(data_sub), "^(fin_insur.+).(shc.+)$")]
+indicators <- indicators[!str_detect(indicators, "comp|isl|cusu")]
+groups <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = data_sub, weights = "weight_msme", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 50, group_name = 25, group_cat_val = 12), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fct_levels <- c("Currently uses", "Stopped using", "Never used", "Not aware")
+fct_levels_2 <- c("All businesses", "Men", "Women", "Some primary or none", "Primary", "Secondary", "University/technical school")
+
+fig_data <- prep_fig_data(ests, factor_params)
+fig_data <- insurance_landscape(fig_data, wrap = factor_params[["wrap_sizes"]][["indicator_name"]]) %>%
+  mutate(
+    indicator_name = fct_rev(factor(indicator_name, levels = fct_levels, ordered = TRUE)), 
+    group_cat_val = factor(str_wrap(group_cat_val, 12), levels = str_wrap(fct_levels_2, 12), ordered = TRUE)
+    )
+
+labels <- list(
+  title = "Insurance: Adoption and awareness",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(fig_notes, SOURCE), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "tile", # One of "bar" or "tile"
+  tiles = list(color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
+)
+
+scales <- list(
+  fillcolor = list(palette = "identity", direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "group_cat_val", fillvar = "fillcolor"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
+
+```
+
+#### Indonesia
+
+```{r, fig.width = 12, fig.asp = 0.75}
+#| label: fig-insur_adoption_indonesia
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance usage: Indonesia"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates presented in this figure are derived from the following question: 'For each type of insurance listed, please let us know if you currently have it, had it in the past but not within the last year, never had it, or are not aware of it'.")
+
+data_sub <- main_data_all %>% filter(country == "Indonesia")
+
+indicators <- names(data_sub)[str_detect(names(data_sub), "^(fin_insur.+).(shc.+)$")]
+indicators <- indicators[!str_detect(indicators, "comp|cusu")]
+groups <- GROUPS[c("fullsample", "resp_sex_str", "resp_education_agg4")]
+
+ests <- compute_summary_mainlevel_1g(indicators, groups, data = data_sub, weights = "weight_msme", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 50, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fct_levels <- c("Currently uses", "Stopped using", "Never used", "Not aware")
+fct_levels_2 <- c("All businesses", "Men", "Women", "Some primary or none", "Primary", "Secondary", "University/technical school")
+
+fig_data <- prep_fig_data(ests, factor_params)
+fig_data <- insurance_landscape(fig_data, wrap = factor_params[["wrap_sizes"]][["indicator_name"]]) %>%
+  mutate(
+    indicator_name = fct_rev(factor(indicator_name, levels = fct_levels, ordered = TRUE)), 
+    group_cat_val = factor(str_wrap(group_cat_val, 15), levels = str_wrap(fct_levels_2, 15), ordered = TRUE)
+    )
+
+labels <- list(
+  title = "Insurance: Adoption and awareness",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(fig_notes, SOURCE), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "tile", # One of "bar" or "tile"
+  tiles = list(color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE)
+)
+
+scales <- list(
+  fillcolor = list(palette = "identity", direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 5, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "group_cat_val", fillvar = "fillcolor"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "group_name", 
+  scales = "free", 
+  space = "free",
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) 
+
+```
+
+:::
+
+### Health insurance adoption, by cover type
+```{r, fig.width = 12, fig.asp = 0.6}
+#| label: fig-health_ins_types
+#| echo: false
+#| warning: false
+#| fig-cap: "Types of health insurance used"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates in this figures are based on the following question: 'What types of health insurance have you used?' [Reference population: MSE owners or managers who reported currently having health insurance or those that had health insurance but not in the past 12 months].")
+
+indicators <- c("fin_insur_hlt_shc_cusu", names(INDICATORS)[str_detect(INDICATORS, "Health insurance type:")])
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("resp_sex_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 50, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Types of health insurance currently or recently used",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = FALSE, lab_hjust = 0, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#FF7B9C", "#CEE5F2")
+names(palette) <- c("Women", "Men")     
+
+scales <- list(
+  fillcolor = list(palette = palette), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = TRUE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE) + theme(axis.text.x = element_text(size = 9))
+
+
+```
+
+
+### Customer satisfaction
+
+```{r, fig.width = 12, fig.asp = 0.525}
+#| label: fig-insur_recos
+#| echo: false
+#| warning: false
+#| fig-cap: "Insurance recommendations"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The reference population for the estimates in this figure are all respondents that currently have insurance or had insurance of each type in the past but not in the past 12 months. Only insurance categories with greater than 25 policyholders are shown.")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_rec_")]
+indicators <- indicators[!str_detect(indicators, "idx|oth|dk")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean") %>% filter(nobs >= 25)
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 90, indicator_group = 60, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = TRUE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thresh = 0.05) %>% filter(!is.na(indicator_group)) %>% 
+  mutate(indicator_name = fct_rev(factor(indicator_name, levels = c("Yes", "Maybe", "No", "Don't know/refused"), ordered = TRUE)))
+
+labels <- list(
+  title = "Would you recommend insurance to others?",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4","#EFFFC8","#DB504A", "grey90")
+names(palette) <- c("Yes", "Maybe", "No", "Don't know/refused")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "indicator_group", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_cat_val", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+### Health shocks: Exposure and experience with health insurance
+
+Notes: There are a series of questions in the survey (H6 - H10) that were asked to respondent who used insurance payouts to cope with a recent health shock (past 36 months). However, there are too few respondents using insurance payouts for these data to be reliable. 
+
+```{r, fig.width = 12, fig.asp = 0.65}
+#| label: fig-hlthrisks_combined
+#| echo: false
+#| warning: false
+#| fig-cap: "Exposure and impacts of health shocks"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates presented in this figure are based on the following five questions: (1) In the last 36 months (3 years), did the owner, manager, or any employee have health issues that impacted your business operations? [Reference population: All MSEs] (2) Please describe how the most significant health issue(s) in the last 36 months impacted your business operations? [Reference population: MSEs that faced health shock per (1)] (3) What actions did the business take to cope with the impacts of this health issue? [Reference population: MSEs that faced health shock per (1)] (4) What is the condition of the business now, compared to before the health risk occurred? [Reference population: MSEs that faced health shock per (1)] (5) Approximately, how many months did it take the business to recover to its pre-event condition? [Reference population: MSEs that recovered from health shock (1)]")
+
+indicators <- c(names(data_sub)[str_detect(names(data_sub), "risk_hlt_exp")], names(data_sub)[str_detect(names(data_sub), "risk_hlt_imp")], names(data_sub)[str_detect(names(data_sub), "risk_hlt_cope")], names(data_sub)[str_detect(names(data_sub), "risk_hlt_cond")], names(data_sub)[str_detect(names(data_sub), "risk_hlt_rec")])
+indicators <- indicators[!str_detect(indicators, "risk_hlt_exp_str")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 15, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params)
+
+labels <- list(
+  title = "Health risks: Exposure, coping strategies and recovery",
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "dodge", position_width = 0.9, labeltotal = FALSE, fill = "#CEE5F2", color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0, lab_face = "plain", lab_size = 3),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+scales <- list(
+  fillcolor = NULL, 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = FALSE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = FALSE
+)
+
+vars <- list(
+  xvar = "indicator_name", yvar = "mean", fillvar = "group_cat_val"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "indicator_group", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = FALSE, 
+  drop_col_label = FALSE, 
+  add_dividers = TRUE
+)
+
+fig_flex(fig_data, vars, facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+
+```{r, fig.width = 12, fig.asp = 0.5}
+#| label: fig-health_insurance_purchase
+#| echo: false
+#| warning: false
+#| fig-cap: "Likelihood of purchasing health insurance in next 12 months"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following question that was asked to all respondents: 'In the next 12 months, how likely are you to purchase insurance, or expand your insurance coverage to protect against health risks?'")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "risk_hlt_inspur_shc_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "risk_hlt_exp_str", "fin_insur_hlt_status")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(!is.na(indicator_group))
+
+labels <- list(
+  title = "Health risks: Likelihood of purchasing or expanding insurance coverage in next 12 months",
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.65, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#FF9F1C", "#FF5714")
+names(palette) <- c("Very or somewhat likely", "Netural", "Somewhat or very unlikely")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+```{r, fig.width = 12, fig.asp = 0.525}
+#| label: fig-health_expenses
+#| echo: false
+#| warning: false
+#| fig-cap: "Health expenses in the last 12 months"
+#| cap-location: margin
+
+fig_notes <- c("")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "fin_insur_medexp_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("fullsample", "risk_hlt_exp_str", "fin_insur_hlt_status")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 80, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params, valuelabel_thresh = 0.05) %>% filter(!is.na(indicator_group))
+
+labels <- list(
+  title = str_wrap("Health risks: How much did you spend on medical expenses for yourself and your family in the last 12 months?", 90), 
+  subtitle =  "MSE owners or managers (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.8, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#CEE5F2", "#A2C3A4", "#FF9F1C", "#FF5714", "grey90")
+names(palette) <- str_wrap(c("None", 
+                    "Less than IDR 1700000 (Indonesia) / BRL1100 (Brazil)", 
+                    "Between IDR 1,700,000 and 3,500,000 (Indonesia) / BRL 1100 and BRL 2200 (Brazil)", 
+                    "Over IDR 3,500,000 (Indonesia) / BRL 2200 (Brazil)", "Don't know/can't remember"), 80)
+ 
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 5, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+
+### Climate shocks
+
+Notes: There are a series of questions in the survey (C7 - C11) that were asked to respondent who used insurance payouts to cope with a recent climate shock (past 36 months). However, there are too few respondents using insurance payouts for these data to be reliable. 
+
+```{r, fig.width = 12, fig.asp = 0.35}
+#| label: fig-climate_insurance_purchase
+#| echo: false
+#| warning: false
+#| fig-cap: "Likelihood of purchasing insurance to protect against climate shocks"
+#| cap-location: margin
+
+fig_notes <- c("Notes: The estimates in this figure are based on the following quesiton which was asked to all respondents regardless of whether they had experienced a climate shock in the past 36 months: In the next 12 months how likely are you to purchase insurance, or expand your insurance coverage to protect against climate risks?")
+
+indicators <- names(main_data_all)[str_detect(names(main_data_all), "risk_cli_inspur_shc_")]
+groups_l1 <- "city"
+groups_l2 <- GROUPS[c("risk_weather_type_any_str")]
+
+ests <- compute_summary_mainlevel_2g(indicators, groups_l1, groups_l2, data = main_data_all, weights = "weight_msme_adj", psu = NULL, keep = "mean")
+
+factor_params <- list(
+  wrap_sizes = list(indicator_name = 70, indicator_group = 20, group_name = 25, group_cat_val = NULL), 
+  reverse_order = list(indicator_name = TRUE, indicator_group = FALSE, group_name = FALSE, group_cat_val = FALSE), 
+  order_vars = list(indicator_name = NULL, indicator_group = NULL, group_name = NULL, group_cat_val = NULL)
+)
+
+fig_data <- prep_fig_data(ests, factor_params) %>% filter(!is.na(indicator_group))
+
+labels <- list(
+  title = str_wrap("Climate risks: Likelihood of purchasing or expanding insurance coverage to protect against climate riks in next 12 months", 80),
+  subtitle =  "MSEs (%)",
+  yax_ti = NULL,
+  xax_ti = NULL,
+  caption = str_wrap(paste(SOURCE, fig_notes), CAP_WRAP)
+)
+
+figparams <- list(
+  geom_type = "bar", # One of "bar" or "tile"
+  bars = list(width = 0.65, position = "stack", labeltotal = FALSE, color = "white"), 
+  valuelabels = list(show = TRUE, lab_hjust = 0.5, lab_vjust = 0.5, lab_face = "plain", lab_size = 3.5),
+  catlabels = list(show = FALSE), 
+  errorbars = list(show = FALSE, color = "#2374AB")
+)
+
+palette <- c("#A2C3A4", "#FF9F1C", "#FF5714")
+names(palette) <- c("Very or somewhat likely", "Netural", "Somewhat or very unlikely")
+
+scales <- list(
+  fillcolor = list(palette = palette, direction = NULL), 
+  yaxis = list(limits = c(0, 1), nbreaks = 4, type = "percent", expand = NULL, droplines = FALSE)
+)
+
+legend <- list(
+  show = TRUE, 
+  title = NULL, 
+  nrows = 1, 
+  ncols = 1, 
+  reverse = TRUE
+)
+
+vars <- list(
+  xvar = "group_cat_val", yvar = "mean", fillvar = "indicator_name"
+)
+
+facets <- list(
+  type = "grid", 
+  rows = "group_name", 
+  cols = "city", 
+  scales = "free_y", 
+  space = "free", 
+  drop_row_label = TRUE, 
+  drop_col_label = FALSE, 
+  add_dividers = FALSE
+)
+
+fig_flex(fig_data, vars, facets = facets, figparams, scales, legend, labels, coord_flip = TRUE)
+
+```
+
+

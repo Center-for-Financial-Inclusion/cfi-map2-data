@@ -1083,6 +1083,8 @@ prep_main_data <- function(raw_data, weights, selected_country) {
       
       cp_issues_any = ifelse(Q51_1 == 1 | Q51_2 == 1 | Q51_3 == 1 | Q51_4 == 1 | Q51_5 == 1 | Q51_6 == 1 | Q51_7 == 1, 1, 0), 
       
+      cp_exposure_score = cp_issues_fraud + cp_issues_salesp + cp_issues_badtreat + cp_issues_unxfees + cp_issues_crb + cp_issues_trms + cp_issues_other, 
+      
       cp_complaint = ifelse(Q52 ==1, 1, 0),
       
       cp_complaint_no_diff = ifelse(Q53 == 1, 1, 0), 
