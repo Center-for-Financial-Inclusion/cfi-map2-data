@@ -12,8 +12,8 @@ source("R/specific_functions.R") # Preparing specialized (non-generic) functions
 source("R/viz_functions.R")
 
 # Select country:
-#COUNTRY <- params$country
-COUNTRY <- "Indonesia"
+COUNTRY <- params$country
+#COUNTRY <- "Indonesia"
 CITY <- CITIES[[COUNTRY]]
 
 # Preparing enumeration data and weights 
