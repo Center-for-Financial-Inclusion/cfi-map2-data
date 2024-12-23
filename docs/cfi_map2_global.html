@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -145,10 +111,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li class="nav-item">
     <a class="nav-link" href="./India_analysis.html"> 
 <span class="menu-text">India</span></a>
-  </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./cfi_map2_insurance.html"> 
-<span class="menu-text">Insurance</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -821,119 +783,16 @@ Figure&nbsp;41: Predictors of exposure to consumer risks: Financial services
 </div>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-reg_cp_digtech</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| warning: false</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Relationship between depth of digital technology adoption and exposure to consumer protection risks"</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#| cap-location: margin</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>fig_notes <span class="ot">&lt;-</span> <span class="st">"Notes: The results shown are based on a linear regression model that measures the effect of combined use of digital technology applications on consumer protection risks. This model includes controls for two variables: years of experience and educational attainment of the owner or manager of the firm. The regression parameters are used to compute predicted probabilities to show the marginal effect of digital technology adoption on productivity. The height of 'Baseline' corresponds to the predicted productivity for firms run by an owner with mean years of experience, and secondary-level educaitonal attainment."</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Defining regressions</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  depvars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"cp_exposure_score"</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  depvar_labels <span class="ot">&lt;-</span> INDICATORS[depvars]</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  maineffects <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"tech_cat_any1"</span>, <span class="st">"tech_cat_any2"</span>, <span class="st">"tech_cat_any3all4"</span>)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  effect_labels <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"(Intercept)"</span> <span class="ot">=</span> <span class="st">"No digital solutions used"</span>, INDICATORS[maineffects])</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  confounds <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"resp_experience_c"</span>, <span class="st">"resp_education_agg4_shc_non"</span>, <span class="st">"resp_education_agg4_shc_pri"</span>,  <span class="st">"resp_education_agg4_shc_trt"</span>, <span class="st">"resp_maingoal_grow"</span>, <span class="st">"resp_riskapproach_aggr"</span>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  confounds2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"resp_experience_c"</span>, <span class="st">"resp_education_agg4_shc_non"</span>, <span class="st">"resp_education_agg4_shc_pri"</span>,  <span class="st">"resp_education_agg4_shc_trt"</span>, <span class="st">"psych_mca_dim1"</span>, <span class="st">"psych_mca_dim2"</span>)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>combinations <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(depvars, COUNTRIES, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>depvars <span class="ot">&lt;-</span> combinations[[<span class="dv">1</span>]]</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>countries <span class="ot">&lt;-</span> combinations[[<span class="dv">2</span>]]</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Running regressions</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>ests <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">#map(depvars, model_and_prepfig, maineffects, confounds = NULL, data = main_data_all, depvar_labels, effect_labels),</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">map2</span>(depvars, countries, model_and_prepfig, <span class="at">maineffect =</span> maineffects, <span class="at">confounds =</span> confounds, <span class="at">data =</span> main_data_all, <span class="at">depvar_labels =</span> depvar_labels, <span class="at">effect_labels =</span> effect_labels,  <span class="at">depvarlog =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>NOTE: 76 observations removed because of NA values (LHS: 12, RHS: 67).</code></pre>
+<div class="cell page-columns page-full" data-cap-location="margin">
+<div class="cell-output-display page-columns page-full">
+<div id="fig-reg_cp_digtech" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-reg_cp_digtech-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="cfi_map2_global_files/figure-html/fig-reg_cp_digtech-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-42" data-gallery="quarto-lightbox-gallery-42"><img src="cfi_map2_global_files/figure-html/fig-reg_cp_digtech-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>NOTE: 370 observations removed because of NA values (LHS: 238, RHS: 195).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>NOTE: 103 observations removed because of NA values (LHS: 2, RHS: 103).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>NOTE: 169 observations removed because of NA values (LHS: 38, RHS: 144).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>NOTE: 60 observations removed because of NA values (LHS: 20, RHS: 43).</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>factor_params <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">wrap_sizes =</span> <span class="fu">list</span>(<span class="at">depvar_label =</span> <span class="dv">60</span>, <span class="at">effect_label =</span> <span class="dv">70</span>, <span class="at">model_type =</span> <span class="dv">25</span>), </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">reverse_order =</span> <span class="fu">list</span>(<span class="at">depvar_label =</span> <span class="cn">TRUE</span>, <span class="at">effect_label =</span> <span class="cn">FALSE</span>, <span class="at">model_type =</span> <span class="cn">FALSE</span>), </span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">order_vars =</span> <span class="fu">list</span>(<span class="at">depvar_label =</span> <span class="cn">NULL</span>, <span class="at">effect_label =</span> <span class="cn">NULL</span>, <span class="at">model_type =</span> <span class="cn">NULL</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>fig_data <span class="ot">&lt;-</span> <span class="fu">prep_reg_data</span>(<span class="fu">prep_reg_factors</span>(ests, factor_params, <span class="at">include_valuelabel =</span> <span class="cn">FALSE</span>),  <span class="at">depvarlog =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">effect_label =</span> <span class="fu">str_replace</span>(effect_label, <span class="st">"Digital technology adoption: "</span>, <span class="st">""</span>))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>labels <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">title =</span> <span class="st">"Observational estimates of the effect of the breadth of</span><span class="sc">\n</span><span class="st">digital technology adoption on exposure to consumer risks"</span>,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">subtitle =</span> <span class="st">""</span>,</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Consumer protection risk exposure score"</span>,</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">x =</span> <span class="cn">NULL</span>,</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">caption =</span> <span class="fu">str_wrap</span>(<span class="fu">paste</span>(SOURCE, fig_notes), CAP_WRAP)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>barparams <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">bars =</span> <span class="fu">list</span>(<span class="at">width =</span> <span class="fl">0.6</span>, <span class="at">color =</span> <span class="st">"grey90"</span>), </span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">valuelabels =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="cn">FALSE</span>, <span class="at">lab_vjust =</span> <span class="dv">0</span>, <span class="at">lab_hjust =</span> <span class="dv">0</span>, <span class="at">lab_ndgy =</span> <span class="dv">0</span>, <span class="at">lab_ndgx =</span> <span class="fl">0.25</span>, <span class="at">lab_face =</span> <span class="st">"plain"</span>, <span class="at">lab_size =</span> <span class="dv">3</span>), </span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">arrowlabels =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="cn">TRUE</span>, <span class="at">lab_vjust =</span> <span class="fl">0.5</span>, <span class="at">lab_hjust =</span> <span class="fl">0.5</span>, <span class="at">lab_ndgy =</span> <span class="dv">0</span>, <span class="at">lab_ndgx =</span> <span class="sc">-</span><span class="fl">0.15</span>,  <span class="at">lab_face =</span> <span class="st">"plain"</span>, <span class="at">lab_size =</span> <span class="dv">3</span>), </span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">baselinelabel =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="cn">TRUE</span>, <span class="at">lab_vjust =</span> <span class="fl">0.5</span>, <span class="at">lab_hjust =</span> <span class="dv">0</span>, <span class="at">lab_ndgy =</span> <span class="fl">0.01</span>, <span class="at">lab_ndgx =</span> <span class="dv">0</span>,  <span class="at">lab_face =</span> <span class="st">"bold"</span>, <span class="at">lab_size =</span> <span class="fl">3.5</span>)</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>facets <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">type =</span> <span class="st">"wrap"</span>, </span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>                <span class="at">rows =</span><span class="st">"city"</span>, </span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>                <span class="at">cols =</span> <span class="st">"city"</span>, </span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>                <span class="at">scales =</span> <span class="st">"free_x"</span>, </span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>                <span class="at">space =</span> <span class="st">"free"</span>, </span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>                <span class="at">drop_row_label =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>  miny <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">min</span>(fig_data<span class="sc">$</span>fig_data), <span class="dv">2</span>) </span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  maxy <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">max</span>(fig_data<span class="sc">$</span>fig_data), <span class="dv">2</span>) </span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>  buffer <span class="ot">&lt;-</span> (maxy <span class="sc">-</span> miny)<span class="sc">/</span><span class="dv">100</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>  miny <span class="ot">&lt;-</span> miny <span class="sc">-</span> buffer<span class="sc">*</span><span class="dv">4</span></span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (miny <span class="sc">&gt;</span> <span class="dv">0</span>) { miny <span class="ot">&lt;-</span> <span class="dv">0</span> }</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>  maxy <span class="ot">&lt;-</span> maxy <span class="sc">+</span> buffer<span class="sc">*</span><span class="dv">4</span></span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>scales <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">list</span>(<span class="at">limits =</span> <span class="cn">NULL</span>, <span class="at">position =</span> <span class="st">"left"</span>, <span class="at">nbreaks =</span> <span class="dv">3</span>), </span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">list</span>(<span class="at">position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="fu">fig_regests</span>(fig_data, labels, <span class="at">facets =</span> facets, barparams, scales, <span class="at">effect_desc =</span> <span class="st">"The effect of digital technology adoption on consumer risks"</span>, <span class="at">coord_flip =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
-(`geom_hline()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
-(`geom_segment()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
-(`geom_point()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 5 rows containing missing values or values outside the scale range
-(`geom_text()`).</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 15 rows containing missing values or values outside the scale range
-(`geom_text()`).</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><a href="cfi_map2_global_files/figure-html/unnamed-chunk-43-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-42"><img src="cfi_map2_global_files/figure-html/unnamed-chunk-43-1.png" class="img-fluid figure-img" width="1152"></a></p>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-reg_cp_digtech-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;42: Relationship between depth of digital technology adoption and exposure to consumer protection risks
+</figcaption>
 </figure>
 </div>
 </div>
@@ -949,7 +808,7 @@ Figure&nbsp;41: Predictors of exposure to consumer risks: Financial services
 <a href="cfi_map2_global_files/figure-html/fig-risks_types-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-43" data-gallery="quarto-lightbox-gallery-43"><img src="cfi_map2_global_files/figure-html/fig-risks_types-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-risks_types-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;42: Risks: General
+Figure&nbsp;43: Risks: General
 </figcaption>
 </figure>
 </div>
@@ -964,7 +823,7 @@ Figure&nbsp;42: Risks: General
 <a href="cfi_map2_global_files/figure-html/fig-risks_climate_types-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-44" data-gallery="quarto-lightbox-gallery-44"><img src="cfi_map2_global_files/figure-html/fig-risks_climate_types-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-risks_climate_types-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;43: Risks: Climate
+Figure&nbsp;44: Risks: Climate
 </figcaption>
 </figure>
 </div>
@@ -979,7 +838,7 @@ Figure&nbsp;43: Risks: Climate
 <a href="cfi_map2_global_files/figure-html/fig-risks_impacts-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-45" data-gallery="quarto-lightbox-gallery-45"><img src="cfi_map2_global_files/figure-html/fig-risks_impacts-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-risks_impacts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;44: Risks: Impacts
+Figure&nbsp;45: Risks: Impacts
 </figcaption>
 </figure>
 </div>
@@ -994,7 +853,7 @@ Figure&nbsp;44: Risks: Impacts
 <a href="cfi_map2_global_files/figure-html/fig-resilience_financial-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-46" data-gallery="quarto-lightbox-gallery-46"><img src="cfi_map2_global_files/figure-html/fig-resilience_financial-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-resilience_financial-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;45: Financial resilience
+Figure&nbsp;46: Financial resilience
 </figcaption>
 </figure>
 </div>
@@ -1009,7 +868,7 @@ Figure&nbsp;45: Financial resilience
 <a href="cfi_map2_global_files/figure-html/fig-resilience_nonfinancial-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-47" data-gallery="quarto-lightbox-gallery-47"><img src="cfi_map2_global_files/figure-html/fig-resilience_nonfinancial-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-resilience_nonfinancial-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;46: Non-financial dimensions of business resilience
+Figure&nbsp;47: Non-financial dimensions of business resilience
 </figcaption>
 </figure>
 </div>
@@ -1024,7 +883,7 @@ Figure&nbsp;46: Non-financial dimensions of business resilience
 <a href="cfi_map2_global_files/figure-html/fig-resilience_overview-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-48" data-gallery="quarto-lightbox-gallery-48"><img src="cfi_map2_global_files/figure-html/fig-resilience_overview-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-resilience_overview-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;47: Access to connectivity and devices
+Figure&nbsp;48: Access to connectivity and devices
 </figcaption>
 </figure>
 </div>
@@ -1039,7 +898,7 @@ Figure&nbsp;47: Access to connectivity and devices
 <a href="cfi_map2_global_files/figure-html/fig-reg_climrisk_adaptation-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-49" data-gallery="quarto-lightbox-gallery-49"><img src="cfi_map2_global_files/figure-html/fig-reg_climrisk_adaptation-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-reg_climrisk_adaptation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;48: Relationship between prior exposure to weather shock and investment in adaptation
+Figure&nbsp;49: Relationship between prior exposure to weather shock and investment in adaptation
 </figcaption>
 </figure>
 </div>
@@ -1053,7 +912,7 @@ Figure&nbsp;48: Relationship between prior exposure to weather shock and investm
 <a href="cfi_map2_global_files/figure-html/fig-reg_climrisk_finserv-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-50" data-gallery="quarto-lightbox-gallery-50"><img src="cfi_map2_global_files/figure-html/fig-reg_climrisk_finserv-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-reg_climrisk_finserv-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;49: Relationship between prior exposure to weather shock and use of financial services
+Figure&nbsp;50: Relationship between prior exposure to weather shock and use of financial services
 </figcaption>
 </figure>
 </div>
@@ -1067,7 +926,7 @@ Figure&nbsp;49: Relationship between prior exposure to weather shock and use of 
 <a href="cfi_map2_global_files/figure-html/fig-reg_climrisk_digtools-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-51" data-gallery="quarto-lightbox-gallery-51"><img src="cfi_map2_global_files/figure-html/fig-reg_climrisk_digtools-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-reg_climrisk_digtools-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;50: Relationship between prior exposure to weather shock and use of digital tools
+Figure&nbsp;51: Relationship between prior exposure to weather shock and use of digital tools
 </figcaption>
 </figure>
 </div>
@@ -1081,7 +940,7 @@ Figure&nbsp;50: Relationship between prior exposure to weather shock and use of 
 <a href="cfi_map2_global_files/figure-html/fig-reg_digtech_resilience-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-52" data-gallery="quarto-lightbox-gallery-52"><img src="cfi_map2_global_files/figure-html/fig-reg_digtech_resilience-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-reg_digtech_resilience-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;51: Relationship between overall technology adoption &amp; resilience
+Figure&nbsp;52: Relationship between overall technology adoption &amp; resilience
 </figcaption>
 </figure>
 </div>
@@ -1098,7 +957,7 @@ Figure&nbsp;51: Relationship between overall technology adoption &amp; resilienc
 <a href="cfi_map2_global_files/figure-html/fig-sampling_adjustments_premise-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-53" data-gallery="quarto-lightbox-gallery-53"><img src="cfi_map2_global_files/figure-html/fig-sampling_adjustments_premise-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-sampling_adjustments_premise-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;52: MSEs by premises type
+Figure&nbsp;53: MSEs by premises type
 </figcaption>
 </figure>
 </div>
@@ -1113,7 +972,7 @@ Figure&nbsp;52: MSEs by premises type
 <a href="cfi_map2_global_files/figure-html/fig-sampling_adjustments_sector-1.png" class="lightbox" data-glightbox="description: .lightbox-desc-54" data-gallery="quarto-lightbox-gallery-54"><img src="cfi_map2_global_files/figure-html/fig-sampling_adjustments_sector-1.png" class="img-fluid figure-img" width="1152"></a>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-sampling_adjustments_sector-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;53: MSES by sector
+Figure&nbsp;54: MSES by sector
 </figcaption>
 </figure>
 </div>
@@ -1163,18 +1022,19 @@ Figure&nbsp;53: MSES by sector
 <span class="glightbox-desc lightbox-desc-39">Figure&nbsp;39: Predictors of exposure to consumer risks: Breadth of digital technologies</span>
 <span class="glightbox-desc lightbox-desc-40">Figure&nbsp;40: Predictors of exposure to consumer risks: Non-financial digital technologies</span>
 <span class="glightbox-desc lightbox-desc-41">Figure&nbsp;41: Predictors of exposure to consumer risks: Financial services</span>
-<span class="glightbox-desc lightbox-desc-43">Figure&nbsp;42: Risks: General</span>
-<span class="glightbox-desc lightbox-desc-44">Figure&nbsp;43: Risks: Climate</span>
-<span class="glightbox-desc lightbox-desc-45">Figure&nbsp;44: Risks: Impacts</span>
-<span class="glightbox-desc lightbox-desc-46">Figure&nbsp;45: Financial resilience</span>
-<span class="glightbox-desc lightbox-desc-47">Figure&nbsp;46: Non-financial dimensions of business resilience</span>
-<span class="glightbox-desc lightbox-desc-48">Figure&nbsp;47: Access to connectivity and devices</span>
-<span class="glightbox-desc lightbox-desc-49">Figure&nbsp;48: Relationship between prior exposure to weather shock and investment in adaptation</span>
-<span class="glightbox-desc lightbox-desc-50">Figure&nbsp;49: Relationship between prior exposure to weather shock and use of financial services</span>
-<span class="glightbox-desc lightbox-desc-51">Figure&nbsp;50: Relationship between prior exposure to weather shock and use of digital tools</span>
-<span class="glightbox-desc lightbox-desc-52">Figure&nbsp;51: Relationship between overall technology adoption &amp; resilience</span>
-<span class="glightbox-desc lightbox-desc-53">Figure&nbsp;52: MSEs by premises type</span>
-<span class="glightbox-desc lightbox-desc-54">Figure&nbsp;53: MSES by sector</span>
+<span class="glightbox-desc lightbox-desc-42">Figure&nbsp;42: Relationship between depth of digital technology adoption and exposure to consumer protection risks</span>
+<span class="glightbox-desc lightbox-desc-43">Figure&nbsp;43: Risks: General</span>
+<span class="glightbox-desc lightbox-desc-44">Figure&nbsp;44: Risks: Climate</span>
+<span class="glightbox-desc lightbox-desc-45">Figure&nbsp;45: Risks: Impacts</span>
+<span class="glightbox-desc lightbox-desc-46">Figure&nbsp;46: Financial resilience</span>
+<span class="glightbox-desc lightbox-desc-47">Figure&nbsp;47: Non-financial dimensions of business resilience</span>
+<span class="glightbox-desc lightbox-desc-48">Figure&nbsp;48: Access to connectivity and devices</span>
+<span class="glightbox-desc lightbox-desc-49">Figure&nbsp;49: Relationship between prior exposure to weather shock and investment in adaptation</span>
+<span class="glightbox-desc lightbox-desc-50">Figure&nbsp;50: Relationship between prior exposure to weather shock and use of financial services</span>
+<span class="glightbox-desc lightbox-desc-51">Figure&nbsp;51: Relationship between prior exposure to weather shock and use of digital tools</span>
+<span class="glightbox-desc lightbox-desc-52">Figure&nbsp;52: Relationship between overall technology adoption &amp; resilience</span>
+<span class="glightbox-desc lightbox-desc-53">Figure&nbsp;53: MSEs by premises type</span>
+<span class="glightbox-desc lightbox-desc-54">Figure&nbsp;54: MSES by sector</span>
 </div>
 </section>
 
@@ -1589,7 +1449,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script>
 </div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"selector":".lightbox","closeEffect":"zoom","loop":false,"descPosition":"bottom","openEffect":"zoom"});
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","selector":".lightbox","loop":false,"descPosition":"bottom","openEffect":"zoom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
