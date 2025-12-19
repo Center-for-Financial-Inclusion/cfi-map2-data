@@ -1,0 +1,757 @@
+variable_name,variable_description
+business_total,Population estimate: Total businesses (N)
+resp_sex_men,Gender: Men
+resp_sex_women,Gender: Women
+resp_type_owner,Respondent type: Owner of business
+resp_type_manager,Respondent type: Manager or other
+resp_education_agg2_shc_priorless,Educational attainment: Primary or less
+resp_education_agg2_shc_secormore,Educational attainment: Secondary or higher
+resp_education_agg4_shc_non,Educational attainment: Some primary or none
+resp_education_agg4_shc_pri,Educational attainment: Completed primary or some secondary
+resp_education_agg4_shc_sec,Educational attainment: Completed secondary or some university/technical school
+resp_education_agg4_shc_trt,Educational attainment: Completed university/technical school
+resp_education_agg5_shc_non,Educational attainment: None completed
+resp_education_agg5_shc_pri,Educational attainment: Primary
+resp_education_agg5_shc_sec,Educational attainment: Secondary
+resp_education_agg5_shc_trt_uni,Educational attainment: University
+resp_education_agg5_shc_trt_voc,Educational attainment: Vocational/technical training
+resp_experience,Experience running business: Years (mean)
+resp_experience_c,Experience running business: Continuous (single years)
+resp_experience_agg5_shc_1,Experience running business: 1 yr or less
+resp_experience_agg5_shc_2_5,Experience running business: 2-5 yrs
+resp_experience_agg5_shc_6_10,Experience running business: 6-10 yrs
+resp_experience_agg5_shc_11_20,Experience running business: 11-20 yrs
+resp_experience_agg5_shc_20,Experience running business: > 20 yrs
+resp_experience_c_5yi,Experience running business: Continuous (+5yrs)*
+resp_age,Age: Years (mean)
+resp_age_c,Age: Years (mean)
+resp_age_c_5yi,Age: Continuous (+5yrs)*
+resp_age_agg3_shc_35,Age: [< 35 yrs]
+resp_age_agg3_shc_55,Age:[> 55 yrs]
+resp_age_agg3_shc_3555,Age: [35-55 yrs)
+resp_age_agg6_shc_25,Age: [< 25 yrs]
+resp_age_agg6_shc_2535,Age: [25-35 yrs)
+resp_age_agg6_shc_3545,Age: [35-45 yrs)
+resp_age_agg6_shc_4555,Age: [45-55 yrs)
+resp_age_agg6_shc_5565,Age: [55-65 yrs)
+resp_age_agg6_shc_65,Age: [65+ yrs]
+resp_motivation_oth,Motivation to start business: Inherited business or other reason
+resp_motivation_lackopp,Motivation to start business: Lack of other income opportunities or desire to generate additional income
+resp_motivation_entrep,Motivation to start business: Desire to have own business
+resp_maingoal_grow,Main goal in next 12 months: Grow the business
+resp_maingoal_stab,Main goal in next 12 months: Cover business costs
+resp_maingoal_leave,Main goal in next 12 months: Leave business to get a regular wage paying job or other
+resp_riskapproach_aggr,Risk tolerance: Aggresively pursue risky opportunities that could generate significant additional income
+resp_riskapproach_calc,Risk tolerance: Cautiously pursue risk opportunities that could generate a little income
+resp_riskapproach_avoid,Risk tolerance: Avoid risks even if they could generate additional income
+resp_psych_segment_shc_grow,Pyschographic orientation: Growth and risk-taking
+resp_psych_segment_shc_stab,Pyschographic orientation: Stability
+resp_psych_segment_shc_surv,Pyschographic orientation: Survival
+business_size,Total employment (N)
+business_size_agg2_shc_1,Size: 1 person
+business_size_agg2_shc_2_10,Size: 2-10 people
+business_sector_agg2_shc_mfc,Sector: Manufacturing
+business_sector_agg2_shc_srv,Sector: Services
+business_sector_agg3_shc_mfc,Sector: Manufacturing
+business_sector_agg3_shc_srv_resale,"Sector: Services, trade (re-sale)"
+business_sector_agg3_shc_srv_oth,"Sector: Services, other (eg. transport, construction)"
+business_sector_agg4_shc_fd,Sector: Food distribution and production
+business_sector_agg4_shc_nfdm,Sector: Non-food manufacturing
+business_sector_agg4_shc_nfdrt,Sector: Non-food retail trade
+business_sector_agg4_shc_os,Sector: Other services
+business_sector_food,Sector: Food distribution or production
+business_premise_shc_1,Premises: Household
+business_premise_shc_2,Premises: Permanent
+business_premise_shc_3,Premises: Semi-permanent
+business_registered_yes,Registration with tax authority:  Yes
+business_registered_no,Registration with tax authority:  No
+resp_pcthhincfrmbus_high,Business-household co-dependence: Business contributes over 50% of owner's household income
+business_account_separate_v2,Business-household co-dependence: Business owns a formal account that is separate from owner's account
+business_finances_notseparate,Business-household co-dependence: Business either does not have a formal financial account or is not separate from owner's account
+business_hh_noboundaries,Business-household co-dependence: Business operations and finances are not separate from household
+business_hh_separate,Business-household co-dependence: Business operations and finances are separate from household
+business_hh_codep_index,Business-household co-dependence: Index
+tech_has_internet,Internet connectivity: Has
+tech_has_device,Mobile phone/computer/tablet: Uses
+tech_has_both,Digital technology adoption: Has internet and uses device
+tech_has_none,Digital technology adoption: Does not have internet and does not use device
+tech_cat_none,Digital technology adoption: No digital technology application used
+tech_cat_any1,Digital technology adoption: Any 1 use case
+tech_cat_any2,Digital technology adoption: Any 2 use cases
+tech_cat_any3,Digital technology adoption: Any 3 use cases
+tech_cat_all4,Digital technology adoption: All 4 use cases
+tech_cat_any3all4,Digital technology adoption: Any 3 or all 4 use cases
+tech_uses_messaging,Messaging apps: Uses
+tech_uses_socialmedia,Social media: Uses
+tech_uses_website,Website: Has
+tech_uses_ecommerce,E-commerce platforms: Uses
+tech_uses_software,Software for operations: Uses
+tech_uses_ai,Artificial intelligence: Ever used
+tech_uses_digpayments,Digital payments acceptance: Used in past 12 mos
+tech_uses_digloans,Digital loans: Used in past 12 mos
+tech_uses_diginsurance,Digital insurance: Uses
+tech_uses_messaging_30da,Messaging apps: 30-day active
+tech_uses_socialmedia_30da,Social media: 30-day active
+tech_uses_ecommerce_30da,E-commerce platforms: 30-day active
+tech_uses_messaging_7da,Messaging apps: 7-day active
+tech_uses_socialmedia_7da,Social media: 7-day active
+tech_uses_ecommerce_7da,E-commerce platforms: 7-day active
+tech_uses_website_imp,Website is very or somewhat important to business
+tech_uses_software_30da,Software for operations (30-day active)
+tech_uses_software_7da,Software for operations (7-day active)
+tech_uses_messaging_shc_dow,Messaging apps: Daily or weekly
+tech_uses_messaging_shc_mol,Messaging apps: Monthly or less
+tech_uses_messaging_shc_nam,Messaging apps: Stopped using
+tech_uses_messaging_shc_nvr,Messaging apps: Never used
+tech_uses_messaging_shc_30da,Messaging apps: 30-day active
+tech_uses_socialmedia_shc_dow,Social media: Daily or weekly
+tech_uses_socialmedia_shc_mol,Social media: Monthly or less
+tech_uses_socialmedia_shc_nam,Social media: Stopped using
+tech_uses_socialmedia_shc_nvr,Social media: Never used
+tech_uses_socialmedia_shc_30da,Social media: 30-day active
+tech_uses_ecommerce_shc_dow,E-commerce platforms: Daily or weekly
+tech_uses_ecommerce_shc_mol,E-commerce platforms: Monthly or less
+tech_uses_ecommerce_shc_nam,E-commerce platforms: Stopped using
+tech_uses_ecommerce_shc_nvr,E-commerce platforms: Never used
+tech_uses_ecommerce_shc_30da,E-commerce platforms: 30-day active
+tech_uses_software_shc_dow,Software for operations: Daily or weekly
+tech_uses_software_shc_mol,Software for operations: Monthly or less
+tech_uses_software_shc_nam,Software for operations: Stopped using
+tech_uses_software_shc_nvr,Software for operations: Never used
+tech_uses_software_shc_30da,Software for operations: 30-day active
+tech_uses_adoption_score,Digital technology adoption score: Mean [0 min -10 max]
+tech_uses_adoption_score_c,Uses 1 additional digital technology
+tech_function_comms,Communicating with customers: Uses
+tech_function_mkts,Accessing markets: Uses
+tech_function_ops,Enterprise operations: Uses
+tech_function_epay,Digital payment acceptance: Uses
+tech_function_epay_expos,Digital payment acceptance (excludes POS card payments): Uses
+tech_function_efin,Enterprise digital finance: Uses
+tech_function_comms_30da,Communicating with customers: 30-day active
+tech_function_mkts_30da,Accessing markets: 30-day active
+tech_function_ops_30da,Enterprise operations: 30-day active
+tech_function_comms_7da,Communicating with customers: 7-day active
+tech_function_mkts_7da,Accessing markets: 7-day active
+tech_function_ops_7da,Enterprise operations: 7-day active
+tech_function_mkts_ops,Accessing markets/ business operations: Uses
+tech_function_any,Technology adoption: Uses any digital application for business operations/payments
+tech_function_infra_N,Digital technology adoption summary score: Connectivity and devices (Max = 2)
+tech_function_comms_N,Digital technology adoption summary score: Communicating with customers (Max = 2)
+tech_function_mkts_N,Digital technology adoption summary score: Accessing markets (Max = 2)
+tech_function_ops_N,Digital technology adoption summary score: Business operations (Max = 2)
+tech_function_epayloans_N,Digital technology adoption summary score: Customer payments and loans (Max = 2)
+tech_function_epay_N,Digital technology adoption summary score: Customer payments (N)
+tech_adopfactors_demand,Adoption factors: Demand from customers/suppliers
+tech_adopfactors_support,Adoption factors: Obtaining support to use tech
+tech_adopfactors_comp,Adoption factors: Competitive pressure
+tech_adopfactors_other,Adoption factors: Other
+tech_adopbenefits_rev,Adoption benefits: Increased revenue
+tech_adopbenefits_costs,Adoption benefits: Reduced costs
+tech_adopbenefits_customer,Adoption benefits: Access to more customers/providers
+tech_adopbenefits_sales,Adoption benefits: Faster sales cycle/time-savings
+tech_adopbenefits_cashflow,Adoption benefits: Better cash flow management
+tech_adopbenefits_finserv,Adoption benefits: Improved access to financial services
+tech_adopbenefits_other,Adoption benefits: Other
+tech_adopchllng_diff,Adoption challenges: Difficulty using technology
+tech_adopchllng_cost,Adoption challenges: High cost of implementation or maintenance
+tech_adopchllng_trust,Adoption challenges: Lack of trust/ security or privacy concerns
+tech_adopchllng_notrlv,Adoption challenges: Available tools are not relevant
+tech_adopchllng_infra,"Adoption challenges: Lack of phones, computers or internet"
+tech_adopchllng_other,Adoption challenges: Other
+perf_rev_reports,Businesss performence: Business reported monthly revenue (%)
+perf_rev,Business performance: Revenues (past month) [LCU]
+perf_rev_usd,Business performance: Revenues (past month) [USD]
+perf_rev_ppp,Business performance: Revenues (past month) [International $]
+perf_revphrpemp,Business performance: Hourly sales per employee [LCU]
+perf_revphrpemp_usd,Business performance: Hourly sales per employee [USD]
+perf_revphrpemp_ppp,Business performance: Hourly sales per employee [International $]
+perf_revpdypemp_usd,Buseinss performance: Daily sales per employee [USD]
+perf_revpdypemp_usd_log,"Buseinss performance: Daily sales per employee [USD, Log scale]"
+perf_revpdypemp_ppp,Buseinss performance: Daily sales per employee [International $]
+perf_revpdypemp_ppp_log,"Buseinss performance: Daily sales per employee [International $, Log scale]"
+perf_sales_up,Sales in past year: Increased
+perf_sales_same,Sales in past year: Remained the same
+perf_sales_down,Sales in past year: Decreased
+perf_emp_up,Number of employees in past year: Increased
+perf_emp_same,Number of employees in past year: Remained the same
+perf_emp_down,Number of employees in past year: Decreased
+perf_investment,"Dynamism: In past year, MSE added equipment or moved to new premise"
+perf_newservices,"Dynamism: In past year, MSE introduced new products or services"
+perf_growth_subj_any,Firm performance: Employees or revenues increased in past year
+perf_growthdyn_subj_score,Firm performance: Growth/dynamism score [0-4]
+perf_subj_growing,Firm dynamics: Growing
+perf_subj_stable,Firm dynamics: Stable
+perf_subj_struggle,Firm dynamics: Struggling
+perf_subj_other,Firm dynamics: Other
+fin_account_formal,Account usage: Uses a formal account with a financial institution to manage its finances and payment (direct)
+fin_account_formal_usgdef,"Account usage: Uses a formal account with a financial institution for savings, customer payments or loans (indirect)"
+fin_account_formal_v2,Account usage: Composite indicator based on account + savings
+fin_account_formal_v3,Account usage: Composite indicator based on account + savings + payments
+fin_account_formal_v4,Account usage: Composite indicator based on account + savings + payments + loans
+fin_owner_save,Business savings: Business owner able to save money regularly out of business income
+fin_bus_savings_cbnk,Business savings account: Commercial bank
+fin_bus_savings_mfi,Business savings account: Microfinance institution
+fin_bus_savings_fintech,Business savings account: Fintech
+fin_bus_savings_sacco,Business savings account: Saving and Credit Cooperative
+fin_bus_savings_group,"Business savings account: VSLA, ROSCA or Savings group"
+fin_bus_savings_mm,"Business savings account: Mobile money wallet, or e-money"
+fin_bus_savings_other,Business savings account: Other
+fin_bus_savings_agg_fi,Business savings account provider: Financial institution
+fin_bus_savings_agg_nbfi,Business savings account provider: Fintech or mobile money wallet
+fin_bus_savings_agg_inf,Business savings account provider: Informal
+fin_bus_savings_agg_none,Business savings account provider: No savings
+fin_bus_savings_channel_inprsn,"Business savings account, transaction channels: OTC at branch"
+fin_bus_savings_channel_digonly,"Business savings account, transaction channels: Digital"
+fin_bus_savings_channel_both,"Business savings account, transaction channels: Both OTC and digital"
+fin_bus_savings_channel_other,"Business savings account, transaction channels: Other"
+fin_merchpay_cashcheques,Merchant payment methods: Cash or cheques
+fin_merchpay_poscard,Merchant payment methods: POS card payments
+fin_merchpay_bnktrnsf,Merchant payment methods: Direct bank transfers
+fin_merchpay_online,Merchant payment methods: Online payments
+fin_merchpay_mobmoney,Merchant payment methods: Mobile money
+fin_merchpay_instant,Merchant payment methods: Instant money transfers
+fin_merchpay_qr,Merchant payment methods: QR payments
+fin_merchpay_noncash,"Merchant payment methods: Digital (any type, including bank transfers)"
+fin_merchpay_extrnsfpos,"Merchant payment methods: Digital (any type, ex bank transfers, POS card)"
+fin_owner_creditcard,Credit card: Owner has used card for business purposes
+fin_activeloan_cbnk,Active loans in past year: Commercial bank
+fin_activeloan_mfi,Active loans in past year: Microfinance institution
+fin_activeloan_fintech,Active loans in past year: Fintech
+fin_activeloan_sacco,Active loans in past year: Saving and Credit Cooperative
+fin_activeloan_group,"Active loans in past year: VSLA, ROSCA or Savings group"
+fin_activeloan_mm,Active loans in past year: Mobile money provider
+fin_activeloan_platform,Active loans in past year: E-commerce platform
+fin_activeloan_supplier,Active loans in past year: Supplier
+fin_activeloan_moneylndr,Active loans in past year: Moneylender
+fin_activeloan_ff,Active loans in past year: Friends or family
+fin_activeloan_other,Active loans in past year: Other
+fin_activeloan_agg_fi,Active loans in past year: Financial institution
+fin_activeloan_agg_nbfi,"Active loans in past year: Fintech, e-commerce or mobile money"
+fin_activeloan_agg_inf,Active loans in past year: Informal
+fin_activeloan_agg_any,Demand for credit: Used a loan from any source in past 12 months
+fin_activeloan_da_cbnk,Digital credit access: Commercial bank
+fin_activeloan_da_mfi,Digital credit access: Microfinance institution
+fin_activeloan_da_fintech,Digital credit access: Fintech
+fin_activeloan_da_sacco,Digital credit access: Saving and Credit Cooperative
+fin_activeloan_da_group,"Digital credit access: VSLA, ROSCA or Savings group"
+fin_activeloan_da_mm,Digital credit access: Mobile money provider
+fin_activeloan_da_any,Digital credit access: Applied for loan digitally from any source
+fin_deniedloan,Demand for credit: Wanted a loan but could not get one in past 12 months
+fin_deniedloan_reason_nosuit,Reason could not get loan: I did not find a suitable loan
+fin_deniedloan_reason_req,Reason could not get loan: I could not fulfill the requirements
+fin_deniedloan_reason_cost,Reason could not get loan: Interest rates or fees were too high
+fin_deniedloan_reason_terms,Reason could not get loan: Terms and conditions were difficult to understand
+fin_deniedloan_reason_denied,Reason could not get loan: I expected to be denied or applied and was rejected
+fin_deniedloan_reason_other,Reason could not get loan: Other
+fin_activeloan_use_inv,Reason for taking loan: Purchase inventory or supplies
+fin_activeloan_use_exp,"Reason for taking loan: Cover business expenses (e.g. wages, utilities)"
+fin_activeloan_use_debt,Reason for taking loan: Repay previous debts
+fin_activeloan_use_other,Reason for taking loan: Invest in expanding business or workforce
+fin_demandloan,Demand for credit: Used a loan or tried to obtain one in past 12 months
+fin_suppliercredit,Supplier credit: In past 12 months business has received goods from supplier but paid at a later time
+fin_channels_trust_physical,Most trusted financial services transaction channel: Physical
+fin_channels_trust_digital,Most trusted financial services transaction channel: Digital
+fin_channels_trust_indiff,Most trusted financial services transaction channel: Indifferent
+fin_dfs_user,Digital technology adoption: Uses any digital financial services
+fin_digital_benefits_cus,Benefits of digital financial services: Increased number of customers
+fin_digital_benefits_rev,Benefits of digital financial services: Increased revenue
+fin_digital_benefits_cst,Benefits of digital financial services: Reduced costs
+fin_digital_benefits_tim,Benefits of digital financial services: Saved time
+fin_digital_benefits_cf,Benefits of digital financial services: Improve ability to manage cash flow
+fin_digital_benefits_bnk,Benefits of digital financial services: Easier access to banking at any time
+fin_digital_benefits_crd,Benefits of digital financial services: Improved access to credit
+fin_digital_benefits_dat,Benefits of digital financial services: Access to better data & decision-making
+fin_digital_benefits_none,Benefits of digital financial services: No effects
+fin_digital_challenges_diff,Challenges with digital financial services: Difficulty using the technology
+fin_digital_challenges_cost,Challenges with digital financial services: High costs of implementation and maintenance
+fin_digital_challenges_trust,Challenges with digital financial services: Lack of trust in digital tools' security and privacy
+fin_digital_challenges_rel,Challenges with digital financial services: Available digital tools are not relevant
+fin_digital_challenges_infra,"Challenges with digital financial services: Lack of phones, computers or internet"
+fin_digital_challenges_other,Challenges with digital financial services: Other
+fin_digital_challenges_none,Challenges with digital financial services: No challenges
+fin_openbanking_use,Open banking: Has used open banking to securely share financial information between providers
+fin_access_strand_sav_shc_inst,"Access strand, Savings: Institutional"
+fin_access_strand_sav_shc_exc,"Access strand, Savings: Excluded"
+fin_access_strand_loan_shc_inst,"Acccess strand, Loans: Institutional"
+fin_access_strand_loan_shc_dig,"Acccess strand, Loans: Digital"
+fin_access_strand_loan_shc_inf,"Acccess strand, Loans: Informal"
+fin_access_strand_loan_shc_exc,"Acccess strand, Loans: Excluded"
+fin_insur_lif_da,Life insurance: Accessed or managed digitally
+fin_insur_hlt_da,Health insurance: Accessed or managed digitally
+fin_insur_acc_da,Accident insurance: Accessed or managed digitally
+fin_insur_fun_da,Funeral insurance: Accessed or managed digitally
+fin_insur_hom_da,Home insurance: Accessed or managed digitally
+fin_insur_bus_da,Business insurance: Accessed or managed digitally
+fin_insur_aut_da,Automobile insurance: Accessed or managed digitally
+fin_insur_idx_da,Weather-indexed insurance: Accessed or managed digitally
+fin_insur_oth_da,Other insurance: Accessed or managed digitally
+fin_insur_hltlif_da,Health or life insurance: Accessed or managed digitally
+fin_insur_any_da,Any insurance: Accessed or managed digitally
+fin_insur_lif_shc_cu,Life insurance: Currently uses
+fin_insur_lif_shc_na,Life insurance: Not aware
+fin_insur_lif_shc_nh,Life insurance: Never used
+fin_insur_lif_shc_su,Life insurance: Stopped using
+fin_insur_hlt_shc_cu,Health insurance: Currently uses
+fin_insur_hlt_shc_na,Health insurance: Not aware
+fin_insur_hlt_shc_nh,Health insurance: Never used
+fin_insur_hlt_shc_su,Health insurance: Stopped using
+fin_insur_acc_shc_cu,Accident insurance: Currently uses
+fin_insur_acc_shc_na,Accident insurance: Not aware
+fin_insur_acc_shc_nh,Accident insurance: Never used
+fin_insur_acc_shc_su,Accident insurance: Stopped using
+fin_insur_fun_shc_cu,Funeral insurance: Currently uses
+fin_insur_fun_shc_na,Funeral insurance: Not aware
+fin_insur_fun_shc_nh,Funeral insurance: Never used
+fin_insur_fun_shc_su,Funeral insurance: Stopped using
+fin_insur_hom_shc_cu,Home insurance: Currently uses
+fin_insur_hom_shc_na,Home insurance: Not aware
+fin_insur_hom_shc_nh,Home insurance: Never used
+fin_insur_hom_shc_su,Home insurance: Stopped using
+fin_insur_bus_shc_cu,Business insurance: Currently uses
+fin_insur_bus_shc_na,Business insurance: Not aware
+fin_insur_bus_shc_nh,Business insurance: Never used
+fin_insur_bus_shc_su,Business insurance: Stopped using
+fin_insur_aut_shc_cu,Auto insurance: Currently uses
+fin_insur_aut_shc_na,Auto insurance: Not aware
+fin_insur_aut_shc_nh,Auto insurance: Never used
+fin_insur_aut_shc_su,Auto insurance: Stopped using
+fin_insur_idx_shc_cu,Weather-indexed insurance: Currently uses
+fin_insur_idx_shc_na,Weather-indexed insurance: Not aware
+fin_insur_idx_shc_nh,Weather-indexed insurance: Never used
+fin_insur_idx_shc_su,Weather-indexed insurance: Stopped using
+fin_insur_oth_shc_cu,Other insurance: Currently uses
+fin_insur_oth_shc_na,Other insurance: Not aware
+fin_insur_oth_shc_nh,Other insurance: Never used
+fin_insur_oth_shc_su,Other insurance: Stopped using
+fin_insur_isl_shc_cu,Islamic insurance: Currently uses
+fin_insur_isl_shc_na,Islamic insurance: Not aware
+fin_insur_isl_shc_nh,Islamic insurance: Never used
+fin_insur_isl_shc_su,Islamic insurance: Stopped using
+fin_insur_any_shc_cu,Any insurance: Currently uses
+fin_insur_any_shc_nh,Any insurance: Never used
+fin_insur_any_shc_na,Any insurance: Not aware
+fin_insur_any_shc_cu_comp,Any insurance: Currently uses
+fin_insur_shc_cu_N,Financial access summary score: Insurance policies (N)
+fin_insur_hlt_shc_cusu,Health insurance: Currently using or stopped using in past 12 months
+fin_insur_hlt_op,Health insurance type: Out-patient
+fin_insur_hlt_ip,Health insurance type: In-patient/hospital
+fin_insur_hlt_sr,Health insurance type: Surgery
+fin_insur_hlt_vi,Health insurance type: Vision
+fin_insur_hlt_dn,Health insurance type: Dental
+fin_insur_hlt_ca,Health insurance type: Cancer/critical care
+fin_insur_hlt_di,Health insurance type: Other diseases
+fin_insur_hlt_em,Health insurance type: Emergency visits
+fin_insur_hlt_px,Health insurance type: Discounted pharmaceuticals
+fin_insur_hlt_tm,Health insurance type: Telemedicine
+fin_insur_hlt_ot,Health insurance type: Other
+fin_insur_lifhlt_slf,Family covered by life/health insurance: Self
+fin_insur_lifhlt_spo,Family covered by life/health insurance: Spouse/partner
+fin_insur_lifhlt_chi,Family covered by life/health insurance: Children
+fin_insur_lifhlt_par,Family covered by life/health insurance: Parents
+fin_insur_lifhlt_oth,Family covered by life/health insurance: Others
+fin_insur_hlth_empbft,Employee benefits: Offers health insurance
+fin_insur_lifhlt_empbft_yes,MSE offers health insurance to employees: Yes
+fin_insur_lifhlt_empbft_no,MSE offers health insurance to employees: No
+fin_insur_lifhlt_empbft_noemp,MSE offers health insurance to employees: Not applicable (No employees)
+risk_hlt_exp,Health risk exposure: Health issue impacted business operations in past 36 months
+risk_hlt_imp_fin,"Health risk impacts: Decreased sales, income or profits"
+risk_hlt_imp_ops,Health risk impacts: Unable to operated the business as usual
+risk_hlt_imp_prod,Health risk impacts: Reduced productivity
+risk_hlt_imp_opcosts,Health risk impacts: Increased operational costs
+risk_hlt_imp_oth,Health risk impacts: Other
+risk_hlt_cope_borrfin,Health risk coping strategies: Borrowed from a financial institution
+risk_hlt_cope_borrinf,Health risk coping strategies: Borrowed informally
+risk_hlt_cope_savbus,Health risk coping strategies: Used cash or savings from the business
+risk_hlt_cope_ins,Health risk coping strategies: Used insurance payouts
+risk_hlt_cope_hh,Health risk coping strategies: Owner drew on household finances
+risk_hlt_cope_ff,Health risk coping strategies: Owner received money/assistance from friends or family
+risk_hlt_cope_oth,Health risk coping strategies: Adjusted business hours/ hired temp worker/ took second job/ sold assets
+risk_hlt_cope_noth,Health risk coping strategies: Business did nothing
+risk_hlt_cond_notrec,Health risk recovery: Business has not fully recovered
+risk_hlt_cond_rec,Health risk recovery: Business recovered to its pre-event condition
+risk_hlt_cond_fullrec,Health risk recovery: Business recovered and is in a better position now than before
+risk_hlt_rec_lt6mos,Health risk recovery time: Less than 6 months
+risk_hlt_rec_mt6mos,Health risk recovery time: 6 months or more
+risk_hlt_rec_dk,Health risk recovery time: Don't know
+risk_hlt_claimdiff_shc_notdiff,"Health insurance claim, difficulty accessing: Not difficult"
+risk_hlt_claimdiff_shc_some,"Health insurance claim, difficulty accessing: Somewhat difficult"
+risk_hlt_claimdiff_shc_very,"Health insurance claim, difficulty accessing: Very difficult"
+risk_hlt_claimdiff_shc_not,"Health insurance claim, difficulty accessing: Could not access funds"
+risk_hlt_claimquick_shc_qck,"Health insurance claim, speed of access: Very or relatively quickly"
+risk_hlt_claimquick_shc_slw,"Health insurance claim, speed of access: Slow, relatively slowly or very slowly"
+risk_hlt_claimquick_shc_not,"Health insurance claim, speed of access: Could not access funds"
+risk_hlt_claimuse_shc_pmb,"Health insurance claim, use: Pay medical bills"
+risk_hlt_claimuse_shc_pmb,"Health insurance claim, use: Cover lost income or business interruption"
+risk_hlt_claimuse_shc_pmb,"Health insurance claim, use: Settling debts incurred due to medical expenses"
+risk_hlt_claimuse_shc_pmb,"Health insurance claim, use: Other"
+risk_hlt_payout_full,Health insurance payout: Fully or mostly covered expenses
+risk_hlt_payout_partial,Health insurance payout: Only covered a small portion of expenses
+risk_hlt_payout_none,Health insurance payout: Did not cover any expenses
+risk_hlt_payout_dk,Health insurance payout: Don't know/refused
+risk_hlt_inspur_num,"Health risk, likelihood of purchasing or expanding health insurance coverage (next 12 months): Score"
+risk_hlt_inspur_shc_lik,"Health risk, ikelihood of purchasing or expanding health insurance coverage (next 12 months): Very or somewhat likely"
+risk_hlt_inspur_shc_neu,"Health risk, ikelihood of purchasing or expanding health insurance coverage (next 12 months): Netural"
+risk_hlt_inspur_shc_unlik,"Health risk, ikelihood of purchasing or expanding health insurance coverage (next 12 months): Somewhat or very unlikely"
+risk_cli_inspur_num,"Climate risk, likelihood of purchasing or insurance coverage to protect against climate risks (next 12 months): Score"
+risk_cli_inspur_shc_lik,"Climate risk, likelihood of purchasing or insurance coverage to protect against climate risks (next 12 months): Very or somewhat likely"
+risk_cli_inspur_shc_neu,"Climate risk, likelihood of purchasing or insurance coverage to protect against climate risks (next 12 months): Netural"
+risk_cli_inspur_shc_unlik,"Climate risk, likelihood of purchasing or insurance coverage to protect against climate risks (next 12 months): Somewhat or very unlikely"
+fin_insur_chnnl_direct,Purchase channel: Direct from insurance company (in-person)
+fin_insur_chnnl_agent,Purchase channel: Through an insurance agent or broker (in-person)
+fin_insur_chnnl_online,Purchase channel: Direct from insurance company (online)
+fin_insur_chnnl_fi,Purchase channel: Bank/financial institution that offers insurance products
+fin_insur_chnnl_grp,Purchase channel: As part of a group policy
+fin_insur_chnnl_ecom,Purchase channel: Embedded in other digital platforms
+fin_insur_chnnl_bun,Purchase channel: Bundled with another product or service
+fin_insur_chnnl_gov,Purchase channel: Government or social insurance program
+fin_insur_chnnl_oth,Purchase channel: Other
+fin_insur_onlinetype_mkt,Online purchase channel: Marketplace comparison platform
+fin_insur_onlinetype_web,Online purchase channel: Insurance company website
+fin_insur_onlinetype_app,Online purchase channel: Insurance company mobile app
+fin_insur_onlinetype_oth,Online purchase channel: Other
+fin_insur_needs_yes,"Insurance coverage meeting needs: Yes, completely"
+fin_insur_needs_som,"Insurance coverage meeting needs: Somewhat, but could use additional coverage in areas"
+fin_insur_needs_no,Insurance coverage meeting needs: No
+fin_insur_factors_top_prm,"Insurance coverage selecton, top factors: Premium cost"
+fin_insur_factors_top_cov,"Insurance coverage selecton, top factors: Scope of coverage"
+fin_insur_factors_top_dig,"Insurance coverage selecton, top factors: Ease of making claims, availability through digital platforms"
+fin_insur_factors_top_srv,"Insurance coverage selecton, top factors: Customer service, positive reviews/reputation"
+fin_insur_factors_top_mnd,"Insurance coverage selecton, top factors: My insurance was mandatory/ Other"
+fin_insur_exp_cov,Priority area: Increased level of coverage
+fin_insur_exp_rsk,Priority area: Additional risk areas covered/benefits provided
+fin_insur_exp_ded,Priority area: Lower deductible amounts
+fin_insur_exp_mem,Priority area: Add other family members to policy
+fin_insur_exp_oth,Priority area: Other
+fin_insur_claim_yes,Ever filed insurance claim: Yes
+fin_insur_claim_out_rei,Outcome of claim: I was fully reimbursed
+fin_insur_claim_out_par,Outcome of claim: I received a partial reimbursement
+fin_insur_claim_out_rej,Outcome of claim: My claim was rejected
+fin_insur_claim_out_wai,Outcome of claim: Still waiting to be reimbursed
+fin_insur_claim_sat_hi,Satisfication with claims process: Very satisfied or satisfied
+fin_insur_claim_sat_neu,Satisfication with claims process: Neutral
+fin_insur_claim_sat_lo,Satisfication with claims process: Disatisfied or very Disatisfied
+fin_insur_benef_sec,Insurance benefits: More financial security or business continuity
+fin_insur_benef_rsk,Insurance benefits: More confidence taking risks
+fin_insur_benef_crd,Insurance benefits: Facilitated access to credit
+fin_insur_benef_oth,Insurance benefits: Other
+fin_insur_benef_non,Insurance benefits: The insurance did not benefit me
+fin_insur_rec_lif_yes,Life insurance: Yes
+fin_insur_rec_lif_myb,Life insurance: Maybe
+fin_insur_rec_lif_no,Life insurance: No
+fin_insur_rec_lif_dk,Life insurance: Don't know/refused
+fin_insur_rec_hlt_yes,Health insurance: Yes
+fin_insur_rec_hlt_myb,Health insurance: Maybe
+fin_insur_rec_hlt_no,Health insurance: No
+fin_insur_rec_hlt_dk,Health insurance: Don't know/refused
+fin_insur_rec_acc_yes,Accident insurance: Yes
+fin_insur_rec_acc_myb,Accident insurance: Maybe
+fin_insur_rec_acc_no,Accident insurance: No
+fin_insur_rec_acc_dk,Accident insurance: Don't know/refused
+fin_insur_rec_fun_yes,Funeral insurance: Yes
+fin_insur_rec_fun_myb,Funeral insurance: Maybe
+fin_insur_rec_fun_no,Funeral insurance: No
+fin_insur_rec_fun_dk,Funeral insurance: Don't know/refused
+fin_insur_rec_hom_yes,Home insurance: Yes
+fin_insur_rec_hom_myb,Home insurance: Maybe
+fin_insur_rec_hom_no,Home insurance: No
+fin_insur_rec_hom_dk,Home insurance: Don't know/refused
+fin_insur_rec_bus_yes,Business insurance: Yes
+fin_insur_rec_bus_myb,Business insurance: Maybe
+fin_insur_rec_bus_no,Business insurance: No
+fin_insur_rec_bus_dk,Business insurance: Don't know/refused
+fin_insur_rec_aut_yes,Automobile insurance: Yes
+fin_insur_rec_aut_myb,Automobile insurance: Maybe
+fin_insur_rec_aut_no,Automobile insurance: No
+fin_insur_rec_aut_dk,Automobile insurance: Don't know/refused
+fin_insur_rec_idx_yes,Weather-indexed insurance: Yes
+fin_insur_rec_idx_myb,Weather-indexed insurance: Maybe
+fin_insur_rec_idx_no,Weather-indexed insurance: No
+fin_insur_rec_idx_dk,Weather-indexed insurance: Don't know/refused
+fin_insur_rec_oth_yes,Other insurance: Yes
+fin_insur_rec_oth_myb,Other insurance: Maybe
+fin_insur_rec_oth_no,Other insurance: No
+fin_insur_rec_oth_dk,Other insurance: Don't know/refused
+fin_insur_nonewhy_hiprm,Reasons insurance not currently used: Premium is too high
+fin_insur_nonewhy_rigprm,Reasons insurance not currently used: Premium payment schedule too rigid
+fin_insur_nonewhy_app,Reasons insurance not currently used: Application or renovation process too complicated
+fin_insur_nonewhy_noval,Reasons insurance not currently used: Don't see value or need/switched to alternative risk management strategy
+fin_insur_nonewhy_negex,Reasons insurance not currently used: Had a negative experience with insurance provider
+fin_insur_nonewhy_oth,Reasons insurance not currently used: Other
+fin_insur_statm_1_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I understand the benefits of having insurance coverage"
+fin_insur_statm_2_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I believe insurance policies are affordable"
+fin_insur_statm_3_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I trust insurance companies to pay out claims in the event of a loss"
+fin_insur_statm_4_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): Having insurance (health, life, etc.) is essential for financial security"
+fin_insur_statm_5_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): I am likely to purchase insurance coverage in the near future"
+fin_insur_statm_6_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): Health insurance is necessary for ensuring access to healthcare services"
+fin_insur_statm_7_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): Life insurance is a critical component of long-term financial planning"
+fin_insur_statm_8_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): Digital platforms (websites, apps) have made it easier to access and use insurance services"
+fin_insur_statm_9_num,"Agreement scale (mean, 1= Strongly disagree, 5 = Strongly agree): Social media and advertising have increased my awareness of the importance of insurance"
+fin_insur_statm_1_sd,I understand the benefits of having insurance coverage: Strongly disagree
+fin_insur_statm_1_d,I understand the benefits of having insurance coverage: Disagree
+fin_insur_statm_1_n,I understand the benefits of having insurance coverage: Neutral
+fin_insur_statm_1_a,I understand the benefits of having insurance coverage: Agree
+fin_insur_statm_1_sa,I understand the benefits of having insurance coverage: Strongly agree
+fin_insur_statm_1_dk,I understand the benefits of having insurance coverage: Don't know/refused
+fin_insur_statm_2_sd,I believe insurance policies are affordable: Strongly disagree
+fin_insur_statm_2_d,I believe insurance policies are affordable: Disagree
+fin_insur_statm_2_n,I believe insurance policies are affordable: Neutral
+fin_insur_statm_2_a,I believe insurance policies are affordable: Agree
+fin_insur_statm_2_sa,I believe insurance policies are affordable: Strongly agree
+fin_insur_statm_2_dk,I believe insurance policies are affordable: Don't know/refused
+fin_insur_statm_3_sd,I trust insurance companies to pay out claims in the event of a loss: Strongly disagree
+fin_insur_statm_3_d,I trust insurance companies to pay out claims in the event of a loss: Disagree
+fin_insur_statm_3_n,I trust insurance companies to pay out claims in the event of a loss: Neutral
+fin_insur_statm_3_a,I trust insurance companies to pay out claims in the event of a loss: Agree
+fin_insur_statm_3_sa,I trust insurance companies to pay out claims in the event of a loss: Strongly agree
+fin_insur_statm_3_dk,I trust insurance companies to pay out claims in the event of a loss: Don't know/refused
+fin_insur_statm_4_sd,"Having insurance (health, life, etc.) is essential for financial security: Strongly disagree"
+fin_insur_statm_4_d,"Having insurance (health, life, etc.) is essential for financial security: Disagree"
+fin_insur_statm_4_n,"Having insurance (health, life, etc.) is essential for financial security: Neutral"
+fin_insur_statm_4_a,"Having insurance (health, life, etc.) is essential for financial security: Agree"
+fin_insur_statm_4_sa,"Having insurance (health, life, etc.) is essential for financial security: Strongly agree"
+fin_insur_statm_4_dk,"Having insurance (health, life, etc.) is essential for financial security: Don't know/refused"
+fin_insur_statm_5_sd,I am likely to purchase insurance coverage in the near future: Strongly disagree
+fin_insur_statm_5_d,I am likely to purchase insurance coverage in the near future: Disagree
+fin_insur_statm_5_n,I am likely to purchase insurance coverage in the near future: Neutral
+fin_insur_statm_5_a,I am likely to purchase insurance coverage in the near future: Agree
+fin_insur_statm_5_sa,I am likely to purchase insurance coverage in the near future: Strongly agree
+fin_insur_statm_5_dk,I am likely to purchase insurance coverage in the near future: Don't know/refused
+fin_insur_statm_6_sd,Health insurance is necessary for ensuring access to healthcare services: Strongly disagree
+fin_insur_statm_6_d,Health insurance is necessary for ensuring access to healthcare services: Disagree
+fin_insur_statm_6_n,Health insurance is necessary for ensuring access to healthcare services: Neutral
+fin_insur_statm_6_a,Health insurance is necessary for ensuring access to healthcare services: Agree
+fin_insur_statm_6_sa,Health insurance is necessary for ensuring access to healthcare services: Strongly agree
+fin_insur_statm_6_dk,Health insurance is necessary for ensuring access to healthcare services: Don't know/refused
+fin_insur_statm_7_sd,Life insurance is a critical component of long-term financial planning: Strongly disagree
+fin_insur_statm_7_d,Life insurance is a critical component of long-term financial planning: Disagree
+fin_insur_statm_7_n,Life insurance is a critical component of long-term financial planning: Neutral
+fin_insur_statm_7_a,Life insurance is a critical component of long-term financial planning: Agree
+fin_insur_statm_7_sa,Life insurance is a critical component of long-term financial planning: Strongly agree
+fin_insur_statm_7_dk,Life insurance is a critical component of long-term financial planning: Don't know/refused
+fin_insur_statm_8_sd,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Strongly disagree"
+fin_insur_statm_8_d,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Disagree"
+fin_insur_statm_8_n,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Neutral"
+fin_insur_statm_8_a,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Agree"
+fin_insur_statm_8_sa,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Strongly agree"
+fin_insur_statm_8_dk,"Digital platforms (websites, apps) have made it easier to access and use insurance services: Don't know/refused"
+fin_insur_statm_9_sd,Social media and advertising have increased my awareness of the importance of insurance: Strongly disagree
+fin_insur_statm_9_d,Social media and advertising have increased my awareness of the importance of insurance: Disagree
+fin_insur_statm_9_n,Social media and advertising have increased my awareness of the importance of insurance: Neutral
+fin_insur_statm_9_a,Social media and advertising have increased my awareness of the importance of insurance: Agree
+fin_insur_statm_9_sa,Social media and advertising have increased my awareness of the importance of insurance: Strongly agree
+fin_insur_statm_9_dk,Social media and advertising have increased my awareness of the importance of insurance: Don't know/refused
+fin_insur_buy_lif,Likely to purchase in next 12 months: Life insurance
+fin_insur_buy_hlt,Likely to purchase in next 12 months: Health insurance
+fin_insur_buy_acc,Likely to purchase in next 12 months: Accident insurance
+fin_insur_buy_fun,Likely to purchase in next 12 months: Funeral insurance
+fin_insur_buy_hom,Likely to purchase in next 12 months: Home insurance
+fin_insur_buy_bus,Likely to purchase in next 12 months: Business insurance
+fin_insur_buy_aut,Likely to purchase in next 12 months: Automobile insurance
+fin_insur_buy_idx,Likely to purchase in next 12 months: Weather-indexed insurance
+fin_insur_buy_oth,Likely to purchase in next 12 months: Other insurance
+fin_insur_medexp_0,Medical expenses (past 12 months): None
+fin_insur_medexp_1,Medical expenses (past 12 months): Less than IDR 1700000 (Indonesia) / BRL1100 (Brazil)
+fin_insur_medexp_2,"Medical expenses (past 12 months): Between IDR 1,700,000 and 3,500,000 (Indonesia) / BRL 1100 and BRL 2200 (Brazil)"
+fin_insur_medexp_3,"Medical expenses (past 12 months): Over IDR 3,500,000 (Indonesia) / BRL 2200 (Brazil)"
+fin_insur_medexp_dk,Medical expenses (past 12 months): Don't know/can't remember
+fin_insur_dig_mot_exp,"Digital platform, primary motivation: Less expensive"
+fin_insur_dig_mot_cnv,"Digital platform, primary motivation: More convenient"
+fin_insur_dig_mot_tru,"Digital platform, primary motivation: Trust data will be protected"
+fin_insur_dig_mot_pro,"Digital platform, primary motivation: For protection against financial losses"
+fin_insur_dig_mot_dat,"Digital platform, primary motivation: Insurance companies use my data to offer customized products with better terms"
+fin_insur_dig_mot_oth,"Digital platform, primary motivation: Other"
+fin_insur_chlng_plt,"Digital platform, challenges: The digital platform"
+fin_insur_chlng_ins,"Digital platform, challenges: The insurance provider"
+fin_insur_chlng_bth,"Digital platform, challenges: Both"
+fin_insur_chlng_dk,"Digital platform, challenges: Don't know"
+fin_insur_issues_type_any,"Issues faced accessing/using insurance policy (in past 36 months)?: Yes, any"
+fin_insur_issues_type_lkc,Type of issue: Lack of clarity about insurance policy
+fin_insur_issues_type_exp,Type of issue: Coerced into buying policy/faced discrimination or disrespectful treatment
+fin_insur_issues_type_pre,Type of issue: Rapid increase in premium
+fin_insur_issues_type_frd,Type of issue: Exposed to fraud
+fin_insur_issues_type_clm,Type of issue: Problems processing claims
+fin_insur_issues_type_dat,Type of issue: Exposed to data breaches/personal data sold without consent
+fin_insur_issues_type_oth,Type of issue: Other
+fin_insur_issues_act_web,Actions taken: Visited the insurance provider's website for more information
+fin_insur_issues_act_call,Actions taken: Called agent or provider's helpline
+fin_insur_issues_act_cht,Actions taken: Used provider's chatbot
+fin_insur_issues_act_ip,Actions taken: Talked with agent or provider in person
+fin_insur_issues_act_cg,Actions taken:  Complained to a consumer group/regulator
+fin_insur_issues_act_dk,Actions taken: Did not know what to do
+fin_insur_issues_act_nr,Actions taken: Knew what to do but did not pursue any recourse
+fin_insur_issues_act_oth,Actions taken: Other
+fin_insur_trust_yes,"Extent of trust in insurance companies: I trust them completely, or somewhat"
+fin_insur_trust_neu,Extent of trust in insurance companies: I have no reason to trust them or not
+fin_insur_trust_no,"Extent of trust in insurance companies: I do not trust them, or trust them at all"
+fin_insur_trust_agg_no_neg,"Reason for not trusting: Fraud, data misuse, claims not honored"
+fin_insur_trust_agg_no_pos,"Reason for not trusting: Pricing, processes, terms hard to understand/products don't meet needs"
+fin_insur_trust_agg_no_oth,Reason for not trusting: Other
+fin_insur_trust_no_needs,Reason for not trusting: Insurance products don't meet my needs
+fin_insur_trust_no_fraud,Reason for not trusting: I have experienced/heard of insurance fraud or I have heard/experienced data misuse by insurance companies
+fin_insur_trust_no_claim,Reason for not trusting: I have heard/experienced that insurance companies don’t honor claims processes
+fin_insur_trust_no_ux,Reason for not trusting: The pricing and terms are vague and hard to understand or the processes are unclear
+fin_insur_trust_no_oth,Reason for not trusting: Other
+fin_ins_seg0_cu_hltlif,Insurance adoption group: Health or life insurance
+fin_ins_seg0_cu_oth,Insurance adoption group: Other insurance (not health or life)
+fin_ins_seg0_cu_none,Insurance adoption group: No insurance coverage
+fin_ins_seg01_cu_hlt,Insurance adoption group: Health insurance only
+fin_ins_seg01_cu_lif,Insurance adoption group: Life insurance only
+fin_ins_seg01_cu_hltlifboth,Insurance adoption group: Both health and life
+fin_ins_seg01_cu_oth,Insurance adoption group: Other insurance (not health or life)
+fin_ins_seg01_cu_none,Insurance adoption group: No insurance coverage
+fin_ins_seg1_cu,Insurance customer segment: Current policyholder
+fin_ins_seg1_pr,Insurance customer segment: Prospective policyholder
+fin_ins_seg1_hr,Insurance customer segment: Hard to reach
+fin_ins_seg2_cu,Insurance customer segment: Current policyholder
+fin_ins_seg2_pr,Insurance customer segment: Prospective policyholder
+fin_ins_seg2_hr,Insurance customer segment: Hard to reach
+fin_ins_seg3_cu,Insurance customer segment: Current policyholder
+fin_ins_seg3_pr,Insurance customer segment: Prospective policyholder
+fin_ins_seg3_hr,Insurance customer segment: Hard to reach
+fin_ins_lif_seg_cu,Insurance customer segment: Current life policyholder
+fin_ins_lif_seg_pr,Insurance customer segment: Prospective life policyholder
+fin_ins_lif_seg_hr,Insurance customer segment: Hard to reach
+fin_ins_lif_seg3_cu,Life insurance customer segment: Current life policyholder
+fin_ins_lif_seg3_pr,Life insurance customer segment: Prospective life policyholder
+fin_ins_lif_seg3_hr,"Life insurance customer segment: Never used, hard to reach"
+fin_ins_lif_seg3_ou,"Life insurance customer segment: Stopped using, does not recommend"
+fin_ins_hlt_seg3_cu,Health insurance customer segment: Current health policyholder
+fin_ins_hlt_seg3_pr,Health insurance customer segment: Prospective health policyholder
+fin_ins_hlt_seg3_hr,"Health insurance customer segment: Never used, hard to reach"
+fin_ins_hlt_seg3_ou,"Health insurance customer segment: Stopped using, does not recommend"
+fin_ins_lif_seg4_cu,Life insurance customer segment: Current policyholder
+fin_ins_lif_seg4_pr,Life insurance customer segment: Prospective policyholder
+fin_ins_lif_seg4_hr,Life insurance customer segment: Hard to reach
+fin_ins_hlt_seg4_cu,Health insurance customer segment: Current policyholder
+fin_ins_hlt_seg4_pr,Health insurance customer segment: Prospective policyholder
+fin_ins_hlt_seg4_hr,Health insurance customer segment: Hard to reach
+fin_access_score,Breadth of financial access: Score [0-4]
+fin_access_savings_N,Financial access summary score: Savings accounts (N)
+fin_access_loans_N,Financial access summary score: Loan accounts (N)
+fin_access_payments_N,Financial access summary score: Payments solutions (N)
+fin_access_insurance_N,Financial access summary score: Insurance policies (N)
+cp_loanrepaydiff,Loan repayment difficulty: Business has been unable to pay a full loan installment on-time for any funds that it borrowed
+cp_loanrepaydiff_cope_notpay,Loan repayment difficulty: I did not repay
+cp_loanrepaydiff_cope_restr,Loan repayment difficulty: Restructured the loan
+cp_loanrepaydiff_cope_borr,Loan repayment difficulty: Borrowed from another source to repay
+cp_loanrepaydiff_cope_work,Loan repayment difficulty: Worked additional hours or took another job
+cp_loanrepaydiff_cope_sellasst,Loan repayment difficulty: Sold or pawned a business asset
+cp_loanrepaydiff_cope_usedhh,Loan repayment difficulty: Used household money
+cp_loanrepaydiff_cope_other,Loan repayment difficulty: Other
+cp_issues_fraud,Negative experiences with financial services: Fraud or scams
+cp_issues_salesp,Negative experiences with financial services: Sales pressure from provider
+cp_issues_badtreat,Negative experiences with financial services: Poor treatment by provider
+cp_issues_unxfees,Negative experiences with financial services: Paid unexpected fees or penalties
+cp_issues_crb,Negative experiences with financial services: Incorrectly reported to a credit reference bureau
+cp_issues_trms,Negative experiences with financial services: Did not understand how a financial product worked
+cp_issues_other,Negative experiences with financial services: Other
+cp_issues_any,Negative experiences with financial services: Any
+cp_complaint,Recourse: Raised a complaint
+cp_complaint_no_diff,"No recourse taken, reason: Too difficult"
+cp_complaint_no_knowhow,"No recourse taken, reason: Did not know how or where to go"
+cp_complaint_no_channel,"No recourse taken, reason: No channel to make an official complaint"
+cp_complaint_no_faith,"No recourse taken, reason: Did not think it would be resolved"
+cp_complaint_resolved_yes,Recourse: Issue was resolved
+cp_dfs_stopped,"Negative experiences with digital financial services: Stopped using DFS due to fear of, or experiencing consumer protection risks"
+risk_largestimpact_shc_corr,Main risk in past 36 months: Bribes or corruption
+risk_largestimpact_shc_cost,Main risk in past 36 months: Rising costs of inputs or labor
+risk_largestimpact_shc_crme,"Main risk in past 36 months: Crime (theft, vandalism, etc)"
+risk_largestimpact_shc_frau,"Main risk in past 36 months: Online frauds or scams, cybersecurity"
+risk_largestimpact_shc_hlth,"Main risk in past 36 months: Injuries, illness or any health issues"
+risk_largestimpact_shc_none,Main risk in past 36 months: No risks faced
+risk_largestimpact_shc_othr,Main risk in past 36 months: Other
+risk_largestimpact_shc_wthr,Main risk in past 36 months: Extreme weather events
+risk_weather_type_heat,Climate risk: Extreme heat
+risk_weather_type_droughts,Climate risk: Droughts
+risk_weather_type_floods,"Climate risk: Extreme rain, floods or landslides"
+risk_weather_type_typhoon,Climate risk: Typhoons or cylcones
+risk_weather_type_floodstyphoon,"Climate risk: Extreme rain, floods or landslides*"
+risk_weather_type_other,Climate risk: Other
+risk_weather_type_any,Climate risk: Any weather event
+risk_weather_impact_fin,Impact of climate risk on business operations: Decreased sales income and/or profits
+risk_weather_impact_cst,Impact of climate risk on business operations: Increased costs
+risk_weather_impact_ops,Impact of climate risk on business operations: Disrupted business operations
+risk_weather_impact_dmg,"Impact of climate risk on business operations: Business assets damaged, lost or worsened*"
+risk_weather_impact_imp,Impact of climate risk on business operations: Production or sales improved
+risk_weather_cope_prod,Actions to cope with climate risk: Changed what the business sells or produces
+risk_weather_cope_spch,Actions to cope with climate risk: Diversified suppliers or sought alternative supply chains
+risk_weather_cope_relo,Actions to cope with climate risk: Relocated the business
+risk_weather_cope_cash,Actions to cope with climate risk: Used business cash or savings
+risk_weather_cope_loan,Actions to cope with climate risk: Borrowed money
+risk_weather_cope_insu,Actions to cope with climate risk: Used insurance payouts
+risk_weather_cope_govr,Actions to cope with climate risk: Received funds from the government
+risk_weather_cope_hcsh,"Actions to cope with climate risk: Drew on household cash, savings or other assets"
+risk_weather_cope_remi,Actions to cope with climate risk: Received money from family or friends
+risk_weather_cope_asst,Actions to cope with climate risk: Sold business assets
+risk_weather_cope_noth,Actions to cope with climate risk: Did nothing
+risk_weather_cope_othr,Actions to cope with climate risk: Other
+risk_weather_cond_ntrc,Recovery status from climate risk: Not fully recovered
+risk_weather_cond_rc,Recovery status from climate risk: Recovered
+risk_weather_cond_rcbt,Recovery status from climate risk: Recovered and in a better position
+risk_weather_adaptspend,Climate adaptation: Has invested to reduce impact of future weather risks
+risk_hlt_exp,Health risk exposure: Business exposed to health shock that affected operations (past 36 months)
+risk_hlt_imp_fin,"Health risk impact: Decreased sales, income or profits"
+risk_hlt_imp_ops,Health risk impact: Unable to operate the business as usual
+risk_hlt_imp_prod,Health risk impact: Reduced productivity
+risk_hlt_imp_opcosts,Health risk impact: Increased operational costs
+risk_hlt_imp_oth,Health risk impact: Other
+risk_hltcli_exp,Risk exposure: Business exposed to health or climate shock in past 36 months
+risk_hlt_cope_borrfin,Health risk coping strategies: Borrowed from a financial institution
+risk_hlt_cope_savbus,Health risk coping strategies: Use business cash or savings
+risk_hlt_cope_ins,Health risk coping strategies: Insurance payout
+risk_hlt_cope_hh,Health risk coping strategies: Owner's household finances
+risk_hlt_cope_ff,Health risk coping strategies: Money or assistance from friends or family
+risk_hlt_cope_oth,"Health risk coping strategies: Other (e.g. adjusted operating hours, sold assets, second job, temp hires)"
+risk_hlt_cope_noth,Health risk coping strategies: Did nothing
+risk_hlt_cond_notrec,Health risk recovery: Not fully recovered
+risk_hlt_cond_rec,Health risk recovery: Recovered
+risk_hlt_cond_fullrec,Health risk recovery: Recovered and in a better position
+risk_hlt_rec_lt6mos,Health risk recovery time: Less than 6 months
+risk_hlt_rec_mt6mos,Health risk recovery time: More than 6 months
+risk_hlt_rec_dk,Health risk recovery time: Don't know
+resi_efunds_firm_diff_3,Difficulty raising emergency funds: Very difficult
+resi_efunds_firm_diff_2,Difficulty raising emergency funds: Somewhat difficult
+resi_efunds_firm_diff_1,Difficulty raising emergency funds:  Not difficult at all
+resi_efunds_firm_diff_4,Difficulty raising emergency funds: Not possible
+resi_efunds_firm_str,Difficulty raising emergency funds: Emergency funds group
+resi_efunds_firm_source_family,Source of emergency funds: Family
+resi_efunds_firm_source_work,Source of emergency funds: Work
+resi_efunds_firm_source_firmcsh,Source of emergency funds: Business savings
+resi_efunds_firm_source_hhcsh,Source of emergency funds: Personal savings
+resi_efunds_firm_source_borrow,Source of emergency funds: Borrowing
+resi_efunds_firm_source_sellassets,Source of emergency funds: Selling assets
+resi_efunds_firm_source_other,Source of emergency funds: Other
+resi_efunds_hh_owner_yes,Would need to take resources from business to cover household emergency: Yes
+resi_efunds_hh_owner_no,Would need to take resources from business to cover household emergency: No
+resi_suppchain_cust_diff_1,Difficulty of losing supplier or main customer: Not difficult at all
+resi_suppchain_cust_diff_2,Difficulty of losing supplier or main customer: Somewhat difficult
+resi_suppchain_cust_diff_3,Difficulty of losing supplier or main customer: Very difficult
+resi_resp_attitude_chllng_1,Response to prior business challenges: Felt overwhelmed and feared closure
+resi_resp_attitude_chllng_2,Response to prior business challenges: Viewed challenge as normal part of business
+resi_resp_attitude_chllng_3,Response to prior business challenges: Sought new opportunities to expand or pivot
+resi_resp_attitude_chllng_4,Response to prior business challenges: I didn't face any significant challenges
+resi_network_conf_3,Confidence in social network support: Not confident
+resi_network_conf_2,Confidence in social network support: Somewhat confident
+resi_network_conf_1,Confidence in social network support: Very confident
+resi_capital_financial,"Resilience capital: Financial, Can raise emergency funds without major difficulty"
+resi_capital_linkages,"Resilience capital: Structural, Can overcome loss of main customer or supplier without major difficulty"
+resi_capital_hh,"Resilience capital: Financial, Business resources insulated from household shocks"
+resi_capital_network,"Resilience capital: Social, Confident that network can support business if needed"
+resi_capital_score_v1,"Resilience capital: Overall, Resilience score [0 min - 4 max]"
+resi_capital_score_v2,"Resilience capital: Overall, Resilience score (excluding household finance component) [0 min - 3 max]"
+resi_capital_score_v3,"Resilience capital: Overall, Resilience score [0 min - 7 max]"
+resi_capital_score_v3_norm,"Resilience capital: Overall, Resilience score, normalized"
+,All businesses
+,Household
+,Non-household: Permanent structure
+,Non-household: Semi-permanent structure
+,Services: trade (re-sale)
+,"Services: other (eg. transport, construction)"
+,Manufacturing
+,1 person
+,2-10 people
+,1 yr or less
+,2-5 yrs
+,6-10 yrs
+,11-20 yrs
+,> 20 yrs
